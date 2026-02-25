@@ -4,162 +4,164 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements-docs.txt requirements-docs.in
 #
-acme==5.2.2
+acme==5.3.1
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   certbot
 alabaster==1.0.0
     # via sphinx
 alembic==1.14.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   flask-migrate
 alembic-autogenerate-enums==0.1.2
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 amqp==5.3.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   kombu
 aniso8601==10.0.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   flask-restful
 annotated-types==0.7.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   pydantic
 anyio==4.5.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cloudflare
     #   httpx
 arrow==1.4.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 async-timeout==5.0.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   redis
 asyncpool==1.0
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 attrs==25.4.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   jsonschema
     #   referencing
-aws-sam-translator==1.106.0
+aws-sam-translator==1.107.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cfn-lint
 aws-xray-sdk==2.15.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   moto
 azure-common==1.1.28
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   azure-mgmt-cdn
     #   azure-mgmt-subscription
-azure-core==1.38.0
+azure-core==1.38.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   azure-identity
     #   azure-keyvault-certificates
     #   azure-keyvault-keys
     #   azure-keyvault-secrets
     #   azure-mgmt-core
     #   msrest
-azure-identity==1.25.1
-    # via -r requirements-tests.txt
+azure-identity==1.25.2
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 azure-keyvault==4.2.0
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 azure-keyvault-certificates==4.10.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   azure-keyvault
 azure-keyvault-keys==4.11.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   azure-keyvault
 azure-keyvault-secrets==4.10.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   azure-keyvault
 azure-mgmt-cdn==13.1.1
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 azure-mgmt-core==1.6.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   azure-mgmt-cdn
     #   azure-mgmt-network
     #   azure-mgmt-subscription
-azure-mgmt-network==30.1.0
-    # via -r requirements-tests.txt
+azure-mgmt-network==30.2.0
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 azure-mgmt-subscription==3.1.1
-    # via -r requirements-tests.txt
-babel==2.17.0
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
+babel==2.18.0
     # via sphinx
-bandit==1.9.3
-    # via -r requirements-tests.txt
+bandit==1.9.4
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 bcrypt==5.0.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   flask-bcrypt
     #   paramiko
 billiard==4.2.4
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   celery
 black==26.1.0
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 blinker==1.9.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.42.37
+boto3==1.42.56
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   aws-sam-translator
     #   moto
-botocore==1.42.37
+botocore==1.42.56
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   aws-xray-sdk
     #   boto3
     #   moto
     #   s3transfer
 bytecode==0.17.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
     #   ddtrace
-cachetools==6.2.6
+cachetools==7.0.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
+    #   dd-internal-authentication
 celery[redis]==5.6.2
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 cert-manager==2.4.0
-    # via -r requirements-tests.txt
-cert-orchestration-adapter @ https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.26-py3-none-any.whl
-    # via -r requirements-tests.txt
-certbot==5.2.2
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
+cert-orchestration-adapter @ https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.28-py3-none-any.whl
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
+certbot==5.3.1
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
-certifi==2026.1.4
+certifi==2026.2.25
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
+    #   dd-internal-authentication
     #   httpcore
     #   httpx
     #   msrest
@@ -167,26 +169,26 @@ certifi==2026.1.4
     #   sentry-sdk
 certsrv[ntlm]==2.1.1
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 cffi==2.0.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
     #   cryptography
     #   pynacl
-cfn-lint==1.43.4
+cfn-lint==1.45.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   moto
 charset-normalizer==3.4.4
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
     #   requests
 click==8.3.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   black
     #   celery
     #   cert-orchestration-adapter
@@ -196,39 +198,40 @@ click==8.3.1
     #   flask
 click-didyoumean==0.3.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   celery
 click-plugins==1.1.1.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   celery
 click-repl==0.3.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   celery
 cloudflare==4.3.1
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 configargparse==1.7.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   certbot
 configobj==5.0.9
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   certbot
-coverage==7.13.2
-    # via -r requirements-tests.txt
+coverage==7.13.4
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 cryptography==43.0.1
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   acme
     #   azure-identity
     #   azure-keyvault-keys
     #   cert-orchestration-adapter
     #   certbot
+    #   dd-internal-authentication
     #   google-auth
     #   josepy
     #   moto
@@ -243,31 +246,37 @@ cryptography==43.0.1
     #   types-paramiko
     #   types-pyopenssl
     #   types-redis
-ddtrace==4.3.1
+datadog==0.52.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
+dd-internal-authentication @ https://binaries.ddbuild.io/dd-source/python/dd_internal_authentication-1.7.1-py2.py3-none-any.whl
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
+ddtrace==4.5.0
+    # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
+    #   cert-orchestration-adapter
+    #   dd-internal-authentication
 deprecated==1.3.1
     # via
-    #   -r requirements-tests.txt
-    #   cert-orchestration-adapter
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   limits
 distro==1.9.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   certbot
     #   cloudflare
 dnspython==2.6.1
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 dnspython3==1.12.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 docker==7.1.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   moto
 docutils==0.21.2
     # via
@@ -276,37 +285,37 @@ docutils==0.21.2
     #   sphinx-rtd-theme
 dyn==1.8.6
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 ecdsa==0.19.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   moto
     #   python-jose
     #   sshpubkeys
 envier==0.6.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
     #   ddtrace
 exceptiongroup==1.3.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   anyio
     #   celery
     #   pytest
 factory-boy==3.3.3
-    # via -r requirements-tests.txt
-faker==40.1.2
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
+faker==40.5.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   factory-boy
-fakeredis==2.33.0
-    # via -r requirements-tests.txt
+fakeredis==2.34.1
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 flask==2.3.3
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   cert-orchestration-adapter
     #   flask-bcrypt
     #   flask-cors
@@ -320,312 +329,314 @@ flask==2.3.3
     #   pytest-flask
 flask-bcrypt==1.0.1
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 flask-cors==6.0.2
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 flask-limiter==4.1.1
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 flask-mail==0.10.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 flask-migrate==2.7.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 flask-principal==0.4.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 flask-replicated==2.1
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 flask-restful==0.3.10
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 flask-script==2.0.5
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 flask-sqlalchemy==2.5.1
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   flask-migrate
 freezegun==1.5.5
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 future==1.0.0
-    # via -r requirements-tests.txt
-google-api-core[grpc]==2.29.0
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
+google-api-core[grpc]==2.30.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   google-cloud-compute
     #   google-cloud-private-ca
 google-auth==2.48.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   google-api-core
     #   google-cloud-compute
     #   google-cloud-private-ca
 google-cloud-compute==1.43.0
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 google-cloud-private-ca==1.17.0
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 googleapis-common-protos[grpc]==1.72.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   google-api-core
     #   grpc-google-iam-v1
     #   grpcio-status
 graphql-core==3.2.7
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   moto
 grpc-google-iam-v1==0.14.3
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   google-cloud-private-ca
-grpcio==1.76.0
+grpcio==1.78.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
+    #   dd-internal-authentication
     #   google-api-core
     #   google-cloud-compute
     #   google-cloud-private-ca
     #   googleapis-common-protos
     #   grpc-google-iam-v1
     #   grpcio-status
-grpcio-status==1.48.2
+grpcio-status==1.78.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   google-api-core
-gunicorn==24.1.1
+gunicorn==25.1.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 h11==0.16.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   httpcore
 httpcore==1.0.9
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   httpx
 httpx==0.28.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cloudflare
 hvac==2.4.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 idna==3.11
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   anyio
     #   cert-orchestration-adapter
+    #   dd-internal-authentication
     #   httpx
     #   requests
 imagesize==1.4.1
     # via sphinx
 importlib-metadata==8.5.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
     #   opentelemetry-api
 inflection==0.5.1
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 iniconfig==2.3.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   pytest
 invoke==2.2.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   paramiko
 isodate==0.7.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   azure-keyvault-certificates
     #   azure-keyvault-keys
     #   azure-keyvault-secrets
     #   azure-mgmt-cdn
+    #   azure-mgmt-network
     #   msrest
 itsdangerous==2.2.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   cert-orchestration-adapter
     #   flask
 javaobj-py3==0.4.4
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   pyjks
 jinja2==3.1.6
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
     #   flask
     #   moto
     #   sphinx
 jmespath==1.1.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   boto3
     #   botocore
 josepy==2.2.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   acme
     #   certbot
 jsondiff==2.2.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   moto
 jsonpatch==1.33
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cfn-lint
 jsonpointer==3.0.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   jsonpatch
-jsonschema==4.26.0
+jsonschema==4.24.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   aws-sam-translator
     #   openapi-schema-validator
     #   openapi-spec-validator
-jsonschema-path==0.3.4
+jsonschema-path==0.4.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   openapi-spec-validator
 jsonschema-specifications==2025.9.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   jsonschema
     #   openapi-schema-validator
 kombu[redis]==5.6.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   celery
 lazy-object-proxy==1.12.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   openapi-spec-validator
-librt==0.7.8
+librt==0.8.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   mypy
-limits==5.6.0
+limits==5.8.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   flask-limiter
 lockfile==0.12.2
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 logmatic-python==0.1.7
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 mako==1.3.10
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   alembic
 markdown-it-py==4.0.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   rich
 markupsafe==2.1.5
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
     #   jinja2
     #   mako
     #   werkzeug
 marshmallow==2.21.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   marshmallow-sqlalchemy
 marshmallow-sqlalchemy==0.23.1
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 mdurl==0.1.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   markdown-it-py
 moto[all]==4.2.14
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 mpmath==1.3.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   sympy
-msal==1.34.0
+msal==1.35.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   azure-identity
     #   msal-extensions
 msal-extensions==1.3.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   azure-identity
 msrest==0.7.1
     # via
-    #   -r requirements-tests.txt
-    #   azure-mgmt-network
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   azure-mgmt-subscription
 multipart==1.3.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   moto
 mypy==1.19.1
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 mypy-extensions==1.1.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   black
     #   mypy
 ndg-httpsclient==0.5.1
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 networkx==3.4.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cfn-lint
 nose==1.3.7
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 oauthlib==3.3.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   requests-oauthlib
-openapi-schema-validator==0.6.3
+openapi-schema-validator==0.7.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   openapi-spec-validator
-openapi-spec-validator==0.7.2
+openapi-spec-validator==0.8.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   moto
 opentelemetry-api==1.39.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
     #   ddtrace
 ordered-set==4.1.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   flask-limiter
 packaging==26.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   black
     #   gunicorn
     #   kombu
@@ -634,46 +645,46 @@ packaging==26.0
     #   sphinx
 paramiko==4.0.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 parsedatetime==2.6
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   certbot
-pathable==0.4.4
+pathable==0.5.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   jsonschema-path
 pathspec==1.0.4
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   black
     #   mypy
 pem==23.1.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
-platformdirs==4.5.1
+platformdirs==4.9.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   black
 pluggy==1.6.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   pytest
 prompt-toolkit==3.0.52
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   click-repl
-proto-plus==1.27.0
+proto-plus==1.27.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   google-api-core
     #   google-cloud-compute
     #   google-cloud-private-ca
-protobuf==3.20.3
+protobuf==6.33.5
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
     #   google-api-core
     #   google-cloud-compute
@@ -683,14 +694,14 @@ protobuf==3.20.3
     #   grpcio-status
     #   proto-plus
 psycopg2==2.9.11
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 py-partiql-parser==0.5.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   moto
 pyasn1==0.6.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   ndg-httpsclient
     #   pyasn1-modules
     #   pyjks
@@ -698,80 +709,81 @@ pyasn1==0.6.2
     #   rsa
 pyasn1-modules==0.4.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   google-auth
     #   pyjks
 pycparser==3.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
     #   cffi
 pycryptodomex==3.23.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   pyjks
 pydantic==2.12.5
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   aws-sam-translator
     #   cloudflare
 pydantic-core==2.41.5
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   pydantic
 pyflakes==3.4.0
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 pygments==2.19.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   pytest
     #   rich
     #   sphinx
 pyjks==20.0.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
-pyjwt[crypto]==2.10.1
+pyjwt[crypto]==2.11.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   cert-orchestration-adapter
+    #   dd-internal-authentication
     #   msal
 pynacl==1.6.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   paramiko
 pyopenssl==25.1.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   acme
     #   ndg-httpsclient
 pyparsing==3.3.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   moto
 pyrfc3339==2.1.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   acme
     #   certbot
 pyspnego==0.12.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   requests-ntlm
 pytest==9.0.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   pytest-flask
     #   pytest-mock
 pytest-flask==1.3.0
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 pytest-mock==3.15.1
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 python-dateutil==2.9.0.post0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   arrow
     #   botocore
     #   celery
@@ -779,24 +791,24 @@ python-dateutil==2.9.0.post0
     #   moto
 python-jose[cryptography]==3.5.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   moto
 python-json-logger==4.0.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   logmatic-python
-    # via -r requirements-tests.txt
-pytokens==0.4.0
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
+pytokens==0.4.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   black
 pytz==2025.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   flask-restful
 pyyaml==6.0.3
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   bandit
     #   cfn-lint
     #   jsondiff
@@ -805,32 +817,34 @@ pyyaml==6.0.3
     #   responses
 redis==6.4.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   fakeredis
     #   kombu
-referencing==0.36.2
+referencing==0.37.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   jsonschema
     #   jsonschema-path
     #   jsonschema-specifications
-regex==2026.1.15
+    #   openapi-schema-validator
+regex==2026.2.19
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cfn-lint
 requests==2.32.5
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   acme
     #   azure-core
     #   cert-manager
     #   cert-orchestration-adapter
     #   certsrv
+    #   datadog
+    #   dd-internal-authentication
     #   docker
     #   google-api-core
     #   hvac
-    #   jsonschema-path
     #   moto
     #   msal
     #   msrest
@@ -840,73 +854,75 @@ requests==2.32.5
     #   responses
     #   sphinx
 requests-mock==1.12.1
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 requests-ntlm==1.3.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   certsrv
 requests-oauthlib==2.0.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   msrest
-responses==0.25.8
+responses==0.26.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
+    #   dd-internal-authentication
     #   moto
 retrying==1.4.2
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 rfc3339-validator==0.1.4
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   openapi-schema-validator
-rich==14.3.1
+rich==14.3.3
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   bandit
 rpds-py==0.30.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   jsonschema
     #   referencing
 rsa==4.9.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   google-auth
     #   python-jose
 s3transfer==0.16.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   boto3
-sentry-sdk==2.51.0
+sentry-sdk==2.53.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 simplejson==3.20.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
+    #   dd-internal-authentication
 six==1.17.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
+    #   dd-internal-authentication
     #   ecdsa
     #   flask-restful
     #   python-dateutil
     #   rfc3339-validator
-    #   sphinxcontrib-httpdomain
 sniffio==1.3.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   anyio
     #   cloudflare
 snowballstemmer==3.0.1
     # via sphinx
 sortedcontainers==2.4.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   fakeredis
 sphinx==8.1.3
     # via
@@ -922,7 +938,7 @@ sphinxcontrib-devhelp==2.0.0
     # via sphinx
 sphinxcontrib-htmlhelp==2.1.0
     # via sphinx
-sphinxcontrib-httpdomain==1.8.1
+sphinxcontrib-httpdomain==2.0.0
     # via -r requirements-docs.in
 sphinxcontrib-jquery==4.1
     # via sphinx-rtd-theme
@@ -934,80 +950,80 @@ sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
 sqlalchemy==1.3.24
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   alembic
     #   flask-sqlalchemy
     #   marshmallow-sqlalchemy
     #   sqlalchemy-utils
 sqlalchemy-utils==0.41.2
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 sshpubkeys==3.3.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   moto
-stevedore==5.6.0
+stevedore==5.7.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   bandit
 sympy==1.14.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cfn-lint
 tabulate==0.9.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
 toml==0.10.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-manager
 tomli==2.4.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   black
     #   mypy
     #   pytest
     #   sphinx
 twofish==0.3.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   pyjks
 types-cffi==1.17.0.20250915
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   types-pyopenssl
-types-deprecated==1.3.1.20251101
-    # via -r requirements-tests.txt
+types-deprecated==1.3.1.20260130
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 types-paramiko==4.0.0.20250822
-    # via -r requirements-tests.txt
-types-protobuf==6.32.1.20251210
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
+types-protobuf==6.32.1.20260221
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 types-pyopenssl==24.1.0.20240722
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   types-redis
 types-pyrfc3339==2.0.1.20250825
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 types-pytz==2025.2.0.20251108
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 types-redis==4.6.0.20241004
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 types-requests==2.32.4.20260107
-    # via -r requirements-tests.txt
-types-setuptools==80.10.0.20260124
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
+types-setuptools==82.0.0.20260210
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   types-cffi
 types-six==1.17.0.20251009
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 types-tabulate==0.9.0.20241207
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 typing-extensions==4.15.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   alembic
     #   anyio
     #   aws-sam-translator
@@ -1035,65 +1051,65 @@ typing-extensions==4.15.0
     #   typing-inspection
 typing-inspection==0.4.2
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   pydantic
 tzdata==2025.3
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   arrow
     #   kombu
 tzlocal==5.3.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   celery
 urllib3==2.6.3
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   botocore
     #   cert-orchestration-adapter
+    #   dd-internal-authentication
     #   docker
     #   requests
     #   responses
     #   sentry-sdk
     #   types-requests
 validators==0.35.0
-    # via -r requirements-tests.txt
+    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
 vine==5.1.0
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   amqp
     #   celery
     #   kombu
-wcwidth==0.5.0
+wcwidth==0.6.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   prompt-toolkit
-werkzeug==3.1.5
+werkzeug==3.1.6
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
     #   cert-orchestration-adapter
     #   flask
     #   flask-cors
     #   moto
     #   pytest-flask
-wrapt==2.0.1
+wrapt==2.1.1
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   aws-xray-sdk
     #   cert-orchestration-adapter
     #   ddtrace
     #   deprecated
-xmltodict==1.0.2
+xmltodict==1.0.4
     # via
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   -r requirements-docs.in
-    #   -r requirements-tests.txt
-    #   cert-orchestration-adapter
     #   moto
 zipp==3.23.0
     # via
-    #   -r requirements-tests.txt
+    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-tests.txt
     #   cert-orchestration-adapter
     #   importlib-metadata
 

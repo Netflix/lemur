@@ -4,7 +4,8 @@
 # For upstream sync: update requirements-base.in from Netflix/lemur, then recompile
 
 # === Datadog Internal Packages ===
-https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.26-py3-none-any.whl
+https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.28-py3-none-any.whl
+https://binaries.ddbuild.io/dd-source/python/dd_internal_authentication-1.7.1-py2.py3-none-any.whl
 
 # === Additional Integrations ===
 azure-identity >= 1.16.1  # (VUNL-7150)

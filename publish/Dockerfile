@@ -29,10 +29,13 @@ RUN npm config set registry http://registry.npmjs.org/ && \
     echo "Running with nodejs:" && node -v && \
     python3 -m venv /opt/venv && \
     echo "Running with python:" && /opt/venv/bin/python3 -c 'import sys, platform; print("sys.platform == {}, platform.machine == {}, platform.python_version == {}".format(sys.platform, platform.machine(), platform.python_version()))' && \
-    /opt/venv/bin/python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    /opt/venv/bin/python3 -m pip install --no-cache-dir --upgrade pip "setuptools<81" wheel && \
     # ddtrace is required to automatically instrument lemur to emit traces
     /opt/venv/bin/python3 -m pip install --no-cache-dir ddtrace && \
     /opt/venv/bin/python3 -m pip install --no-cache-dir -e . && \
+    # Datadog-specific packages (COA plugin, dd_internal_authentication, etc.)
+    # Versions are managed in requirements-datadog.in
+    /opt/venv/bin/python3 -m pip install --no-cache-dir -r requirements-datadog.in && \
     # install the statsd plugin required to emit metrics to datadog
     /opt/venv/bin/python3 -m pip install --no-cache-dir -e /opt/lemur/lemur/plugins/lemur_statsd && \
     npm install --unsafe-perm && \
