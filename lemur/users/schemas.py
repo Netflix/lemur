@@ -7,8 +7,10 @@
 """
 
 from marshmallow import fields
+from marshmallow.exceptions import ValidationError
 
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
+from lemur.common.fields import ArrowDateTime
 from lemur.schemas import (
     AssociatedRoleSchema,
     AssociatedCertificateSchema,
@@ -47,3 +49,27 @@ class UserNestedOutputSchema(LemurOutputSchema):
     username = fields.String()
     email = fields.Email()
     active = fields.Boolean()
+
+
+def validate_expires_in_hours(val):
+    if not (0 < val <= 24):
+        raise ValidationError("expires_in_hours must be between 1 and 24 (1 day).")
+
+
+class BreakGlassGrantInputSchema(LemurInputSchema):
+    """Request body for granting temporary break-glass to a user (admin only)."""
+
+    expires_in_hours = fields.Integer(required=True, validate=validate_expires_in_hours)
+
+
+class BreakGlassGrantOutputSchema(LemurOutputSchema):
+    """Response for active temporary break-glass grant."""
+
+    id = fields.Integer()
+    user_id = fields.Integer()
+    granted_by_id = fields.Integer(allow_none=True)
+    expires_at = ArrowDateTime()
+
+
+break_glass_grant_input_schema = BreakGlassGrantInputSchema()
+break_glass_grant_output_schema = BreakGlassGrantOutputSchema()

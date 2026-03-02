@@ -37,6 +37,7 @@ from lemur.certificates.schemas import (
 
 from lemur.roles import service as role_service
 from lemur.logs import service as log_service
+from lemur.users import service as user_service
 
 
 mod = Blueprint("certificates", __name__)
@@ -722,13 +723,18 @@ class CertificatePrivateKey(AuthenticatedResource):
         if not cert:
             return dict(message="Cannot find specified certificate"), 404
 
-        # allow creators
+        # Require certificate-level permission (owner, creator, admin, or role member)
         if g.current_user != cert.user:
             owner_role = role_service.get_by_name(cert.owner)
             permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
 
             if not permission.can():
                 return dict(message="You are not authorized to view this key"), 403
+
+        # Require break-glass to view private key (no key access for admin-only users)
+        effective_roles = user_service.get_effective_role_names(g.current_user)
+        if "break-glass" not in effective_roles:
+            return dict(message="Break-glass access is required to view private keys"), 403
 
         log_service.create(g.current_user, "key_view", certificate=cert)
         response = make_response(jsonify(key=cert.private_key), 200)

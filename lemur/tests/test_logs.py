@@ -8,7 +8,7 @@ from lemur.tests.vectors import (
 from lemur.logs.views import *  # noqa
 
 
-def test_private_key_audit(client, certificate):
+def test_private_key_audit(client, session, certificate):
     from lemur.certificates.views import CertificatePrivateKey, api
 
     assert len(certificate.logs) == 0
@@ -16,6 +16,7 @@ def test_private_key_audit(client, certificate):
         api.url_for(CertificatePrivateKey, certificate_id=certificate.id),
         headers=VALID_ADMIN_HEADER_TOKEN,
     )
+    session.refresh(certificate)
     assert len(certificate.logs) == 1
 
 

@@ -32,6 +32,10 @@ echo " # Running init"
 su lemur -s /bin/bash -c "cd /opt/lemur/lemur; lemur init -p ${LEMUR_ADMIN_PASSWORD}"
 echo " # Done"
 
+echo " # Running DB migrations"
+su lemur -s /bin/bash -c "cd /opt/lemur/lemur; lemur db upgrade"
+echo " # Done"
+
 # Only create default resources in local development (set LEMUR_CREATE_DEFAULTS=true)
 if [ "${LEMUR_CREATE_DEFAULTS}" = "true" ]; then
   echo " # Creating default resources (user and authority)"

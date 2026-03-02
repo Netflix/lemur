@@ -14,9 +14,13 @@ import os
 import importlib
 import logmatic
 import errno
-import pkg_resources
 import socket
 import stat
+
+try:
+    from importlib.metadata import entry_points
+except ImportError:
+    from importlib_metadata import entry_points
 
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
@@ -248,7 +252,11 @@ def install_plugins(app):
     #         'verisign = lemur_verisign.plugin:VerisignPlugin'
     #     ],
     # },
-    for ep in pkg_resources.iter_entry_points("lemur.plugins"):
+    if hasattr(entry_points(), "select"):
+        plugin_eps = entry_points(group="lemur.plugins")
+    else:
+        plugin_eps = entry_points().get("lemur.plugins", [])
+    for ep in plugin_eps:
         try:
             plugin = ep.load()
         except Exception:
@@ -267,7 +275,7 @@ def install_plugins(app):
             plugins.get(slug)
         except KeyError:
             raise Exception(
-                "Unable to location notification plugin: {slug}. Ensure that "
+                "Unable to locate notification plugin: {slug}. Ensure that "
                 "LEMUR_DEFAULT_NOTIFICATION_PLUGIN is set to a valid and installed notification plugin.".format(
                     slug=slug
                 )

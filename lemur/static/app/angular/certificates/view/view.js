@@ -108,7 +108,7 @@ angular.module('lemur')
           toaster.pop({
             type: 'error',
             title: certificate.name,
-            body: 'You do not have permission to view this key!',
+            body: 'break-glass access is required to view private keys.',
             timeout: 100000
           });
         });

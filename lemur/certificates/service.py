@@ -27,6 +27,7 @@ from lemur.certificates.models import Certificate, CertificateAssociation
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
 from lemur.common.utils import (
     generate_private_key,
+    get_key_type_from_certificate,
     truthiness,
     parse_serial,
     get_certificate_via_tls,
@@ -950,6 +951,13 @@ def get_certificate_primitives(certificate):
     )
     assert not ser.errors, "Error re-serializing certificate: %s" % ser.errors
     data = ser.data
+
+    # key_type can be wrong in dump (e.g. defaulted to ECC when body is stripped for non break-glass users);
+    # ensure we use the actual cert's key type for reissue
+    if certificate.body:
+        data["key_type"] = get_key_type_from_certificate(certificate.body)
+    elif certificate.key_type:
+        data["key_type"] = certificate.key_type
 
     # we can't quite tell if we are using a custom name, as this is an automated process (typically)
     # we will rely on the Lemur generated name

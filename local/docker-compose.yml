@@ -6,6 +6,8 @@ services:
     container_name: local-postgres
     image: "postgres:13.1-alpine"
     restart: on-failure
+    ports:
+      - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
     env_file:

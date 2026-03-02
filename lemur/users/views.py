@@ -23,6 +23,8 @@ from lemur.users.schemas import (
     user_input_schema,
     user_output_schema,
     users_output_schema,
+    break_glass_grant_input_schema,
+    break_glass_grant_output_schema,
 )
 
 
@@ -382,6 +384,42 @@ class RoleUsers(AuthenticatedResource):
         return role_service.get(role_id).users
 
 
+class UserBreakGlass(AuthenticatedResource):
+    """Temporary break-glass role: an admin can grant another user break-glass access for a limited time."""
+
+    @admin_permission.require(http_exception=403)
+    @validate_schema(None, break_glass_grant_output_schema)
+    def get(self, user_id):
+        """Get the current temporary break-glass grant for a user (if any)."""
+        grant = service.get_active_break_glass_grant(user_id)
+        if not grant:
+            return None, 204
+        return grant
+
+    @admin_permission.require(http_exception=403)
+    @validate_schema(break_glass_grant_input_schema, break_glass_grant_output_schema)
+    def post(self, user_id, data=None):
+        """Grant temporary break-glass role to a user. Only admins can grant."""
+        import arrow
+
+        target_user = service.get(user_id)
+        if not target_user:
+            return {"message": "User not found"}, 404
+        expires_at = arrow.utcnow().shift(hours=data["expires_in_hours"])
+        grant = service.grant_break_glass(
+            user_id=user_id,
+            granted_by_id=g.current_user.id,
+            expires_at=expires_at.datetime,
+        )
+        return grant
+
+    @admin_permission.require(http_exception=403)
+    def delete(self, user_id):
+        """Revoke temporary break-glass for a user. Only admins can revoke."""
+        service.revoke_break_glass(user_id)
+        return None, 204
+
+
 class Me(AuthenticatedResource):
     def __init__(self):
         super(Me, self).__init__()
@@ -426,6 +464,11 @@ class Me(AuthenticatedResource):
 api.add_resource(Me, "/auth/me", endpoint="me")
 api.add_resource(UsersList, "/users", endpoint="users")
 api.add_resource(Users, "/users/<int:user_id>", endpoint="user")
+api.add_resource(
+    UserBreakGlass,
+    "/users/<int:user_id>/break-glass",
+    endpoint="userBreakGlass",
+)
 api.add_resource(
     CertificateUsers,
     "/certificates/<int:certificate_id>/creator",

@@ -101,8 +101,8 @@ SQLALCHEMY_ENGINE_OPTIONS = {
     "pool_timeout": 10,
     "connect_args": {
         "connect_timeout": 10,
-        "options": "-c statement_timeout=30000"  # 30 second statement timeout
-    }
+        "options": "-c statement_timeout=30000",  # 30 second statement timeout
+    },
 }
 
 # AWS
@@ -243,6 +243,14 @@ LDAP_REQUIRED_GROUP = "Lemur Access"
 LDAP_DEFAULT_ROLE = "role1"
 
 ALLOW_CERT_DELETION = True
+
+# Use test notification plugin so app creation succeeds without entry-point plugins
+LEMUR_DEFAULT_NOTIFICATION_PLUGIN = "test-notification"
+if TESTING:
+    from lemur.plugins.base import register
+    from lemur.tests.plugins.notification_plugin import TestNotificationPlugin
+
+    register(TestNotificationPlugin)
 
 ENTRUST_API_CERT = "api-cert"
 ENTRUST_API_KEY = get_random_secret(32)

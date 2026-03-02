@@ -94,7 +94,7 @@ RUN apt-get purge -y --auto-remove \
     rm -rf /var/lib/apt/lists/*
 
 # Install development and test dependencies
-RUN pip install --no-cache-dir "file://`pwd`#egg=lemur[dev]" "file://`pwd`#egg=lemur[tests]"
+RUN pip install --no-cache-dir -e ."[dev]" -e ."[tests]"
 
 COPY local/src/lemur.conf.py /home/lemur/.lemur/lemur.conf.py
 COPY local/create_defaults.py /home/lemur/.lemur/create_defaults.py

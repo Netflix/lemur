@@ -10,7 +10,7 @@
 """
 
 from sqlalchemy.orm import relationship
-from sqlalchemy import Integer, String, Column, Boolean
+from sqlalchemy import Integer, String, Column, Boolean, ForeignKey
 from sqlalchemy.event import listen
 
 from sqlalchemy_utils.types.arrow import ArrowType
@@ -19,6 +19,25 @@ from lemur.database import db
 from lemur.models import roles_users
 
 from lemur.extensions import bcrypt
+
+
+class TemporaryBreakGlassGrant(db.Model):
+    """
+    A time-limited grant of the break-glass role to a user, granted by an admin.
+    While active, the user is treated as having the 'break-glass' role (e.g. can view
+    certificate bodies). Only admins can create or revoke these grants.
+    """
+
+    __tablename__ = "temporary_break_glass_grants"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="cascade"), nullable=False)
+    granted_by_id = Column(
+        Integer, ForeignKey("users.id", ondelete="set null"), nullable=True
+    )
+    expires_at = Column(ArrowType, nullable=False)
+
+    user = relationship("User", foreign_keys=[user_id])
+    granted_by = relationship("User", foreign_keys=[granted_by_id])
 
 
 def hash_password(mapper, connect, target):

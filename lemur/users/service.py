@@ -8,11 +8,14 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 
+from datetime import datetime
+
+import arrow
 from flask import current_app
 
 from lemur import database
 from lemur.logs import service as log_service
-from lemur.users.models import User
+from lemur.users.models import User, TemporaryBreakGlassGrant
 
 
 def create(username, password, email, active, profile_picture, roles):
@@ -161,3 +164,113 @@ def render(args):
         query = database.filter(query, User, terms)
 
     return database.sort_and_page(query, User, args)
+
+
+# --- Temporary break-glass grants (admin grants break-glass role to a user temporarily) ---
+
+BREAK_GLASS_ROLE_NAME = "break-glass"
+
+
+def get_effective_role_names(user):
+    """
+    Returns the list of role names for the user, including 'break-glass' if they
+    have an active (non-expired) temporary break-glass grant.
+
+    :param user: User instance
+    :return: list of role name strings
+    """
+    if not user:
+        return []
+    role_names = [r.name for r in user.roles]
+    if has_active_break_glass_grant(user.id):
+        if BREAK_GLASS_ROLE_NAME not in role_names:
+            role_names.append(BREAK_GLASS_ROLE_NAME)
+    return role_names
+
+
+def has_active_break_glass_grant(user_id):
+    """
+    Returns True if the user has a non-expired temporary break-glass grant.
+
+    :param user_id: user id
+    :return: bool
+    """
+    now = arrow.utcnow()
+    q = (
+        database.session_query(TemporaryBreakGlassGrant)
+        .filter(TemporaryBreakGlassGrant.user_id == user_id)
+        .filter(TemporaryBreakGlassGrant.expires_at > now)
+    )
+    return q.first() is not None
+
+
+def get_active_break_glass_grant(user_id):
+    """
+    Returns the active temporary break-glass grant for the user, or None.
+
+    :param user_id: user id
+    :return: TemporaryBreakGlassGrant or None
+    """
+    now = arrow.utcnow()
+    q = (
+        database.session_query(TemporaryBreakGlassGrant)
+        .filter(TemporaryBreakGlassGrant.user_id == user_id)
+        .filter(TemporaryBreakGlassGrant.expires_at > now)
+    )
+    return q.first()
+
+
+def grant_break_glass(user_id, granted_by_id, expires_at):
+    """
+    Grant the break-glass role to a user until expires_at. Only admins should call this.
+    If the user already has an active grant, it is replaced (single active grant per user).
+
+    :param user_id: id of user to grant break-glass to
+    :param granted_by_id: id of admin granting
+    :param expires_at: arrow or datetime when the grant expires
+    :return: TemporaryBreakGlassGrant
+    """
+    if hasattr(expires_at, "datetime"):
+        expires_at = expires_at.datetime
+    if isinstance(expires_at, datetime) and expires_at.tzinfo is None:
+        expires_at = arrow.get(expires_at).replace(tzinfo="UTC").datetime
+    revoke_break_glass(user_id)
+    grant = TemporaryBreakGlassGrant(
+        user_id=user_id,
+        granted_by_id=granted_by_id,
+        expires_at=expires_at,
+    )
+    database.create(grant)
+    user = get(user_id)
+    log_service.audit_log(
+        "grant_break_glass",
+        user.username if user else str(user_id),
+        f"Temporary break-glass granted until {expires_at} by user id {granted_by_id}",
+    )
+    return grant
+
+
+def revoke_break_glass(user_id):
+    """
+    Remove any active temporary break-glass grant for the user.
+
+    :param user_id: user id
+    :return: number of grants removed
+    """
+    now = arrow.utcnow()
+    q = (
+        database.session_query(TemporaryBreakGlassGrant)
+        .filter(TemporaryBreakGlassGrant.user_id == user_id)
+        .filter(TemporaryBreakGlassGrant.expires_at > now)
+    )
+    grants = q.all()
+    for grant in grants:
+        database.delete(grant)
+    if grants:
+        user = get(user_id)
+        log_service.audit_log(
+            "revoke_break_glass",
+            user.username if user else str(user_id),
+            "Temporary break-glass revoked",
+        )
+    return len(grants)

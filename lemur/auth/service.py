@@ -192,10 +192,12 @@ def on_identity_loaded(sender, identity):
     # add the UserNeed to the identity
     identity.provides.add(UserNeed(identity.id))
 
-    # identity with the roles that the user provides
+    # identity with the roles that the user provides (including temporary break-glass)
+    effective_role_names = user_service.get_effective_role_names(user)
+    for role_name in effective_role_names:
+        identity.provides.add(RoleNeed(role_name))
     if hasattr(user, "roles"):
         for role in user.roles:
-            identity.provides.add(RoleNeed(role.name))
             identity.provides.add(RoleMemberNeed(role.id))
 
     # apply ownership for authorities
