@@ -502,20 +502,22 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
-    # Validate destinations do not overlap accounts for the same plugin
+    # Validate destinations do not overlap accounts for the same plugin and path
     if "destinations" in kwargs:
         dest_plugin_accounts = {}
         for dest in kwargs["destinations"]:
             plugin_accounts = dest_plugin_accounts.setdefault(dest.plugin_name, {})
             account = get_plugin_option("accountNumber", dest.options)
+            path = get_plugin_option("path", dest.options) or ""
 
             # only AWS destinations have an account number, so we can skip this validation if an account number is not found
             if account is not None:
-                if account in plugin_accounts:
+                key = (account, path)
+                if key in plugin_accounts:
                     raise Exception(
-                        f"Too many destinations for plugin {dest.plugin_name} and account {account}"
+                        f"Duplicate destination for plugin {dest.plugin_name}, account {account}, path {path}"
                     )
-                plugin_accounts[account] = True
+                plugin_accounts[key] = True
 
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
