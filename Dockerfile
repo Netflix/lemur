@@ -28,3 +28,6 @@ RUN pip install -e .
 RUN pip install --no-cache-dir "file://`pwd`#egg=lemur[dev]"
 RUN pip install --no-cache-dir "file://`pwd`#egg=lemur[tests]"
 
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]

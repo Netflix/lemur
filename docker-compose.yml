@@ -6,6 +6,8 @@ services:
     build: .
     volumes:
       - ".:/app"
+    depends_on:
+      - postgres
     links:
       - postgres
     command: make test
