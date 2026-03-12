@@ -63,7 +63,7 @@ billiard==4.2.0
     # via
     #   -r requirements-tests.txt
     #   celery
-black==25.1.0
+black==26.3.1
     # via -r requirements-tests.txt
 blinker==1.7.0
     # via
@@ -158,6 +158,7 @@ cryptography==45.0.7
     #   pyspnego
     #   python-jose
     #   requests-ntlm
+    #   secretstorage
     #   sshpubkeys
     #   types-paramiko
     #   types-pyopenssl
@@ -329,6 +330,10 @@ javaobj-py3==0.4.4
     # via
     #   -r requirements-tests.txt
     #   pyjks
+jeepney==0.9.0
+    # via
+    #   keyring
+    #   secretstorage
 jinja2==3.1.3
     # via
     #   -r requirements-tests.txt
@@ -496,7 +501,7 @@ pathable==0.4.3
     # via
     #   -r requirements-tests.txt
     #   jsonschema-path
-pathspec==0.12.1
+pathspec==1.0.4
     # via
     #   -r requirements-tests.txt
     #   black
@@ -641,6 +646,10 @@ python-json-logger==3.3.0
     # via -r requirements-tests.txt
 python-ldap==3.4.4
     # via -r requirements-tests.txt
+pytokens==0.4.1
+    # via
+    #   -r requirements-tests.txt
+    #   black
 pytz==2024.1
     # via
     #   -r requirements-tests.txt
@@ -736,6 +745,8 @@ sarif-om==1.0.4
     # via
     #   -r requirements-tests.txt
     #   cfn-lint
+secretstorage==3.5.0
+    # via keyring
 sentry-sdk==2.35.1
     # via -r requirements-tests.txt
 six==1.17.0
