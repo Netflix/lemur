@@ -98,7 +98,7 @@ certifi==2025.8.3
     #   sentry-sdk
 certsrv[ntlm]==2.1.1
     # via -r requirements-tests.txt
-cffi==1.16.0
+cffi==2.0.0
     # via
     #   -r requirements-tests.txt
     #   cryptography
@@ -146,7 +146,7 @@ configobj==5.0.9
     #   certbot
 coverage==7.10.6
     # via -r requirements-tests.txt
-cryptography==45.0.7
+cryptography==46.0.5
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -298,9 +298,7 @@ idna==3.7
     #   -r requirements-tests.txt
     #   requests
 importlib-metadata==7.1.0
-    # via
-    #   -r requirements-tests.txt
-    #   keyring
+    # via keyring
 importlib-resources==6.4.0
     # via
     #   -r requirements-tests.txt
@@ -602,7 +600,7 @@ pynacl==1.5.0
     # via
     #   -r requirements-tests.txt
     #   paramiko
-pyopenssl==25.2.0
+pyopenssl==26.0.0
     # via
     #   -r requirements-tests.txt
     #   acme
@@ -835,12 +833,13 @@ types-urllib3==1.26.25.14
     # via
     #   -r requirements-tests.txt
     #   types-requests
-typing-extensions==4.11.0
+typing-extensions==4.15.0
     # via
     #   -r requirements-tests.txt
     #   alembic
     #   aws-sam-translator
     #   black
+    #   cryptography
     #   fakeredis
     #   flask-limiter
     #   limits
@@ -893,9 +892,7 @@ xmltodict==1.0.0
     #   -r requirements-tests.txt
     #   moto
 zipp==3.19.1
-    # via
-    #   -r requirements-tests.txt
-    #   importlib-metadata
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
