@@ -68,7 +68,7 @@ billiard==4.2.0
     # via
     #   -r requirements-tests.txt
     #   celery
-black==25.1.0
+black==26.3.1
     # via -r requirements-tests.txt
 blinker==1.7.0
     # via
@@ -328,11 +328,7 @@ idna==3.7
 imagesize==1.4.1
     # via sphinx
 importlib-metadata==7.1.0
-    # via
-    #   -r requirements-tests.txt
-    #   certbot
-    #   flask
-    #   sphinx
+    # via -r requirements-tests.txt
 importlib-resources==6.4.0
     # via
     #   -r requirements-tests.txt
@@ -520,7 +516,7 @@ pathable==0.4.3
     # via
     #   -r requirements-tests.txt
     #   jsonschema-path
-pathspec==0.12.1
+pathspec==1.0.4
     # via
     #   -r requirements-tests.txt
     #   black
@@ -666,6 +662,10 @@ python-json-logger==3.3.0
     #   logmatic-python
 python-ldap==3.4.4
     # via -r requirements-tests.txt
+pytokens==0.4.1
+    # via
+    #   -r requirements-tests.txt
+    #   black
 pytz==2024.1
     # via
     #   -r requirements-tests.txt
@@ -882,13 +882,11 @@ typing-extensions==4.11.0
     #   black
     #   fakeredis
     #   flask-limiter
-    #   kombu
     #   limits
     #   mypy
     #   pydantic
     #   pydantic-core
     #   pyopenssl
-    #   python-json-logger
 tzdata==2024.1
     # via
     #   -r requirements-tests.txt
@@ -937,7 +935,6 @@ zipp==3.19.1
     # via
     #   -r requirements-tests.txt
     #   importlib-metadata
-    #   importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
