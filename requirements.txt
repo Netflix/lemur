@@ -55,7 +55,7 @@ certifi==2025.8.3
     #   sentry-sdk
 certsrv[ntlm]==2.1.1
     # via -r requirements.in
-cffi==1.16.0
+cffi==2.0.0
     # via
     #   cryptography
     #   pynacl
@@ -80,7 +80,7 @@ configargparse==1.7
     # via certbot
 configobj==5.0.9
     # via certbot
-cryptography==45.0.7
+cryptography==46.0.5
     # via
     #   -r requirements.in
     #   acme
@@ -162,10 +162,6 @@ hvac==2.3.0
     # via -r requirements.in
 idna==3.7
     # via requests
-importlib-metadata==7.1.0
-    # via
-    #   certbot
-    #   flask
 importlib-resources==6.4.0
     # via limits
 inflection==0.5.1
@@ -272,7 +268,7 @@ pyjwt==2.9.0
     #   redis
 pynacl==1.5.0
     # via paramiko
-pyopenssl==25.2.0
+pyopenssl==26.0.0
     # via
     #   -r requirements.in
     #   acme
@@ -350,14 +346,13 @@ types-protobuf==6.30.2.20250914
     # via -r requirements.in
 types-python-dateutil==2.9.0.20240316
     # via arrow
-typing-extensions==4.11.0
+typing-extensions==4.15.0
     # via
     #   alembic
+    #   cryptography
     #   flask-limiter
-    #   kombu
     #   limits
     #   pyopenssl
-    #   python-json-logger
 tzdata==2024.1
     # via celery
 urllib3==1.26.18
@@ -383,7 +378,3 @@ wrapt==1.16.0
     # via deprecated
 xmltodict==1.0.0
     # via -r requirements.in
-zipp==3.19.1
-    # via
-    #   importlib-metadata
-    #   importlib-resources
