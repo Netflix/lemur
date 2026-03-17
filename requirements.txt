@@ -239,7 +239,7 @@ protobuf==4.25.8
     #   proto-plus
 psycopg2==2.9.10
     # via -r requirements.in
-pyasn1==0.6.0
+pyasn1==0.6.3
     # via
     #   ndg-httpsclient
     #   pyasn1-modules
