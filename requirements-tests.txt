@@ -230,7 +230,7 @@ google-auth==2.29.0
     #   -r requirements.txt
     #   google-api-core
     #   google-cloud-private-ca
-google-cloud-private-ca==1.15.0
+google-cloud-private-ca==1.17.0
     # via -r requirements.txt
 googleapis-common-protos[grpc]==1.63.0
     # via
@@ -248,6 +248,7 @@ grpcio==1.62.1
     # via
     #   -r requirements.txt
     #   google-api-core
+    #   google-cloud-private-ca
     #   googleapis-common-protos
     #   grpc-google-iam-v1
     #   grpcio-status
