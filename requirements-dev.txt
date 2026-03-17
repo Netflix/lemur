@@ -211,7 +211,7 @@ flake8==7.1.2
     # via
     #   -r requirements-dev.in
     #   flake8-pyproject
-flake8-pyproject==1.2.3
+flake8-pyproject==1.2.4
     # via -r requirements-dev.in
 flask==2.3.3
     # via
