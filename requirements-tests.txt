@@ -440,7 +440,7 @@ psycopg2==2.9.10
     # via -r requirements.txt
 py-partiql-parser==0.5.0
     # via moto
-pyasn1==0.6.0
+pyasn1==0.6.3
     # via
     #   -r requirements.txt
     #   ndg-httpsclient
