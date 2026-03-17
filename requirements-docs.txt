@@ -244,7 +244,7 @@ flask-cors==6.0.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-flask-limiter==3.11.0
+flask-limiter==4.1.1
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
@@ -745,7 +745,6 @@ rich==13.7.1
     # via
     #   -r requirements-tests.txt
     #   bandit
-    #   flask-limiter
 rpds-py==0.18.0
     # via
     #   -r requirements-tests.txt
