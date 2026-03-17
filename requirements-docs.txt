@@ -317,7 +317,7 @@ gunicorn==23.0.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-hvac==2.3.0
+hvac==2.4.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
