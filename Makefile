@@ -14,6 +14,7 @@ endif
 	pip install "setuptools<81"  # pkg_resources removed in 81+, still used by plugins
 	# order matters here, base package must install first
 	pip install -e .
+	pip install -r requirements-dd-source.in
 	pip install -e "file://`pwd`#egg=lemur[dev]"
 	pip install -e "file://`pwd`#egg=lemur[tests]"
 	node_modules/.bin/gulp build

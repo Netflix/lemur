@@ -33,6 +33,8 @@ test:
     - python3 -m venv ~/env && \
     - source ~/env/bin/activate && \
     - python3 -m pip install --upgrade pip setuptools coveralls bandit
+    # Install dd-source packages (not in lockfiles, managed separately)
+    - python3 -m pip install -r requirements-dd-source.in
     # Run tests
     - make test
     - bandit -r . -ll -ii -x lemur/tests/,docs
