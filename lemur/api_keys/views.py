@@ -8,7 +8,7 @@
 
 """
 
-from datetime import datetime
+import time
 
 from flask import Blueprint, g
 from flask_restful import reqparse, Api
@@ -147,7 +147,7 @@ class ApiKeyList(AuthenticatedResource):
             user_id=data["user"]["id"],
             ttl=data["ttl"],
             revoked=False,
-            issued_at=int(datetime.utcnow().timestamp()),
+            issued_at=int(time.time()),
         )
         return dict(
             jwt=create_token(access_token.user_id, access_token.id, access_token.ttl)
@@ -267,7 +267,7 @@ class ApiKeyUserList(AuthenticatedResource):
             user_id=user_id,
             ttl=data["ttl"],
             revoked=False,
-            issued_at=int(datetime.utcnow().timestamp()),
+            issued_at=int(time.time()),
         )
         return dict(
             jwt=create_token(access_token.user_id, access_token.id, access_token.ttl)

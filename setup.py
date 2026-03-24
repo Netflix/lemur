@@ -81,7 +81,7 @@ class SdistWithBuildStatic(sdist):
         with open(os.path.join(dist_path, "lemur-package.json"), "w") as fp:
             json.dump(
                 {
-                    "createdAt": datetime.datetime.utcnow().isoformat() + "Z",
+                    "createdAt": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 },
                 fp,
             )

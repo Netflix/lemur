@@ -7,10 +7,16 @@
 """
 
 from flask import g
-from marshmallow import fields
+from marshmallow import fields, validates, ValidationError
 
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.users.schemas import UserNestedOutputSchema, UserInputSchema
+
+
+def _validate_ttl(value):
+    """TTL must be -1 (infinite) or a positive integer (days)."""
+    if value is not None and (value == 0 or value < -1):
+        raise ValidationError("TTL must be -1 (infinite) or a positive integer (days).")
 
 
 def current_user_id():
@@ -28,6 +34,10 @@ class ApiKeyInputSchema(LemurInputSchema):
     )
     ttl = fields.Integer()
 
+    @validates("ttl")
+    def validate_ttl(self, value):
+        _validate_ttl(value)
+
 
 class ApiKeyRevokeSchema(LemurInputSchema):
     id = fields.Integer(required=True)
@@ -37,10 +47,18 @@ class ApiKeyRevokeSchema(LemurInputSchema):
     ttl = fields.Integer()
     issued_at = fields.Integer(required=False)
 
+    @validates("ttl")
+    def validate_ttl(self, value):
+        _validate_ttl(value)
+
 
 class UserApiKeyInputSchema(LemurInputSchema):
     name = fields.String(required=False)
     ttl = fields.Integer()
+
+    @validates("ttl")
+    def validate_ttl(self, value):
+        _validate_ttl(value)
 
 
 class ApiKeyOutputSchema(LemurOutputSchema):

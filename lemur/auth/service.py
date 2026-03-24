@@ -107,9 +107,15 @@ def login_required(f):
                 token,
                 current_app.config["LEMUR_TOKEN_SECRET"],
                 algorithms=[header_data["alg"]],
-                # Disable strict 'sub' validation to support both old tokens (int sub)
-                # and new tokens (string sub) during migration to PyJWT 2.10+
-                options={"verify_sub": False},
+                options={
+                    # Disable strict 'sub' validation to support both old tokens (int sub)
+                    # and new tokens (string sub) during migration to PyJWT 2.10+
+                    "verify_sub": False,
+                    # Disable built-in exp verification: API keys with ttl=-1 have no exp
+                    # claim. Expiration is handled manually below for both API keys and
+                    # regular user tokens.
+                    "verify_exp": False,
+                },
             )
         except jwt.DecodeError:
             return dict(message="Token is invalid"), 403
@@ -118,6 +124,12 @@ def login_required(f):
         except jwt.InvalidTokenError:
             return dict(message="Token is invalid"), 403
 
+        # Manual exp check for regular user tokens (since we disabled verify_exp
+        # in jwt.decode to support API keys without exp claims).
+        if "exp" in payload and "aid" not in payload:
+            if datetime.utcnow() >= datetime.utcfromtimestamp(payload["exp"]):
+                return dict(message="Token has expired"), 403
+
         if "aid" in payload:
             access_key = api_key_service.get(payload["aid"])
             if access_key.revoked:
@@ -125,7 +137,7 @@ def login_required(f):
             if access_key.ttl != -1:
                 current_time = datetime.utcnow()
                 # API key uses days
-                expired_time = datetime.fromtimestamp(access_key.issued_at) + timedelta(
+                expired_time = datetime.utcfromtimestamp(access_key.issued_at) + timedelta(
                     days=access_key.ttl
                 )
                 if current_time >= expired_time:

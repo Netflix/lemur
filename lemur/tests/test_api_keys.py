@@ -101,6 +101,38 @@ def test_api_key_list_post_valid_no_permission(client, token, status):
 
 
 @pytest.mark.parametrize(
+    "token,ttl,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 0, 400),
+        (VALID_USER_HEADER_TOKEN, -2, 400),
+        (VALID_USER_HEADER_TOKEN, -100, 400),
+        (VALID_ADMIN_HEADER_TOKEN, 0, 400),
+        (VALID_USER_HEADER_TOKEN, -1, 200),
+        (VALID_USER_HEADER_TOKEN, 30, 200),
+    ],
+)
+def test_api_key_list_post_ttl_validation(client, token, ttl, status):
+    assert (
+        client.post(
+            api.url_for(ApiKeyList),
+            data=json.dumps(
+                {
+                    "name": "ttl validation test",
+                    "user": {
+                        "id": 1,
+                        "username": "example",
+                        "email": "example@test.net",
+                    },
+                    "ttl": ttl,
+                }
+            ),
+            headers=token,
+        ).status_code
+        == status
+    )
+
+
+@pytest.mark.parametrize(
     "token,status",
     [
         (VALID_USER_HEADER_TOKEN, 405),

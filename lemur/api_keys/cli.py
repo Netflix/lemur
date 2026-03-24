@@ -10,7 +10,7 @@ from flask_script import Manager
 from lemur.api_keys import service as api_key_service
 from lemur.auth.service import create_token
 
-from datetime import datetime
+import time
 
 manager = Manager(usage="Handles all api key related tasks.")
 
@@ -31,8 +31,8 @@ def create(uid, name, ttl):
     key = api_key_service.create(
         user_id=uid,
         name=name,
-        ttl=ttl,
-        issued_at=int(datetime.utcnow().timestamp()),
+        ttl=int(ttl),
+        issued_at=int(time.time()),
         revoked=False,
     )
     print("[+] Successfully created a new api key. Generating a JWT...")
