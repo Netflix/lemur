@@ -655,7 +655,7 @@ python-jose[cryptography]==3.3.0
     #   moto
 python-json-logger==3.3.0
     # via -r requirements-tests.txt
-python-ldap==3.4.4
+python-ldap==3.4.5
     # via -r requirements-tests.txt
 pytokens==0.4.1
     # via
