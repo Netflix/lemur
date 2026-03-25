@@ -280,7 +280,7 @@ python-dateutil==2.9.0.post0
     #   arrow
     #   botocore
     #   celery
-python-json-logger==3.3.0
+python-json-logger==4.0.0
     # via -r requirements.in
 python-ldap==3.4.5
     # via -r requirements.in
