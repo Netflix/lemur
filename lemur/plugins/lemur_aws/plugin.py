@@ -134,12 +134,13 @@ def get_elb_endpoints(account_number, region, elb_dict):
     return endpoints
 
 
-def get_elb_endpoints_v2(account_number, region, elb_dict):
+def get_elb_endpoints_v2(account_number, region, elb_dict, policy_cache=None):
     """
     Retrieves endpoint information from elbv2 response data.
     :param account_number:
     :param region:
     :param elb_dict:
+    :param policy_cache:
     :return:
     """
     endpoints = []
@@ -164,9 +165,15 @@ def get_elb_endpoints_v2(account_number, region, elb_dict):
             )
 
         if listener["SslPolicy"]:
-            policy = elb.describe_ssl_policies_v2(
-                [listener["SslPolicy"]], account_number=account_number, region=region
-            )
+            ssl_policy = listener["SslPolicy"]
+            if policy_cache is not None and ssl_policy in policy_cache:
+                policy = policy_cache[ssl_policy]
+            else:
+                policy = elb.describe_ssl_policies_v2(
+                    [ssl_policy], account_number=account_number, region=region
+                )
+                if policy_cache is not None:
+                    policy_cache[ssl_policy] = policy
             endpoint["policy"] = format_elb_cipher_policy_v2(policy)
 
         endpoints.append(endpoint)
@@ -306,6 +313,7 @@ class AWSSourcePlugin(SourcePlugin):
         else:
             regions = "".join(regions.split()).split(",")
 
+        policy_cache = {}
         for region in regions:
             elbs = elb.get_all_elbs(account_number=account_number, region=region)
             current_app.logger.info({
@@ -314,6 +322,8 @@ class AWSSourcePlugin(SourcePlugin):
                 "region": region,
                 "number_of_load_balancers": len(elbs)
             })
+            metrics.send("get_load_balancers.elb_count", "gauge", len(elbs),
+                         metric_tags={"account": account_number, "region": region})
 
             for e in elbs:
                 try:
@@ -330,10 +340,12 @@ class AWSSourcePlugin(SourcePlugin):
                 "region": region,
                 "number_of_load_balancers": len(elbs_v2)
             })
+            metrics.send("get_load_balancers.elbv2_count", "gauge", len(elbs_v2),
+                         metric_tags={"account": account_number, "region": region})
 
             for e in elbs_v2:
                 try:
-                    endpoints.extend(get_elb_endpoints_v2(account_number, region, e))
+                    endpoints.extend(get_elb_endpoints_v2(account_number, region, e, policy_cache=policy_cache))
                 except Exception as e:  # noqa
                     capture_exception()
                     continue

@@ -7,6 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import botocore
+from celery.exceptions import SoftTimeLimitExceeded
 from flask import current_app
 
 from retrying import retry
@@ -22,6 +23,9 @@ def retry_throttled(exception):
     :param exception:
     :return:
     """
+    if isinstance(exception, SoftTimeLimitExceeded):
+        return False
+
     if isinstance(exception, botocore.exceptions.ClientError):
         if exception.response["Error"]["Code"] == "NoSuchEntity":
             return False
