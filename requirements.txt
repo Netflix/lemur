@@ -183,8 +183,6 @@ idna==3.11
     #   anyio
     #   httpx
     #   requests
-importlib-metadata==8.7.1
-    # via opentelemetry-api
 inflection==0.5.1
     # via -r requirements.in
 invoke==2.2.1
@@ -227,8 +225,6 @@ marshmallow==2.21.0
 marshmallow-sqlalchemy==0.23.1
     # via -r requirements.in
 ndg-httpsclient==0.5.1
-    # via -r requirements.in
-opentelemetry-api==1.40.0
     # via -r requirements.in
 ordered-set==4.1.0
     # via flask-limiter
@@ -361,7 +357,6 @@ typing-extensions==4.15.0
     #   flask-limiter
     #   grpcio
     #   limits
-    #   opentelemetry-api
     #   pydantic
     #   pydantic-core
     #   pyjwt
@@ -398,5 +393,3 @@ wrapt==2.1.2
     # via deprecated
 xmltodict==1.0.4
     # via -r requirements.in
-zipp==3.23.0
-    # via importlib-metadata

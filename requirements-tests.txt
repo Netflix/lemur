@@ -285,10 +285,6 @@ idna==3.11
     #   anyio
     #   httpx
     #   requests
-importlib-metadata==8.7.1
-    # via
-    #   -r requirements.txt
-    #   opentelemetry-api
 inflection==0.5.1
     # via -r requirements.txt
 iniconfig==2.3.0
@@ -395,8 +391,6 @@ openapi-spec-validator==0.8.4
     # via
     #   -r requirements-tests.in
     #   moto
-opentelemetry-api==1.40.0
-    # via -r requirements.txt
 ordered-set==4.1.0
     # via
     #   -r requirements.txt
@@ -692,7 +686,6 @@ typing-extensions==4.15.0
     #   grpcio
     #   limits
     #   mypy
-    #   opentelemetry-api
     #   pydantic
     #   pydantic-core
     #   pyjwt
@@ -750,10 +743,6 @@ xmltodict==1.0.4
     # via
     #   -r requirements.txt
     #   moto
-zipp==3.23.0
-    # via
-    #   -r requirements.txt
-    #   importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
