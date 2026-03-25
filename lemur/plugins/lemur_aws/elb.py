@@ -6,13 +6,13 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import botocore
+from celery.exceptions import SoftTimeLimitExceeded
 from flask import current_app
-
 from retrying import retry
 from sentry_sdk import capture_exception
 
-from lemur.extensions import metrics
 from lemur.exceptions import InvalidListener
+from lemur.extensions import metrics
 from lemur.plugins.lemur_aws.sts import sts_client
 
 
@@ -22,6 +22,8 @@ def retry_throttled(exception):
     :param exception:
     :return:
     """
+    if isinstance(exception, SoftTimeLimitExceeded):
+        return False
 
     # Log details about the exception
     try:
