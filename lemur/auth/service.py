@@ -94,7 +94,8 @@ def decode_with_multiple_secrets(encoded_jwt, secrets, algorithms):
     errors = []
     for index, secret in enumerate(secrets):
         try:
-            payload = jwt.decode(encoded_jwt, secret, algorithms=algorithms)
+            # verify_sub=False for backward compatibility with old tokens that have integer sub
+            payload = jwt.decode(encoded_jwt, secret, algorithms=algorithms, options={"verify_sub": False})
         except Exception as e:
             errors.append(e)
             continue
