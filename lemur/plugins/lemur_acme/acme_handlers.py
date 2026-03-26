@@ -264,9 +264,8 @@ class AcmeHandler:
             raise InvalidConfiguration("There is no ACME account saved, unable to revoke the certificate.")
         acme_client, _ = self.setup_acme_client(certificate.authority)
 
-        fullchain_com = jose.ComparableX509(
-            OpenSSL.crypto.load_certificate(
-                OpenSSL.crypto.FILETYPE_PEM, certificate.body))
+        from cryptography.x509 import load_pem_x509_certificate
+        fullchain_com = load_pem_x509_certificate(certificate.body.encode("utf-8"))
 
         try:
             acme_client.revoke(fullchain_com, crl_reason)  # revocation reason as int (per RFC 5280 section 5.3.1)
