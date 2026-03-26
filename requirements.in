@@ -10,7 +10,7 @@ celery[redis]
 certbot
 certifi
 certsrv[ntlm]
-CloudFlare
+CloudFlare<3  # v4 renamed the module and overhauled the API; plugin needs migration
 cryptography
 dnspython3
 dyn
