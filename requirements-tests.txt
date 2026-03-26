@@ -564,7 +564,7 @@ referencing==0.37.0
     #   openapi-schema-validator
 regex==2023.12.25
     # via cfn-lint
-requests==2.32.5
+requests==2.33.0
     # via
     #   -r requirements.txt
     #   acme
