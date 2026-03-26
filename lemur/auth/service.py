@@ -94,7 +94,8 @@ def decode_with_multiple_secrets(encoded_jwt, secrets, algorithms):
     errors = []
     for index, secret in enumerate(secrets):
         try:
-            # verify_sub=False for backward compatibility with old tokens that have integer sub
+            # verify_sub=False for backward compatibility to allow use of old tokens that have integer sub
+            # PyJWT now enforces sub to be a StringOrURI as per RFC 7519 making Old tokens with integer sub non-compliant. New tokens are now created with sub as a string.
             payload = jwt.decode(encoded_jwt, secret, algorithms=algorithms, options={"verify_sub": False})
         except Exception as e:
             errors.append(e)
