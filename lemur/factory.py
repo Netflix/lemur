@@ -18,7 +18,7 @@ from importlib.metadata import entry_points
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
-from pythonjsonlogger.json import JsonFormatter
+from pythonjsonlogger.jsonlogger import JsonFormatter
 import sentry_sdk
 from click import get_current_context
 from flask import Flask, current_app
