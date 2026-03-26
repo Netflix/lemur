@@ -28,3 +28,18 @@ def test_decode_with_multiple_secrets(mock_metrics):
             **{"foo": "bar"}
         }
     )
+
+
+@patch("lemur.auth.service.metrics")
+def test_decode_with_integer_sub_backward_compat(mock_metrics):
+    """Old tokens created before the string-sub fix have integer sub claims.
+    PyJWT 2.10+ rejects these with InvalidSubjectError unless verify_sub=False."""
+    secret = "my_secret"
+    # Manually build a token with integer sub (as old Lemur code produced)
+    encoded_jwt = jwt.encode({"sub": 42, "aid": 1}, secret, algorithm='HS256')
+    secrets = [secret]
+    algorithms = ['HS256']
+
+    payload = decode_with_multiple_secrets(encoded_jwt, secrets, algorithms)
+
+    assert payload["sub"] == 42
