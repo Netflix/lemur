@@ -580,7 +580,7 @@ pydantic-settings==2.13.1
     #   openapi-spec-validator
 pyflakes==3.4.0
     # via -r requirements-tests.txt
-pygments==2.19.2
+pygments==2.20.0
     # via
     #   -r requirements-tests.txt
     #   pytest
