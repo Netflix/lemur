@@ -165,7 +165,7 @@ docker==7.1.0
     # via moto
 dyn==1.8.6
     # via -r requirements.txt
-ecdsa==0.19.1
+ecdsa==0.19.2
     # via
     #   moto
     #   python-jose
