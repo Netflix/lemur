@@ -526,10 +526,15 @@ def sync_all_sources():
         return
 
     sources = validate_sources("all")
+    # Source syncs are heavy, chain them sequentially so they don't flood the queue
+    from celery import chain
+    tasks = []
     for source in sources:
         log_data["source"] = source.label
         current_app.logger.debug(log_data)
-        sync_source.delay(source.label)
+        tasks.append(sync_source.si(source.label))
+    if tasks:
+        chain(*tasks).delay()
 
     metrics.send(f"{function}.success", "counter", 1)
     return log_data
