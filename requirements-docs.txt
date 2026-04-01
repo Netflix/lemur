@@ -200,7 +200,7 @@ dyn==1.8.6
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-ecdsa==0.19.1
+ecdsa==0.19.2
     # via
     #   -r requirements-tests.txt
     #   moto
