@@ -642,7 +642,7 @@ python-jose[cryptography]==3.5.0
     # via
     #   -r requirements-tests.txt
     #   moto
-python-json-logger==4.0.0
+python-json-logger==4.1.0
     # via
     #   -r requirements-tests.txt
     #   logmatic-python
