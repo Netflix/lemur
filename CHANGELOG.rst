@@ -3,6 +3,7 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+Added manual issuer plugin. This plugin allows you to manage certificates issued by third party issuers that do not support automation.
 Added ENABLE_AUTOROTATION_FILTER: a configurable, plugin-independent callback that can be used to skip enabling autorotate
 based on your specific business logic. For example, you could disallow enabling autorotate on certs with notifications disabled.
 Added REISSUE_FILTER: a configurable, plugin-independent callback that can be used to reject reissuance requests

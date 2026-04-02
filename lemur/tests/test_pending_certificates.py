@@ -1,9 +1,11 @@
 import json
 
+from flask import current_app
 import pytest
 
 from marshmallow import ValidationError
 from lemur.pending_certificates.views import *  # noqa
+from unittest.mock import patch, PropertyMock
 from .vectors import (
     CSR_STR,
     INTERMEDIATE_CERT_STR,
@@ -25,14 +27,57 @@ def test_increment_attempt(pending_certificate):
 def test_create_pending_certificate(async_issuer_plugin, async_authority, user):
     from lemur.certificates.service import create
 
-    pending_cert = create(
-        authority=async_authority,
-        csr=CSR_STR,
-        owner="joe@example.com",
-        creator=user["user"],
-        common_name="ACommonName",
-    )
-    assert pending_cert.external_id == "12345"
+    current_app.config["ACME_DISABLE_AUTORESOLVE"] = False
+    with patch('lemur.common.celery.fetch_acme_cert') as mock_celery:
+        pending_cert = create(
+            authority=async_authority,
+            csr=CSR_STR,
+            owner="joe@example.com",
+            creator=user["user"],
+            common_name="ACommonName",
+        )
+
+        assert pending_cert.external_id == "12345"
+        assert mock_celery.apply_async.call_count == 1
+
+
+def test_create_pending_certificate_without_allowed_auto_resolve(async_issuer_plugin, async_authority, user, app):
+    """Test that auto-resolve is skipped when plugin disallows it"""
+    from lemur.certificates.service import create
+
+    current_app.config["ACME_DISABLE_AUTORESOLVE"] = False
+    with patch.object(async_issuer_plugin, 'allows_auto_resolve', new_callable=PropertyMock) as mock_property:
+        mock_property.return_value = False
+
+        with patch('lemur.common.celery.fetch_acme_cert') as mock_celery:
+            pending_cert = create(
+                authority=async_authority,
+                csr=CSR_STR,
+                owner="joe@example.com",
+                creator=user["user"],
+                common_name="ACommonName",
+            )
+
+            assert pending_cert.external_id == "12345"
+            mock_celery.assert_not_called()
+
+
+def test_create_pending_certificate_with_acme_disable_autoresolve(async_issuer_plugin, async_authority, user, app):
+    """Test that auto-resolve is skipped when app config disallows it"""
+    from lemur.certificates.service import create
+
+    current_app.config["ACME_DISABLE_AUTORESOLVE"] = True
+    with patch('lemur.common.celery.fetch_acme_cert') as mock_celery:
+        pending_cert = create(
+            authority=async_authority,
+            csr=CSR_STR,
+            owner="joe@example.com",
+            creator=user["user"],
+            common_name="ACommonName",
+        )
+
+        assert pending_cert.external_id == "12345"
+        mock_celery.assert_not_called()
 
 
 def test_create_pending(pending_certificate, user, session):

@@ -34,3 +34,12 @@ class IssuerPlugin(Plugin):
 
     def deactivate_certificate(self, certificate):
         raise NotImplementedError
+
+    @property
+    def allows_auto_resolve(self) -> bool:
+        """
+        Some issuers, such as the manual issuer, do not allow for auto-resolve
+        of pending certificates. This method allows plugins to indicate that they allow
+        auto-resolve, which will prevent Lemur from automatically calling fetch_acme_cert.apply_async.
+        """
+        return True

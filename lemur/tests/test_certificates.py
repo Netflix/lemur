@@ -927,10 +927,10 @@ def test_get_account_number(client):
 def test_mint_certificate(issuer_plugin, authority):
     from lemur.certificates.service import mint
 
-    cert_body, private_key, chain, external_id, csr = mint(
+    mint_result = mint(
         authority=authority, csr=CSR_STR
     )
-    assert cert_body == SAN_CERT_STR
+    assert mint_result.certificate_body == SAN_CERT_STR
 
 
 def test_create_certificate(issuer_plugin, authority, user):

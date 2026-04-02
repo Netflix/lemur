@@ -9,6 +9,7 @@ import re
 import time
 from collections import defaultdict
 from itertools import groupby
+from dataclasses import dataclass
 
 import arrow
 from cryptography import x509
@@ -16,6 +17,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
 from sentry_sdk import capture_exception
+from lemur.plugins.bases.issuer import IssuerPlugin
 from sqlalchemy import and_, func, or_, not_, cast, Integer
 from sqlalchemy.sql.expression import false, true
 
@@ -433,7 +435,17 @@ def create_certificate_roles(**kwargs):
     return [owner_role]
 
 
-def mint(**kwargs):
+@dataclass
+class MintResult:
+    certificate_body: str
+    private_key: str
+    certificate_chain: str
+    external_id: str
+    csr: str
+    plugin_allows_auto_resolve: bool
+
+
+def mint(**kwargs) -> MintResult:
     """
     Minting is slightly different for each authority.
     Support for multiple authorities is handled by individual plugins.
@@ -441,7 +453,7 @@ def mint(**kwargs):
     """
     authority = kwargs["authority"]
 
-    issuer = plugins.get(authority.plugin_name)
+    issuer: IssuerPlugin = plugins.get(authority.plugin_name)
 
     # allow the CSR to be specified by the user
     if not kwargs.get("csr"):
@@ -453,7 +465,14 @@ def mint(**kwargs):
         csr_imported.send(authority=authority, csr=csr)
 
     cert_body, cert_chain, external_id = issuer.create_certificate(csr, kwargs)
-    return cert_body, private_key, cert_chain, external_id, csr
+    return MintResult(
+        certificate_body=cert_body,
+        private_key=private_key,
+        certificate_chain=cert_chain,
+        external_id=external_id,
+        csr=csr,
+        plugin_allows_auto_resolve=issuer.allows_auto_resolve
+    )
 
 
 def import_certificate(**kwargs):
@@ -504,7 +523,7 @@ def create(**kwargs):
         validate_no_duplicate_destinations(kwargs["destinations"])
 
     try:
-        cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
+        mint_result = mint(**kwargs)
     except Exception:
         log_data = {
             "message": "Exception minting certificate",
@@ -517,12 +536,11 @@ def create(**kwargs):
         current_app.logger.error(log_data, exc_info=True)
         capture_exception()
         raise
-    kwargs["body"] = cert_body
-    kwargs["private_key"] = private_key
-    kwargs["chain"] = cert_chain
-    kwargs["external_id"] = external_id
-    kwargs["csr"] = csr
-
+    kwargs["body"] = mint_result.certificate_body
+    kwargs["private_key"] = mint_result.private_key
+    kwargs["chain"] = mint_result.certificate_chain
+    kwargs["external_id"] = mint_result.external_id
+    kwargs["csr"] = mint_result.csr
     roles = create_certificate_roles(**kwargs)
 
     if kwargs.get("roles"):
@@ -530,7 +548,7 @@ def create(**kwargs):
     else:
         kwargs["roles"] = roles
 
-    if cert_body:
+    if mint_result.certificate_body:
         cert = Certificate(**kwargs)
         kwargs["creator"].certificates.append(cert)
     else:
@@ -568,7 +586,7 @@ def create(**kwargs):
         pending_cert = database.session_query(PendingCertificate).get(cert.id)
         from lemur.common.celery import fetch_acme_cert
 
-        if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False):
+        if not current_app.config.get("ACME_DISABLE_AUTORESOLVE", False) and mint_result.plugin_allows_auto_resolve:
             fetch_acme_cert.apply_async((pending_cert.id, kwargs.get("async_reissue_notification_cert_id", None)), countdown=5)
 
     return cert
