@@ -797,7 +797,7 @@ types-pytz==2026.1.1.20260304
     # via -r requirements-tests.txt
 types-redis==4.6.0.20241004
     # via -r requirements-tests.txt
-types-requests==2.32.4.20260324
+types-requests==2.33.0.20260402
     # via -r requirements-tests.txt
 types-setuptools==82.0.0.20260210
     # via
