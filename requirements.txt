@@ -290,7 +290,7 @@ redis==6.4.0
     # via
     #   -r requirements.in
     #   kombu
-requests==2.33.0
+requests==2.33.1
     # via
     #   -r requirements.in
     #   acme
