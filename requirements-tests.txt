@@ -510,7 +510,7 @@ python-dotenv==1.2.2
     # via pydantic-settings
 python-jose[cryptography]==3.5.0
     # via moto
-python-json-logger==4.0.0
+python-json-logger==4.1.0
     # via -r requirements.txt
 python-ldap==3.4.5
     # via -r requirements.txt
