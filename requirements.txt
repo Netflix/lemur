@@ -158,7 +158,7 @@ grpcio==1.78.0
     #   grpcio-status
 grpcio-status==1.78.0
     # via google-api-core
-gunicorn==25.2.0
+gunicorn==25.3.0
     # via -r requirements.in
 hvac==2.4.0
     # via -r requirements.in
