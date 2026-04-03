@@ -23,6 +23,9 @@ def retry_throttled(exception):
     :param exception:
     :return:
     """
+    from celery.exceptions import SoftTimeLimitExceeded
+    if isinstance(exception, SoftTimeLimitExceeded):
+        return False
 
     # Log details about the exception
     try:

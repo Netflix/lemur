@@ -22,6 +22,10 @@ def retry_throttled(exception):
     :param exception:
     :return:
     """
+    from celery.exceptions import SoftTimeLimitExceeded
+    if isinstance(exception, SoftTimeLimitExceeded):
+        return False
+
     if isinstance(exception, botocore.exceptions.ClientError):
         if exception.response["Error"]["Code"] == "NoSuchEntity":
             return False
