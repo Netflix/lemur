@@ -67,6 +67,7 @@ entrust_issuer = "lemur.plugins.lemur_entrust.plugin:EntrustIssuerPlugin"
 entrust_source = "lemur.plugins.lemur_entrust.plugin:EntrustSourcePlugin"
 azure_destination = "lemur.plugins.lemur_azure_dest.plugin:AzureDestinationPlugin"
 google_ca_issuer = "lemur.plugins.lemur_google_ca.plugin:GoogleCaIssuerPlugin"
+telegram_notification = "lemur.plugins.lemur_telegram.plugin:TelegramNotificationPlugin"
 
 [tool.setuptools]
 include-package-data = true
