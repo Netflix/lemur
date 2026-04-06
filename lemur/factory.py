@@ -61,7 +61,7 @@ def create_app(app_name=None, blueprints=None, config=None):
     if ctx and config is None:
         script_info = ctx.obj
         if script_info:
-            config = getattr(script_info, 'config')
+            config = getattr(script_info, 'config', None)
 
     configure_app(app, config)
     configure_blueprints(app, blueprints)
