@@ -22,7 +22,7 @@ def test_rotate_certificate(client, source_plugin):
 
 
 def test_rotate_certificate_calls_remove_old_certificate(client, source_plugin):
-    from unittest.mock import patch, MagicMock
+    from unittest.mock import patch
     from lemur.deployment.service import rotate_certificate
 
     old_certificate = CertificateFactory()
