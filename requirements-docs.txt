@@ -828,7 +828,7 @@ types-pyopenssl==24.1.0.20240722
     #   types-redis
 types-pyrfc3339==2.0.1.20250825
     # via -r requirements-tests.txt
-types-pytz==2026.1.1.20260304
+types-pytz==2026.1.1.20260402
     # via -r requirements-tests.txt
 types-redis==4.6.0.20241004
     # via -r requirements-tests.txt
