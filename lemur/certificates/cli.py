@@ -166,7 +166,7 @@ def request_rotation(endpoint, certificate, message, commit):
             deployment_service.rotate_certificate(endpoint, certificate)
 
             if message:
-                send_rotation_notification(certificate)
+                send_rotation_notification(certificate, endpoint=endpoint)
 
             status = SUCCESS_METRIC_STATUS
 

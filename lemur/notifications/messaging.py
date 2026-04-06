@@ -387,11 +387,11 @@ def send_revocation_notification(certificate):
     return send_default_notification("revocation", data, [data["owner"]], email_tags=email_tags)
 
 
-def send_rotation_notification(certificate):
+def send_rotation_notification(certificate, endpoint=None):
     data = certificate_notification_output_schema.dump(certificate).data
     data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
     email_tags = {"cert_id": certificate.id, "cert_name": certificate.name, "owner": certificate.owner}
-    return send_default_notification("rotation", data, [data["owner"]], email_tags=email_tags)
+    return send_default_notification("rotation", data, [data["owner"]], email_tags=email_tags, endpoint=endpoint)
 
 
 def send_reissue_no_endpoints_notification(old_cert, new_cert):
