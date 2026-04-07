@@ -619,7 +619,7 @@ twofish==0.3.0
     #   pyjks
 types-cffi==2.0.0.20260316
     # via types-pyopenssl
-types-deprecated==1.3.1.20260130
+types-deprecated==1.3.1.20260402
     # via -r requirements-tests.in
 types-paramiko==4.0.0.20260402
     # via -r requirements-tests.in
