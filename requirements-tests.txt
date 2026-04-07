@@ -266,7 +266,7 @@ inflection==0.5.1
     # via -r requirements.txt
 iniconfig==2.3.0
     # via pytest
-invoke==2.2.1
+invoke==3.0.3
     # via
     #   -r requirements.txt
     #   paramiko

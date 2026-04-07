@@ -166,7 +166,7 @@ idna==3.11
     # via requests
 inflection==0.5.1
     # via -r requirements.in
-invoke==2.2.1
+invoke==3.0.3
     # via paramiko
 itsdangerous==2.2.0
     # via

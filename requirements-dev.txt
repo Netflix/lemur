@@ -304,7 +304,7 @@ iniconfig==2.3.0
     # via
     #   -r requirements-tests.txt
     #   pytest
-invoke==2.2.1
+invoke==3.0.3
     # via
     #   -r requirements-dev.in
     #   -r requirements-tests.txt
