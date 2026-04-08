@@ -3,6 +3,6 @@
 #
 # To bump a version: update the URL here and rebuild the Docker image.
 
-https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.33-py3-none-any.whl
+https://binaries.ddbuild.io/dd-source/python/cert_orchestration_adapter-0.1.34-py3-none-any.whl
 # Must match version enforced in the above COA wheel's requires (dd-source BUILD.bazel)
 https://binaries.ddbuild.io/dd-source/python/dd_internal_authentication-1.9.0-py2.py3-none-any.whl
