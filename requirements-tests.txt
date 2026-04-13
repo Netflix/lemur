@@ -641,7 +641,7 @@ types-setuptools==82.0.0.20260402
     # via
     #   -r requirements-tests.in
     #   types-cffi
-types-six==1.17.0.20251009
+types-six==1.17.0.20260408
     # via -r requirements-tests.in
 types-tabulate==0.10.0.20260408
     # via -r requirements-tests.in
