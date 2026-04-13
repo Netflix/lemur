@@ -643,7 +643,7 @@ types-setuptools==82.0.0.20260402
     #   types-cffi
 types-six==1.17.0.20251009
     # via -r requirements-tests.in
-types-tabulate==0.10.0.20260308
+types-tabulate==0.10.0.20260408
     # via -r requirements-tests.in
 typing-extensions==4.15.0
     # via
