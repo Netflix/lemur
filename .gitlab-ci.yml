@@ -92,7 +92,7 @@ build-prod-image:
     DDSIGN_ID_TOKEN:
       aud: image-integrity
   script:
-    - GBILITE_ENV=prod GBILITE_IMAGE_TO_BUILD="lemur:$IMAGE_TAG" /bin/bash .campaigns/build_and_push_image.sh
+    - CHECKOUT_REF=$CI_COMMIT_SHA GBILITE_ENV=prod GBILITE_IMAGE_TO_BUILD="lemur:$IMAGE_TAG" /bin/bash .campaigns/build_and_push_image.sh
 
 build-prod-image-fips:
   image: $CURRENT_CI_IMAGE
@@ -113,7 +113,7 @@ build-prod-image-fips:
     DDSIGN_ID_TOKEN:
       aud: image-integrity
   script:
-    - GBILITE_ENV=prod GBILITE_IMAGE_TO_BUILD="lemur:$IMAGE_TAG-fips" /bin/bash .campaigns/build_and_push_image.sh
+    - CHECKOUT_REF=$CI_COMMIT_SHA GBILITE_ENV=prod GBILITE_IMAGE_TO_BUILD="lemur:$IMAGE_TAG-fips" /bin/bash .campaigns/build_and_push_image.sh
 
 gbilite-get-images:
   image: $CURRENT_CI_IMAGE
