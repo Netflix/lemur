@@ -72,7 +72,7 @@ build-stage-image-fips:
   script:
     - CHECKOUT_REF=$CI_COMMIT_SHA GBILITE_ENV=staging GBILITE_IMAGE_TO_BUILD="lemur:v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}-fips" /bin/bash .campaigns/build_and_push_image.sh
 
-# build a prod image when we create a new tag
+# build a prod-signed image on master commits and tags
 build-prod-image:
   image: $CURRENT_CI_IMAGE
   stage: build-prod-image
@@ -80,6 +80,11 @@ build-prod-image:
   timeout: 2h
   rules:
     - if: $CI_COMMIT_TAG
+      variables:
+        IMAGE_TAG: "$CI_COMMIT_TAG"
+    - if: $CI_COMMIT_BRANCH == "master" && $GBILITE_GITLAB_ACTION == null
+      variables:
+        IMAGE_TAG: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
   tags: ["arch:amd64"]
   variables:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
@@ -87,7 +92,7 @@ build-prod-image:
     DDSIGN_ID_TOKEN:
       aud: image-integrity
   script:
-    - GBILITE_ENV=prod GBILITE_IMAGE_TO_BUILD="lemur:$CI_COMMIT_TAG" /bin/bash .campaigns/build_and_push_image.sh
+    - GBILITE_ENV=prod GBILITE_IMAGE_TO_BUILD="lemur:$IMAGE_TAG" /bin/bash .campaigns/build_and_push_image.sh
 
 build-prod-image-fips:
   image: $CURRENT_CI_IMAGE
@@ -96,6 +101,11 @@ build-prod-image-fips:
   timeout: 2h
   rules:
     - if: $CI_COMMIT_TAG
+      variables:
+        IMAGE_TAG: "$CI_COMMIT_TAG"
+    - if: $CI_COMMIT_BRANCH == "master" && $GBILITE_GITLAB_ACTION == null
+      variables:
+        IMAGE_TAG: "v${CI_PIPELINE_ID}-${CI_COMMIT_SHORT_SHA}"
   tags: ["arch:amd64"]
   variables:
     CI_ENABLE_CONTAINER_IMAGE_BUILDS: "true"
@@ -103,7 +113,7 @@ build-prod-image-fips:
     DDSIGN_ID_TOKEN:
       aud: image-integrity
   script:
-    - GBILITE_ENV=prod GBILITE_IMAGE_TO_BUILD="lemur:$CI_COMMIT_TAG-fips" /bin/bash .campaigns/build_and_push_image.sh
+    - GBILITE_ENV=prod GBILITE_IMAGE_TO_BUILD="lemur:$IMAGE_TAG-fips" /bin/bash .campaigns/build_and_push_image.sh
 
 gbilite-get-images:
   image: $CURRENT_CI_IMAGE
