@@ -313,6 +313,10 @@ class AWSSourcePlugin(SourcePlugin):
         else:
             regions = "".join(regions.split()).split(",")
 
+        excluded_regions = current_app.config.get("LEMUR_EXCLUDED_REGIONS", [])
+        if excluded_regions:
+            regions = [r for r in regions if r not in excluded_regions]
+
         policy_cache = {}
         for region in regions:
             elbs = elb.get_all_elbs(account_number=account_number, region=region)

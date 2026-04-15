@@ -322,6 +322,14 @@ Basic Configuration
        If Lemur is deployed in and managing endpoints AWS GovCloud, for example, you must set this to `aws-us-gov`.
 
 
+.. data:: LEMUR_EXCLUDED_REGIONS
+   :noindex:
+
+       A list of AWS region names that Lemur should skip when discovering endpoints. Useful for temporarily excluding
+       regions that are unreachable or experiencing disruptions. For example::
+
+           LEMUR_EXCLUDED_REGIONS = ["me-south-1"]
+
 .. data:: LEMUR_STRICT_ROLE_ENFORCEMENT
     :noindex:
 
