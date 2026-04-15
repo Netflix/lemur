@@ -324,6 +324,8 @@ class AWSSourcePlugin(SourcePlugin):
                     "region": region,
                 })
                 capture_exception()
+                metrics.send("source_sync_fail", "counter", 1,
+                             metric_tags={"source": f"{account_number}/{region}/classic"})
                 continue
 
             current_app.logger.info({
@@ -352,6 +354,8 @@ class AWSSourcePlugin(SourcePlugin):
                     "region": region,
                 })
                 capture_exception()
+                metrics.send("source_sync_fail", "counter", 1,
+                             metric_tags={"source": f"{account_number}/{region}/elbv2"})
                 continue
 
             current_app.logger.info({
