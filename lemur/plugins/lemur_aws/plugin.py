@@ -315,7 +315,17 @@ class AWSSourcePlugin(SourcePlugin):
 
         policy_cache = {}
         for region in regions:
-            elbs = elb.get_all_elbs(account_number=account_number, region=region)
+            try:
+                elbs = elb.get_all_elbs(account_number=account_number, region=region)
+            except Exception:  # noqa
+                current_app.logger.warning({
+                    "message": "Failed to describe classic load balancers, skipping region",
+                    "account_number": account_number,
+                    "region": region,
+                })
+                capture_exception()
+                continue
+
             current_app.logger.info({
                 "message": "Describing classic load balancers",
                 "account_number": account_number,
@@ -333,7 +343,17 @@ class AWSSourcePlugin(SourcePlugin):
                     continue
 
             # fetch advanced ELBs
-            elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
+            try:
+                elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
+            except Exception:  # noqa
+                current_app.logger.warning({
+                    "message": "Failed to describe advanced load balancers, skipping region",
+                    "account_number": account_number,
+                    "region": region,
+                })
+                capture_exception()
+                continue
+
             current_app.logger.info({
                 "message": "Describing advanced load balancers",
                 "account_number": account_number,
