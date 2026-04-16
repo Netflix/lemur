@@ -1,6 +1,6 @@
 --- setup.py.orig	2025-04-02 17:02:50
 +++ setup.py	2025-04-02 17:03:06
-@@ -140,37 +140,13 @@
+@@ -140,37 +140,15 @@
              "lemur = lemur.manage:main",
          ],
          "lemur.plugins": [
