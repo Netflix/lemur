@@ -254,7 +254,12 @@ class CertificatesNameQuery(AuthenticatedResource):
 
         args = parser.parse_args()
         args["user"] = g.user
-        return service.query_name(certificate_name, args)
+        result = service.query_name(certificate_name, args)
+        resolver = current_app.config.get("CERT_NAME_RESOLVER")
+        if resolver:
+            caller = getattr(g, "caller_application", None)
+            result = resolver(certificate_name, result, caller)
+        return result
 
 
 class CertificatesList(AuthenticatedResource):
