@@ -325,7 +325,7 @@ tabulate==0.10.0
     # via -r requirements.in
 twofish==0.3.0
     # via pyjks
-types-protobuf==7.34.1.20260403
+types-protobuf==7.34.1.20260408
     # via -r requirements.in
 typing-extensions==4.15.0
     # via
