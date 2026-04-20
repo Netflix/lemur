@@ -413,7 +413,7 @@ lockfile==0.12.2
     # via -r requirements-tests.txt
 logmatic-python==0.1.7
     # via -r requirements-docs.in
-mako==1.3.10
+mako==1.3.11
     # via
     #   -r requirements-tests.txt
     #   alembic
