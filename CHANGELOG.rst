@@ -3,26 +3,38 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
-Added ENABLE_AUTOROTATION_FILTER: a configurable, plugin-independent callback that can be used to skip enabling autorotate
-based on your specific business logic. For example, you could disallow enabling autorotate on certs with notifications disabled.
-Added REISSUE_FILTER: a configurable, plugin-independent callback that can be used to reject reissuance requests
-based on your specific business logic. For example, you could disallow reissuing certs on abandoned ELBs
-Added AWS_ELB_IGNORE_TAGS to allow mutiple ELB tags to be ignored.
-Added support for ignoring cloufront distirbutions and IAM certificates via the AWS_CLOUDFRONT_IGNORE_TAGS and AWS_IAM_IGNORE_TAGS config options.
-Added ENABLE_AUTO_ROTATE_ALL_AUTHORITIES configuration to allow all authorities to be considered for destination autorotate task.
-Added CERTIFICATE_UPDATE_REQUEST_VALIDATION: a configurable, plugin-independent callback that can be used to reject requests
-based on your specific business logic. For example, you could disallow certs with rotate set and no destinations to reduce
-volume of unused certs.
-Added CERTIFICATE_CREATE_REQUEST_VALIDATION: a configurable, plugin-independent callback that can be used to reject requests
-based on your specific business logic. For example, you could disallow certs with rotate set and no destinations to reduce
-volume of unused certs.
-Added CERTIFICATE_EXPORT_KEY_REQUEST_VALIDATION: a configurable, plugin-independent callback that can be used to reject
-private key export requests based on your specific business logic. For example, you could block specific API keys from
-exporting private keys for migrated certificates.
-Added the disable_autorotate_without_endpoint celery task, along with a customizable DISABLE_AUTOROTATION_FILTER
-function you can use to determine when to disable autorotate. By default, nothing will be changed by this task when scheduled.
-Added a new API endpoint `/certificates/{certificate_id}/description` for updating just the description field of a certificate, avoiding the need to provide the full certificate object for simple description updates.
-Removed support for Postgres 12, Postgres 15, Python 3.9, and Ubuntu 20.04. Added support for postgres 16.
+
+1.9.0 - `2026-04-20`
+~~~~~~~~~~~~~~~~~~~~
+This release contains fixes for two security vulnerabilities (`GHSA-3r34-vq8m-39gh`_, `GHSA-vr7c-r5gj-j3w5`_).
+
+- Fixed a bug where the old certificate was not removed from an endpoint after rotation.
+- Fixed a bug where rotation notifications did not include endpoint context.
+- Fixed ``AttributeError`` when running ``lemur`` CLI commands without a config file.
+- Added ``ENABLE_AUTOROTATION_FILTER``: a configurable, plugin-independent callback that can be used to skip enabling autorotate
+  based on your specific business logic. For example, you could disallow enabling autorotate on certs with notifications disabled.
+- Added ``REISSUE_FILTER``: a configurable, plugin-independent callback that can be used to reject reissuance requests
+  based on your specific business logic. For example, you could disallow reissuing certs on abandoned ELBs.
+- Added ``AWS_ELB_IGNORE_TAGS`` to allow multiple ELB tags to be ignored.
+- Added support for ignoring CloudFront distributions and IAM certificates via the ``AWS_CLOUDFRONT_IGNORE_TAGS`` and ``AWS_IAM_IGNORE_TAGS`` config options.
+- Added ``ENABLE_AUTO_ROTATE_ALL_AUTHORITIES`` configuration to allow all authorities to be considered for destination autorotate task.
+- Added ``CERTIFICATE_UPDATE_REQUEST_VALIDATION``: a configurable, plugin-independent callback that can be used to reject requests
+  based on your specific business logic. For example, you could disallow certs with rotate set and no destinations to reduce
+  volume of unused certs.
+- Added ``CERTIFICATE_CREATE_REQUEST_VALIDATION``: a configurable, plugin-independent callback that can be used to reject requests
+  based on your specific business logic. For example, you could disallow certs with rotate set and no destinations to reduce
+  volume of unused certs.
+- Added ``CERTIFICATE_EXPORT_KEY_REQUEST_VALIDATION``: a configurable, plugin-independent callback that can be used to reject
+  private key export requests based on your specific business logic. For example, you could block specific API keys from
+  exporting private keys for migrated certificates.
+- Added the ``disable_autorotate_without_endpoint`` celery task, along with a customizable ``DISABLE_AUTOROTATION_FILTER``
+  function you can use to determine when to disable autorotate. By default, nothing will be changed by this task when scheduled.
+- Added a new API endpoint ``/certificates/{certificate_id}/description`` for updating just the description field of a certificate,
+  avoiding the need to provide the full certificate object for simple description updates.
+- Removed support for Postgres 12, Postgres 15, Python 3.9, and Ubuntu 20.04. Added support for Postgres 16.
+
+.. _GHSA-3r34-vq8m-39gh: https://github.com/Netflix/lemur/security/advisories/GHSA-3r34-vq8m-39gh
+.. _GHSA-vr7c-r5gj-j3w5: https://github.com/Netflix/lemur/security/advisories/GHSA-vr7c-r5gj-j3w5
 
 1.8.2 - `2024-06-11`
 ~~~~~~~~~~~~~~~~~~~~

@@ -13,7 +13,7 @@ __title__ = "lemur"
 __summary__ = "Certificate management and orchestration service"
 __uri__ = "https://github.com/Netflix/lemur"
 
-__version__ = "1.3.dev0"
+__version__ = "1.9.0"
 
 __author__ = "The Lemur developers"
 __email__ = "security@netflix.com"

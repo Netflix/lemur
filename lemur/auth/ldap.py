@@ -6,6 +6,7 @@
 .. moduleauthor:: Ian Stahnke <ian.stahnke@myob.com>
 """
 import ldap
+from ldap.filter import escape_filter_chars
 from flask import current_app
 
 from lemur.common.utils import validate_conf, get_psuedo_random_string
@@ -160,7 +161,7 @@ class LdapPrincipal:
                 self.ldap_principal,
                 self.ldap_email_domain,
             )
-        ldap_filter = "userPrincipalName=%s" % self.ldap_principal
+        ldap_filter = "userPrincipalName=%s" % escape_filter_chars(self.ldap_principal)
 
         # query ldap for auth
         try:
@@ -170,15 +171,15 @@ class LdapPrincipal:
             # perform a synchronous bind
             self.ldap_client.set_option(ldap.OPT_REFERRALS, 0)
             if self.ldap_use_tls:
-                ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
-                self.ldap_client.set_option(ldap.OPT_PROTOCOL_VERSION, 3)
-                self.ldap_client.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND)
-                self.ldap_client.set_option(ldap.OPT_X_TLS_DEMAND, True)
-                self.ldap_client.set_option(ldap.OPT_DEBUG_LEVEL, 255)
-            if self.ldap_cacert_file:
-                self.ldap_client.set_option(
-                    ldap.OPT_X_TLS_CACERTFILE, self.ldap_cacert_file
+                tls_require_cert = current_app.config.get(
+                    "LDAP_TLS_REQUIRE_CERT", ldap.OPT_X_TLS_DEMAND
                 )
+                self.ldap_client.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, tls_require_cert)
+                self.ldap_client.set_option(ldap.OPT_PROTOCOL_VERSION, 3)
+                if self.ldap_cacert_file:
+                    self.ldap_client.set_option(
+                        ldap.OPT_X_TLS_CACERTFILE, self.ldap_cacert_file
+                    )
             self.ldap_client.simple_bind_s(self.ldap_principal, self.ldap_password)
         except ldap.INVALID_CREDENTIALS:
             self.ldap_client.unbind()
@@ -199,7 +200,7 @@ class LdapPrincipal:
             userdn = userdn.decode("utf-8")
             # Search all groups that have the userDN as a member
             groupfilter = "(&(objectclass=group)(member:1.2.840.113556.1.4.1941:={}))".format(
-                userdn
+                escape_filter_chars(userdn)
             )
             lgroups = self.ldap_client.search_s(
                 self.ldap_base_dn, ldap.SCOPE_SUBTREE, groupfilter, ["cn"]
