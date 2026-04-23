@@ -2461,6 +2461,15 @@ Vault
 :Description:
     Destination plugin to deploy certificates to Hashicorp Vault secret store.
 
+Manual
+------
+
+:Authors:
+    Philippe Desmarais <philippe.desmarais0trash@gmail.com>
+:Type:
+    Issuer
+:Description:
+    Manage certificates issued by third party issuers that do not support automation. Import the CA's public key as an issuer, then create a new certificate using that issuer to create a pending cert, which includes a generated CSR. Using whatever manual process you have to complete this CSR, generate and upload the signed public key to the pending certificate, then Lemur will mark it as active and will manage the certificate's lifecycle from there.
 
 3rd Party Plugins
 =================
