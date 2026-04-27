@@ -15,6 +15,19 @@ def test_private_key(session):
         parse_private_key("invalid_private_key")
 
 
+def test_parse_ec_private_key_with_parameters(session):
+    """Verify that EC keys with an EC PARAMETERS prefix can be parsed (issue #5058)."""
+    import subprocess
+    result = subprocess.run(
+        ["openssl", "ecparam", "-genkey", "-name", "secp384r1"],
+        capture_output=True, text=True,
+    )
+    ec_key_with_params = result.stdout
+    assert "BEGIN EC PARAMETERS" in ec_key_with_params
+    key = parse_private_key(ec_key_with_params)
+    assert key is not None
+
+
 def test_validate_private_key(session):
     key = parse_private_key(SAN_CERT_KEY)
 
