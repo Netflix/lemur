@@ -3,13 +3,13 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
-Added GcsDestinationPlugin, which allows uploading certificates to Google Cloud Storage.
 
 1.9.0 - `2026-04-20`
 ~~~~~~~~~~~~~~~~~~~~
 This release contains fixes for two security vulnerabilities (`GHSA-3r34-vq8m-39gh`_, `GHSA-vr7c-r5gj-j3w5`_).
 
 - Fixed a bug where the old certificate was not removed from an endpoint after rotation.
+- Added GcsDestinationPlugin, which allows uploading certificates to Google Cloud Storage.
 - Fixed a bug where rotation notifications did not include endpoint context.
 - Fixed ``AttributeError`` when running ``lemur`` CLI commands without a config file.
 - Added ``ENABLE_AUTOROTATION_FILTER``: a configurable, plugin-independent callback that can be used to skip enabling autorotate
