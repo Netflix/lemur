@@ -3,6 +3,7 @@ Changelog
 
 Unreleased
 ~~~~~~~~~~~~~~~~~~~~
+Added GcsDestinationPlugin, which allows uploading certificates to Google Cloud Storage.
 
 1.9.0 - `2026-04-20`
 ~~~~~~~~~~~~~~~~~~~~
