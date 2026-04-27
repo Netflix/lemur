@@ -4,14 +4,14 @@
 #
 #    pip-compile --no-emit-index-url --output-file=requirements.txt requirements.in
 #
-acme==5.4.0
+acme==5.5.0
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   certbot
 alembic==1.14.1
     # via flask-migrate
 alembic-autogenerate-enums==0.1.2
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 amqp==5.3.1
     # via kombu
 aniso8601==10.0.1
@@ -20,15 +20,15 @@ annotated-types==0.7.0
     # via pydantic
 anyio==4.5.0
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    #   -r requirements-datadog.in
     #   cloudflare
     #   httpx
 arrow==1.4.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 async-timeout==5.0.1
     # via redis
 asyncpool==1.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 azure-common==1.1.28
     # via
     #   azure-mgmt-cdn
@@ -42,26 +42,26 @@ azure-core==1.39.0
     #   azure-mgmt-core
     #   msrest
 azure-identity==1.25.3
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    # via -r requirements-datadog.in
 azure-keyvault==4.2.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
-azure-keyvault-certificates==4.10.0
+    # via -r requirements-datadog.in
+azure-keyvault-certificates==4.11.0
     # via azure-keyvault
 azure-keyvault-keys==4.11.0
     # via azure-keyvault
-azure-keyvault-secrets==4.10.0
+azure-keyvault-secrets==4.11.0
     # via azure-keyvault
 azure-mgmt-cdn==13.1.1
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    # via -r requirements-datadog.in
 azure-mgmt-core==1.6.0
     # via
     #   azure-mgmt-cdn
     #   azure-mgmt-network
     #   azure-mgmt-subscription
 azure-mgmt-network==30.2.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    # via -r requirements-datadog.in
 azure-mgmt-subscription==3.1.1
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    # via -r requirements-datadog.in
 bcrypt==5.0.0
     # via
     #   flask-bcrypt
@@ -73,38 +73,38 @@ blinker==1.9.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.42.73
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-botocore==1.42.73
+boto3==1.42.96
+    # via -r requirements-base.in
+botocore==1.42.96
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   boto3
     #   s3transfer
-cachetools==5.5.2
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
-celery[redis]==5.6.2
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+cachetools==7.0.6
+    # via -r requirements-datadog.in
+celery[redis]==5.6.3
+    # via -r requirements-base.in
 cert-manager==3.0.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
-certbot==5.4.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-certifi==2026.2.25
+    # via -r requirements-datadog.in
+certbot==5.5.0
+    # via -r requirements-base.in
+certifi==2026.4.22
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   httpcore
     #   httpx
     #   msrest
     #   requests
     #   sentry-sdk
 certsrv[ntlm]==2.1.1
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 cffi==2.0.0
     # via
     #   cryptography
     #   pynacl
-charset-normalizer==3.4.6
+charset-normalizer==3.4.7
     # via requests
-click==8.3.1
+click==8.3.3
     # via
     #   celery
     #   click-didyoumean
@@ -118,15 +118,15 @@ click-plugins==1.1.1.2
 click-repl==0.3.0
     # via celery
 cloudflare==4.3.1
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 configargparse==1.7.5
     # via certbot
 configobj==5.0.9
     # via certbot
 cryptography==43.0.1
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    #   -r requirements-base.in
+    #   -r requirements-datadog.in
     #   acme
     #   azure-identity
     #   azure-keyvault-keys
@@ -146,18 +146,18 @@ distro==1.9.0
     #   certbot
     #   cloudflare
 dnspython==2.6.1
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    # via -r requirements-datadog.in
 dnspython3==1.12.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 dyn==1.8.6
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 exceptiongroup==1.3.1
     # via
     #   anyio
     #   celery
 flask==2.3.3
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   flask-bcrypt
     #   flask-cors
     #   flask-limiter
@@ -168,52 +168,52 @@ flask==2.3.3
     #   flask-script
     #   flask-sqlalchemy
 flask-bcrypt==1.0.1
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 flask-cors==6.0.2
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 flask-limiter==4.1.1
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 flask-mail==0.10.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 flask-migrate==2.7.0
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    #   -r requirements-base.in
+    #   -r requirements-datadog.in
 flask-principal==0.4.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 flask-replicated==2.1
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 flask-restful==0.3.10
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 flask-script==2.0.5
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    # via -r requirements-datadog.in
 flask-sqlalchemy==2.5.1
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   flask-migrate
 future==1.0.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-google-api-core[grpc]==2.30.0
+    # via -r requirements-base.in
+google-api-core[grpc]==2.30.3
     # via
     #   google-cloud-compute
     #   google-cloud-private-ca
-google-auth==2.49.1
+google-auth==2.49.2
     # via
     #   google-api-core
     #   google-cloud-compute
     #   google-cloud-private-ca
-google-cloud-compute==1.46.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
-google-cloud-private-ca==1.17.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-googleapis-common-protos[grpc]==1.73.0
+google-cloud-compute==1.47.0
+    # via -r requirements-datadog.in
+google-cloud-private-ca==1.18.0
+    # via -r requirements-base.in
+googleapis-common-protos[grpc]==1.74.0
     # via
     #   google-api-core
     #   grpc-google-iam-v1
     #   grpcio-status
-grpc-google-iam-v1==0.14.3
+grpc-google-iam-v1==0.14.4
     # via google-cloud-private-ca
-grpcio==1.78.0
+grpcio==1.80.0
     # via
     #   google-api-core
     #   google-cloud-compute
@@ -221,30 +221,30 @@ grpcio==1.78.0
     #   googleapis-common-protos
     #   grpc-google-iam-v1
     #   grpcio-status
-grpcio-status==1.78.0
+grpcio-status==1.80.0
     # via google-api-core
-gunicorn==25.1.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+gunicorn==25.3.0
+    # via -r requirements-base.in
 h11==0.16.0
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    #   -r requirements-datadog.in
     #   httpcore
 httpcore==1.0.9
     # via httpx
 httpx==0.28.1
     # via cloudflare
 hvac==2.4.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-idna==3.11
+    # via -r requirements-base.in
+idna==3.13
     # via
     #   anyio
     #   httpx
     #   requests
 importlib-metadata==8.5.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    # via -r requirements-datadog.in
 inflection==0.5.1
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-invoke==2.2.1
+    # via -r requirements-base.in
+invoke==3.0.3
     # via paramiko
 isodate==0.7.2
     # via
@@ -256,14 +256,14 @@ isodate==0.7.2
     #   msrest
 itsdangerous==2.2.0
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   flask
 javaobj-py3==0.4.4
     # via pyjks
 jinja2==3.1.6
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    #   -r requirements-base.in
+    #   -r requirements-datadog.in
     #   flask
 jmespath==1.1.0
     # via
@@ -278,24 +278,24 @@ kombu[redis]==5.6.2
 limits==5.8.0
     # via flask-limiter
 lockfile==0.12.2
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 logmatic-python==0.1.7
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
-mako==1.3.10
+    # via -r requirements-datadog.in
+mako==1.3.11
     # via alembic
 markupsafe==2.1.5
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    #   -r requirements-datadog.in
     #   jinja2
     #   mako
     #   werkzeug
 marshmallow==2.21.0
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   marshmallow-sqlalchemy
 marshmallow-sqlalchemy==0.23.1
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-msal==1.35.1
+    # via -r requirements-base.in
+msal==1.36.0
     # via
     #   azure-identity
     #   msal-extensions
@@ -304,32 +304,32 @@ msal-extensions==1.3.1
 msrest==0.7.1
     # via azure-mgmt-subscription
 ndg-httpsclient==0.5.1
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 oauthlib==3.3.1
     # via requests-oauthlib
 ordered-set==4.1.0
     # via flask-limiter
-packaging==26.0
+packaging==26.2
     # via
     #   gunicorn
     #   kombu
     #   limits
 paramiko==4.0.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 parsedatetime==2.6
     # via certbot
 pem==23.1.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 prompt-toolkit==3.0.52
     # via click-repl
-proto-plus==1.27.1
+proto-plus==1.27.2
     # via
     #   google-api-core
     #   google-cloud-compute
     #   google-cloud-private-ca
 protobuf==6.33.6
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   google-api-core
     #   google-cloud-compute
     #   google-cloud-private-ca
@@ -337,8 +337,8 @@ protobuf==6.33.6
     #   grpc-google-iam-v1
     #   grpcio-status
     #   proto-plus
-psycopg2==2.9.11
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+psycopg2==2.9.12
+    # via -r requirements-base.in
 pyasn1==0.6.3
     # via
     #   ndg-httpsclient
@@ -354,21 +354,21 @@ pycparser==3.0
     # via cffi
 pycryptodomex==3.23.0
     # via pyjks
-pydantic==2.12.5
+pydantic==2.13.3
     # via cloudflare
-pydantic-core==2.41.5
+pydantic-core==2.46.3
     # via pydantic
 pyjks==20.0.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 pyjwt[crypto]==2.12.1
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   msal
 pynacl==1.6.2
     # via paramiko
 pyopenssl==25.1.0
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   acme
     #   ndg-httpsclient
 pyrfc3339==2.1.0
@@ -382,25 +382,25 @@ python-dateutil==2.9.0.post0
     #   arrow
     #   botocore
     #   celery
-python-json-logger==4.0.0
+python-json-logger==4.1.0
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   logmatic-python
 python-ldap==3.4.5
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    #   -r requirements-base.in
+    #   -r requirements-datadog.in
 pytz==2026.1.post1
     # via flask-restful
 pyyaml==6.0.3
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 redis==6.4.0
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   kombu
-requests==2.32.5
+requests==2.33.1
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   acme
     #   azure-core
     #   cert-manager
@@ -416,16 +416,16 @@ requests-ntlm==1.3.0
 requests-oauthlib==2.0.0
     # via msrest
 retrying==1.4.2
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-s3transfer==0.16.0
+    # via -r requirements-base.in
+s3transfer==0.16.1
     # via boto3
-sentry-sdk==2.55.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-simplejson==3.20.2
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+sentry-sdk==2.58.0
+    # via -r requirements-base.in
+simplejson==4.1.1
+    # via -r requirements-datadog.in
 six==1.17.0
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   flask-restful
     #   python-dateutil
 sniffio==1.3.1
@@ -434,21 +434,21 @@ sniffio==1.3.1
     #   cloudflare
 sqlalchemy==1.3.24
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   alembic
     #   flask-sqlalchemy
     #   marshmallow-sqlalchemy
     #   sqlalchemy-utils
 sqlalchemy-utils==0.41.2
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 tabulate==0.10.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 toml==0.10.2
     # via cert-manager
 twofish==0.3.0
     # via pyjks
-types-protobuf==6.32.1.20260221
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+types-protobuf==7.34.1.20260408
+    # via -r requirements-base.in
 typing-extensions==4.15.0
     # via
     #   alembic
@@ -471,7 +471,7 @@ typing-extensions==4.15.0
     #   typing-inspection
 typing-inspection==0.4.2
     # via pydantic
-tzdata==2025.3
+tzdata==2026.2
     # via
     #   arrow
     #   kombu
@@ -479,12 +479,12 @@ tzlocal==5.3.1
     # via celery
 urllib3==2.6.3
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-datadog.in
+    #   -r requirements-datadog.in
     #   botocore
     #   requests
     #   sentry-sdk
 validators==0.35.0
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    # via -r requirements-base.in
 vine==5.1.0
     # via
     #   amqp
@@ -492,14 +492,14 @@ vine==5.1.0
     #   kombu
 wcwidth==0.6.0
     # via prompt-toolkit
-werkzeug==3.1.6
+werkzeug==3.1.8
     # via
-    #   -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
+    #   -r requirements-base.in
     #   flask
     #   flask-cors
 wrapt==2.1.2
     # via deprecated
 xmltodict==1.0.4
-    # via -r /Users/maxime.perusse/go/src/github.com/DataDog/lemur/requirements-base.in
-zipp==3.23.0
+    # via -r requirements-base.in
+zipp==3.23.1
     # via importlib-metadata
