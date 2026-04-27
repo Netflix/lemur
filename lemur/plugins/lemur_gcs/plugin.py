@@ -1,7 +1,7 @@
 import os
 from typing import Dict, Any, Optional
 
-from google.cloud import storage
+from google.cloud import storage  # type: ignore[attr-defined]
 from google.oauth2 import service_account
 from google.api_core import exceptions as gcs_exceptions
 
