@@ -13,6 +13,7 @@ from lemur.plugins import plugins
 from lemur.plugins.lemur_acme.plugin import AcmeHandler
 from lemur.plugins.lemur_aws import s3
 
+
 @click.group(name="acme", help="Handles all ACME related tasks")
 @with_appcontext
 def cli():

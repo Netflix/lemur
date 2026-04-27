@@ -25,6 +25,6 @@ RUN pip install coveralls bandit
 WORKDIR /app
 COPY . /app/
 RUN pip install -e .
-RUN pip install --no-cache-dir "file://`pwd`#egg=lemur[dev]"
-RUN pip install --no-cache-dir "file://`pwd`#egg=lemur[tests]"
+RUN pip install --no-cache-dir -e ".[dev]"
+RUN pip install --no-cache-dir -e ".[tests]"
 

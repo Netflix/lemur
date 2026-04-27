@@ -62,7 +62,6 @@ def sts_client(service, service_type="client"):
             elif service_type == "resource":
                 kwargs["resource"] = session.resource(service, config=config)
 
-
             return f(*args, **kwargs)
 
         return decorated_function

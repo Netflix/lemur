@@ -1214,7 +1214,6 @@ def disable_rotation_of_duplicate_certificates_command(commit):
     disable_rotation_of_duplicate_certificates(commit)
 
 
-
 def disable_rotation_of_duplicate_certificates(commit):
     log_data = {
         "function": f"{__name__}.{sys._getframe().f_code.co_name}",

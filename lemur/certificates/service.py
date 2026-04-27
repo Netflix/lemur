@@ -1132,7 +1132,6 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
     ):
         primitives["key_type"] = "ECCPRIME256V1"
 
-
     # allow celery to send notifications for PendingCertificates using the old cert
     if notify:
         primitives["async_reissue_notification_cert_id"] = certificate.id

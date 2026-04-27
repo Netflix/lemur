@@ -9,6 +9,7 @@
 # === Additional Integrations ===
 azure-identity >= 1.16.1  # (VUNL-7150)
 azure-keyvault
+cachetools  # used by lemur/auth/vault_jwt_auth.py
 azure-mgmt-cdn
 azure-mgmt-network
 azure-mgmt-subscription
