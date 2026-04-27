@@ -10,6 +10,7 @@ import os
 import tempfile
 from contextlib import contextmanager
 
+import cryptography.fernet
 from sqlalchemy import types
 from cryptography.fernet import Fernet, MultiFernet
 from flask import current_app
@@ -26,7 +27,7 @@ def mktempfile():
         try:
             os.unlink(name)
         except OSError as e:
-            current_app.logger.debug("No file {0}".format(name))
+            current_app.logger.debug(f"No file {name}")
 
 
 @contextmanager
@@ -40,7 +41,7 @@ def mktemppath():
         try:
             os.unlink(path)
         except OSError as e:
-            current_app.logger.debug("No file {0}".format(path))
+            current_app.logger.debug(f"No file {path}")
 
 
 def get_keys():
@@ -120,4 +121,11 @@ class Vault(types.TypeDecorator):
         if not value:
             return
 
-        return MultiFernet(self.keys).decrypt(value).decode("utf8")
+        try:
+            return MultiFernet(self.keys).decrypt(value).decode("utf8")
+        except cryptography.fernet.InvalidToken as e:
+            if current_app.config.get("DEBUG", False):
+                current_app.logger.error(f"Error decrypting token: {value}")
+            else:
+                current_app.logger.error("Error decrypting token.  (Enable debugging mode to log the token.)")
+            raise

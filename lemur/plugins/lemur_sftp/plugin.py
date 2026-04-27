@@ -111,7 +111,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
         # delete files
         try:
             current_app.logger.debug(
-                "Connecting to {0}@{1}:{2}".format(user, host, port)
+                f"Connecting to {user}@{host}:{port}"
             )
             ssh = paramiko.SSHClient()
 
@@ -138,12 +138,12 @@ class SFTPDestinationPlugin(DestinationPlugin):
             return ssh.open_sftp(), ssh
 
         except AuthenticationException as e:
-            current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
+            current_app.logger.error(f"ERROR in {e.__class__}: {e}")
             raise AuthenticationException(
                 "Couldn't connect to {0}, due to an Authentication exception."
             )
         except NoValidConnectionsError as e:
-            current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
+            current_app.logger.error(f"ERROR in {e.__class__}: {e}")
             raise NoValidConnectionsError(
                 "Couldn't connect to {0}, possible timeout or invalid hostname"
             )
@@ -209,16 +209,14 @@ class SFTPDestinationPlugin(DestinationPlugin):
             # delete files
             for filename, _ in files.items():
                 current_app.logger.debug(
-                    "Deleting {0} from {1}".format(filename, dst_path)
+                    f"Deleting {filename} from {dst_path}"
                 )
                 try:
                     sftp.remove(path.join(dst_path, filename))
                 except PermissionError as permerror:
                     if permerror.errno == 13:
                         current_app.logger.debug(
-                            "Deleting {0} from {1} returned Permission Denied Error, making file writable and retrying".format(
-                                filename, dst_path
-                            )
+                            f"Deleting {filename} from {dst_path} returned Permission Denied Error, making file writable and retrying"
                         )
                         sftp.chmod(path.join(dst_path, filename), 0o600)
                         sftp.remove(path.join(dst_path, filename))
@@ -227,7 +225,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
         except (AuthenticationException, NoValidConnectionsError) as e:
             raise e
         except Exception as e:
-            current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
+            current_app.logger.error(f"ERROR in {e.__class__}: {e}")
             try:
                 ssh.close()
             except BaseException:
@@ -262,23 +260,21 @@ class SFTPDestinationPlugin(DestinationPlugin):
                     if part != "/" and part != "":
                         remote_path = path.join(remote_path, part)
                     sftp.stat(remote_path)
-                except IOError:
+                except OSError:
                     current_app.logger.debug(
-                        "{0} doesn't exist, trying to create it".format(remote_path)
+                        f"{remote_path} doesn't exist, trying to create it"
                     )
                     try:
                         sftp.mkdir(remote_path)
-                    except IOError as ioerror:
+                    except OSError as ioerror:
                         current_app.logger.debug(
-                            "Couldn't create {0}, error message: {1}".format(
-                                remote_path, ioerror
-                            )
+                            f"Couldn't create {remote_path}, error message: {ioerror}"
                         )
 
             # upload certificate files to the sftp destination
             for filename, data in files.items():
                 current_app.logger.debug(
-                    "Uploading {0} to {1}".format(filename, dst_path)
+                    f"Uploading {filename} to {dst_path}"
                 )
                 try:
                     with sftp.open(path.join(dst_path, filename), "w") as f:
@@ -286,9 +282,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
                 except PermissionError as permerror:
                     if permerror.errno == 13:
                         current_app.logger.debug(
-                            "Uploading {0} to {1} returned Permission Denied Error, making file writable and retrying".format(
-                                filename, dst_path
-                            )
+                            f"Uploading {filename} to {dst_path} returned Permission Denied Error, making file writable and retrying"
                         )
                         sftp.chmod(path.join(dst_path, filename), 0o600)
                         with sftp.open(path.join(dst_path, filename), "w") as f:
@@ -301,7 +295,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
         except (AuthenticationException, NoValidConnectionsError) as e:
             raise e
         except Exception as e:
-            current_app.logger.error("ERROR in {0}: {1}".format(e.__class__, e))
+            current_app.logger.error(f"ERROR in {e.__class__}: {e}")
             try:
                 ssh.close()
             except BaseException:

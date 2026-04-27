@@ -11,11 +11,12 @@ command: celery -A lemur.common.celery worker --loglevel=info -l DEBUG -B
 import copy
 import sys
 import time
+from datetime import datetime, timezone, timedelta
+
 from celery import Celery
 from celery.app.task import Context
 from celery.exceptions import SoftTimeLimitExceeded
 from celery.signals import task_failure, task_received, task_revoked, task_success
-from datetime import datetime, timezone, timedelta
 from flask import current_app
 from sentry_sdk import capture_exception
 
@@ -212,7 +213,7 @@ def report_failed_task(**kwargs):
     with flask_app.app_context():
         log_data = {
             "function": f"{__name__}.{sys._getframe().f_code.co_name}",
-            "Message": "Celery Task Failure",
+            "message": "Celery Task Failure",
         }
 
         # Add traceback if exception info is in the kwargs
@@ -237,7 +238,7 @@ def report_revoked_task(**kwargs):
     with flask_app.app_context():
         log_data = {
             "function": f"{__name__}.{sys._getframe().f_code.co_name}",
-            "Message": "Celery Task Revoked",
+            "message": "Celery Task Revoked",
         }
 
         error_tags = get_celery_request_tags(**kwargs)
@@ -263,7 +264,7 @@ def fetch_acme_cert(id, notify_reissue_cert_id=None):
     function = f"{__name__}.{sys._getframe().f_code.co_name}"
     log_data = {
         "function": function,
-        "message": "Resolving pending certificate {}".format(id),
+        "message": f"Resolving pending certificate {id}",
         "task_id": task_id,
         "id": id,
     }
@@ -391,7 +392,7 @@ def fetch_all_pending_acme_certs():
         cert_authority = get_authority(cert.authority_id)
         if cert_authority.plugin_name == "acme-issuer":
             if datetime.now(timezone.utc) - cert.last_updated > timedelta(minutes=5):
-                log_data["message"] = "Triggering job for cert {}".format(cert.name)
+                log_data["message"] = f"Triggering job for cert {cert.name}"
                 log_data["cert_name"] = cert.name
                 log_data["cert_id"] = cert.id
                 current_app.logger.debug(log_data)
@@ -634,7 +635,7 @@ def certificate_reissue():
     current_app.logger.debug(log_data)
     try:
         notify = current_app.config.get("ENABLE_REISSUE_NOTIFICATION", None)
-        cli_certificate.reissue(None, notify, True)
+        cli_certificate.reissue(None, notify, True, None)
     except SoftTimeLimitExceeded:
         log_data["message"] = "Certificate reissue: Time limit exceeded."
         current_app.logger.error(log_data)
@@ -940,6 +941,30 @@ def enable_autorotate_for_certs_attached_to_destination():
     current_app.logger.debug(log_data)
 
     cli_certificate.automatically_enable_autorotate_with_destination()
+    metrics.send(f"{function}.success", "counter", 1)
+    return log_data
+
+
+@celery_app.task(soft_time_limit=3600)
+def disable_autorotate_without_endpoint():
+    """
+    This celery task disables autorotation for unexpired certificates that are
+    attached to no endpoints and have autorotate enabled.
+    :return:
+    """
+    function = f"{__name__}.{sys._getframe().f_code.co_name}"
+    task_id = None
+    if celery_app.current_task:
+        task_id = celery_app.current_task.request.id
+
+    log_data = {
+        "function": function,
+        "task_id": task_id,
+        "message": "Disabling autorotate to eligible certificates",
+    }
+    current_app.logger.debug(log_data)
+
+    cli_certificate.disable_autorotate_without_endpoint()
     metrics.send(f"{function}.success", "counter", 1)
     return log_data
 

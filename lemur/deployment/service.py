@@ -1,5 +1,10 @@
+import logging
+
 from flask import current_app
+
 from lemur import database
+
+logger = logging.getLogger(__name__)
 
 
 def rotate_certificate(endpoint, old_cert, new_cert):
@@ -33,8 +38,22 @@ def _rotate_primary_certificate(endpoint, new_cert):
     :param new_cert:
     :return:
     """
+    old_cert = endpoint.primary_certificate
+
+    # ensure that certificate is available for rotation
     endpoint.source.plugin.update_endpoint(endpoint, new_cert)
     endpoint.primary_certificate = new_cert
+
+    # attempt to detach the old certificate from the endpoint
+    if old_cert and old_cert.name != new_cert.name:
+        try:
+            endpoint.source.plugin.remove_old_certificate(endpoint, old_cert)
+        except Exception:
+            logger.warning(
+                "Failed to remove old certificate %s from endpoint %s",
+                old_cert.name,
+                endpoint.name,
+            )
 
 
 def _rotate_sni_certificate(endpoint, old_cert, new_cert):

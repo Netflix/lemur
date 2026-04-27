@@ -21,7 +21,7 @@
                 <td><a class="btn btn-sm btn-info" href="#/destinations/{{ destination.id }}/certificates">{{ destination.label }}</a></td>
                 <td><span class="text-muted">{{ destination.description }}</span></td>
                 <td>
-                    <button type="button" ng-click="certificate.removeDestination($index)" class="btn btn-danger btn-sm pull-right">Remove</button>
+                    <button type="button" ng-click="certificate.removeDestination($index)" confirm-click="Proceed to delete certificate resources in {{ destination.label }}?" class="btn btn-danger btn-sm pull-right">Remove</button>
                 </td>
             </tr>
         </table>

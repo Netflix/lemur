@@ -15,6 +15,8 @@ def text_to_slug(value, joiner="-"):
     Normalize a string to a "slug" value, stripping character accents and removing non-alphanum characters.
     A series of non-alphanumeric characters is replaced with the joiner character.
     """
+    if len(value) > 10_000:
+        raise ValueError("Input value is too long.")
 
     # Strip all character accents: decompose Unicode characters and then drop combining chars.
     value = "".join(
@@ -108,7 +110,7 @@ def organization(cert):
         return o[0].value.strip()
     except Exception as e:
         capture_exception()
-        current_app.logger.error("Unable to get organization! {0}".format(e))
+        current_app.logger.error(f"Unable to get organization! {e}")
 
 
 def organizational_unit(cert):
@@ -125,7 +127,7 @@ def organizational_unit(cert):
         return ou[0].value.strip()
     except Exception as e:
         capture_exception()
-        current_app.logger.error("Unable to get organizational unit! {0}".format(e))
+        current_app.logger.error(f"Unable to get organizational unit! {e}")
 
 
 def country(cert):
@@ -142,7 +144,7 @@ def country(cert):
         return c[0].value.strip()
     except Exception as e:
         capture_exception()
-        current_app.logger.error("Unable to get country! {0}".format(e))
+        current_app.logger.error(f"Unable to get country! {e}")
 
 
 def state(cert):
@@ -159,7 +161,7 @@ def state(cert):
         return s[0].value.strip()
     except Exception as e:
         capture_exception()
-        current_app.logger.error("Unable to get state! {0}".format(e))
+        current_app.logger.error(f"Unable to get state! {e}")
 
 
 def location(cert):
@@ -176,7 +178,7 @@ def location(cert):
         return loc[0].value.strip()
     except Exception as e:
         capture_exception()
-        current_app.logger.error("Unable to get location! {0}".format(e))
+        current_app.logger.error(f"Unable to get location! {e}")
 
 
 def domains(cert):
@@ -277,7 +279,7 @@ def issuer(cert):
     ) or cert.issuer.get_attributes_for_oid(x509.OID_ORGANIZATION_NAME)
     if not attrs:
         current_app.logger.error(
-            "Unable to get issuer! Cert serial {:x}".format(cert.serial_number)
+            f"Unable to get issuer! Cert serial {cert.serial_number:x}"
         )
         return "<unknown>"
 
@@ -293,7 +295,7 @@ def not_before(cert):
     :param cert:
     :return: Datetime
     """
-    return cert.not_valid_before
+    return cert.not_valid_before_utc
 
 
 def not_after(cert):
@@ -304,4 +306,4 @@ def not_after(cert):
 
     :return: Datetime
     """
-    return cert.not_valid_after
+    return cert.not_valid_after_utc

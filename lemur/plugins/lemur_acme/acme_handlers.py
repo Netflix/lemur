@@ -12,35 +12,32 @@
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 .. moduleauthor:: Mathias Petermann <mathias.petermann@projektfokus.ch>
 """
-
-from datetime import datetime, timezone, timedelta
 import json
 import time
+from datetime import datetime, timezone, timedelta
 
 import OpenSSL.crypto
-import josepy as jose
 import dns.resolver
+import josepy as jose
 from acme import challenges, errors, messages
 from acme.client import ClientV2, ClientNetwork
 from acme.errors import TimeoutError
 from acme.messages import Error as AcmeError, STATUS_VALID
 from certbot import crypto_util as acme_crypto_util
 from flask import current_app
+from retrying import retry
 from sentry_sdk import capture_exception
 
-from lemur.common.utils import generate_private_key
+from lemur.authorities import service as authorities_service
+from lemur.common.utils import data_encrypt, data_decrypt, is_json
+from lemur.common.utils import generate_private_key, key_to_alg
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidAuthority, UnknownProvider, InvalidConfiguration
 from lemur.extensions import metrics
-
 from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns, nsone
-from lemur.authorities import service as authorities_service
-from retrying import retry
-
-from lemur.common.utils import data_encrypt, data_decrypt, is_json
 
 
-class AuthorizationRecord(object):
+class AuthorizationRecord:
     def __init__(
         self, domain, target_domain, authz, dns_challenge, change_id, cname_delegation
     ):
@@ -52,7 +49,7 @@ class AuthorizationRecord(object):
         self.cname_delegation = cname_delegation
 
 
-class AcmeHandler(object):
+class AcmeHandler:
 
     def reuse_account(self, authority):
         if not authority.options:
@@ -132,11 +129,11 @@ class AcmeHandler(object):
         pem_certificate, pem_certificate_chain = self.extract_cert_and_chain(
             orderr.fullchain_pem, orderr.alternative_fullchains_pem
         )
-        acme_uri = acme_client.client.net.account.uri.replace("https://", "")
+        acme_uri = acme_client.net.account.uri.replace("https://", "")
         self.log_remaining_validation(orderr.authorizations, acme_uri)
 
         current_app.logger.debug(
-            "{0} {1}".format(type(pem_certificate), type(pem_certificate_chain))
+            f"{type(pem_certificate)} {type(pem_certificate_chain)}"
         )
         return pem_certificate, pem_certificate_chain
 
@@ -163,6 +160,9 @@ class AcmeHandler(object):
 
     @retry(stop_max_attempt_number=5, wait_fixed=5000)
     def setup_acme_client(self, authority):
+        return self.setup_acme_client_no_retry(authority)
+
+    def setup_acme_client_no_retry(self, authority):
         if not authority.options:
             raise InvalidAuthority("Invalid authority. Options not set")
         options = {}
@@ -195,10 +195,11 @@ class AcmeHandler(object):
             key = jose.JWK.json_loads(existing_key)
             regr = messages.RegistrationResource.json_loads(existing_regr)
             current_app.logger.debug(
-                "Connecting with directory at {0}".format(directory_url)
+                f"Connecting with directory at {directory_url}"
             )
-            net = ClientNetwork(key, account=regr)
-            client = ClientV2(net, key, directory_url)
+            net = ClientNetwork(key, account=regr, alg=key_to_alg(key))
+            directory = ClientV2.get_directory(directory_url, net)
+            client = ClientV2(directory, net=net)
             return client, {}
         else:
             # Create an account for each certificate issuance
@@ -206,11 +207,12 @@ class AcmeHandler(object):
 
             current_app.logger.debug("Creating a new ACME account")
             current_app.logger.debug(
-                "Connecting with directory at {0}".format(directory_url)
+                f"Connecting with directory at {directory_url}"
             )
 
-            net = ClientNetwork(key, account=None, timeout=3600)
-            client = ClientV2(net, key, directory_url)
+            net = ClientNetwork(key, account=None, timeout=3600, alg=key_to_alg(key))
+            directory = ClientV2.get_directory(directory_url, net)
+            client = ClientV2(directory, net=net)
             if eab_kid and eab_hmac_key:
                 # external account binding (eab_kid and eab_hmac_key could be potentially single use to establish
                 # long-term credentials)
@@ -220,14 +222,16 @@ class AcmeHandler(object):
                     hmac_key=eab_hmac_key,
                     directory=client.directory,
                 )
-                registration = client.new_account_and_tos(
+                registration = client.new_account(
                     messages.NewRegistration.from_data(
-                        email=email, external_account_binding=eab
+                        email=email,
+                        external_account_binding=eab,
+                        terms_of_service_agreed=True,
                     )
                 )
             else:
-                registration = client.new_account_and_tos(
-                    messages.NewRegistration.from_data(email=email)
+                registration = client.new_account(
+                    messages.NewRegistration.from_data(email=email, terms_of_service_agreed=True)
                 )
 
             # if store_account is checked, add the private_key and registration resources to the options
@@ -252,7 +256,7 @@ class AcmeHandler(object):
                     authority.id, options=json.dumps(new_options)
                 )
 
-            current_app.logger.debug("Connected: {0}".format(registration.uri))
+            current_app.logger.debug(f"Connected: {registration.uri}")
 
         return client, registration
 
@@ -272,7 +276,7 @@ class AcmeHandler(object):
                 if dns_name.value not in domains:
                     domains.append(dns_name.value)
 
-        current_app.logger.debug("Got these domains: {0}".format(domains))
+        current_app.logger.debug(f"Got these domains: {domains}")
         return domains
 
     def revoke_certificate(self, certificate, crl_reason=0):
@@ -282,11 +286,8 @@ class AcmeHandler(object):
             )
         acme_client, _ = self.setup_acme_client(certificate.authority)
 
-        fullchain_com = jose.ComparableX509(
-            OpenSSL.crypto.load_certificate(
-                OpenSSL.crypto.FILETYPE_PEM, certificate.body
-            )
-        )
+        from cryptography.x509 import load_pem_x509_certificate
+        fullchain_com = load_pem_x509_certificate(certificate.body.encode("utf-8"))
 
         try:
             acme_client.revoke(
@@ -389,7 +390,7 @@ class AcmeDnsHandler(AcmeHandler):
         }
         provider = provider_types.get(type)
         if not provider:
-            raise UnknownProvider("No such DNS provider: {}".format(type))
+            raise UnknownProvider(f"No such DNS provider: {type}")
         return provider
 
     def start_dns_challenge(
@@ -433,7 +434,7 @@ class AcmeDnsHandler(AcmeHandler):
 
             change_id = dns_provider.create_txt_record(
                 host_to_validate,
-                dns_challenge.validation(acme_client.client.net.key),
+                dns_challenge.validation(acme_client.net.key),
                 account_number,
             )
             change_ids.append(change_id)
@@ -449,7 +450,7 @@ class AcmeDnsHandler(AcmeHandler):
 
     def complete_dns_challenge(self, acme_client, authz_record):
         current_app.logger.debug(
-            "Finalizing DNS challenge for {0}".format(
+            "Finalizing DNS challenge for {}".format(
                 authz_record.authz[0].body.identifier.value
             )
         )
@@ -457,9 +458,7 @@ class AcmeDnsHandler(AcmeHandler):
         if not dns_providers:
             metrics.send("complete_dns_challenge_error_no_dnsproviders", "counter", 1)
             raise Exception(
-                "No DNS providers found for domain: {}".format(
-                    authz_record.target_domain
-                )
+                f"No DNS providers found for domain: {authz_record.target_domain}"
             )
 
         for dns_provider in dns_providers:
@@ -491,12 +490,12 @@ class AcmeDnsHandler(AcmeHandler):
                     metrics.send("acme_challenge_already_valid", "counter", 1)
                     return
 
-                response = dns_challenge.response(acme_client.client.net.key)
+                response = dns_challenge.response(acme_client.net.key)
 
                 verified = response.simple_verify(
                     dns_challenge.chall,
                     authz_record.target_domain,
-                    acme_client.client.net.key.public_key(),
+                    acme_client.net.key.public_key(),
                 )
 
             if not verified:
@@ -533,9 +532,7 @@ class AcmeDnsHandler(AcmeHandler):
                 metrics.send(
                     "get_authorizations_no_dns_provider_for_domain", "counter", 1
                 )
-                raise Exception(
-                    "No DNS providers found for domain: {}".format(target_domain)
-                )
+                raise Exception(f"No DNS providers found for domain: {target_domain}")
 
             for dns_provider in self.dns_providers_for_domain[target_domain]:
                 dns_provider_plugin = self.get_dns_provider(dns_provider.provider_type)
@@ -606,7 +603,7 @@ class AcmeDnsHandler(AcmeHandler):
                         authz_record.change_id,
                         account_number,
                         host_to_validate,
-                        dns_challenge.validation(acme_client.client.net.key),
+                        dns_challenge.validation(acme_client.net.key),
                     )
 
         return authorizations
@@ -617,10 +614,7 @@ class AcmeDnsHandler(AcmeHandler):
         on an exception
 
         :param acme_client:
-        :param account_number:
-        :param dns_provider:
         :param authorizations:
-        :param dns_provider_options:
         :return:
         """
         for authz_record in authorizations:
@@ -648,7 +642,7 @@ class AcmeDnsHandler(AcmeHandler):
                             authz_record.change_id,
                             account_number,
                             host_to_validate,
-                            dns_challenge.validation(acme_client.client.net.key),
+                            dns_challenge.validation(acme_client.net.key),
                         )
                     except Exception as e:
                         # If this fails, it's most likely because the record doesn't exist (It was already cleaned up)

@@ -8,8 +8,9 @@
 import copy
 import sys
 
+import click
 from flask import current_app
-from flask_script import Manager
+from flask.cli import with_appcontext
 
 from lemur.authorities.service import get as get_authority
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
@@ -18,12 +19,23 @@ from lemur.pending_certificates import service as pending_certificate_service
 from lemur.plugins.base import plugins
 
 
-manager = Manager(usage="Handles pending certificate related tasks.")
+@click.group(name="pending_certs", help="Handles pending certificate related tasks.")
+@with_appcontext
+def cli():
+    pass
 
 
-@manager.option(
-    "-i", dest="ids", action="append", help="IDs of pending certificates to fetch"
+@cli.command("fetch")
+@click.option(
+    "-i",
+    "ids",
+    multiple=True,
+    help="IDs of pending certificates to fetch"
 )
+def fetch_command(ids):
+    fetch(ids)
+
+
 def fetch(ids):
     """
     Attempt to get full certificate for each pending certificate listed.
@@ -53,12 +65,16 @@ def fetch(ids):
         else:
             pending_certificate_service.increment_attempt(cert)
             failed += 1
-    print(
-        "[+] Certificates: New: {new} Failed: {failed}".format(new=new, failed=failed)
+    click.echo(
+        f"[+] Certificates: New: {new} Failed: {failed}"
     )
 
 
-@manager.command
+@cli.command("fetch_all_acme")
+def fetch_all_acme_command():
+    fetch_all_acme()
+
+
 def fetch_all_acme():
     """
     Attempt to get full certificates for each pending certificate listed with the acme-issuer. This is more efficient
@@ -66,7 +82,7 @@ def fetch_all_acme():
     certificates.
     """
 
-    log_data = {"function": "{}.{}".format(__name__, sys._getframe().f_code.co_name)}
+    log_data = {"function": f"{__name__}.{sys._getframe().f_code.co_name}"}
     pending_certs = pending_certificate_service.get_unresolved_pending_certs()
     new = 0
     failed = 0
@@ -127,7 +143,7 @@ def fetch_all_acme():
     log_data["failed"] = failed
     log_data["wrong_issuer"] = wrong_issuer
     current_app.logger.debug(log_data)
-    print(
+    click.echo(
         "[+] Certificates: New: {new} Failed: {failed} Not using ACME: {wrong_issuer}".format(
             new=new, failed=failed, wrong_issuer=wrong_issuer
         )

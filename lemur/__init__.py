@@ -9,8 +9,9 @@
 .. moduleauthor:: Hossein Shafagh <hshafagh@netflix.com>
 
 """
-
+import socket
 import time
+import urllib.parse
 from flask import g, request
 
 from lemur import factory
@@ -93,6 +94,8 @@ def configure_hook(app):
     from flask import jsonify
     from werkzeug.exceptions import HTTPException
 
+    custom_response_headers = app.config.get("CUSTOM_RESPONSE_HEADERS", {})
+
     @app.errorhandler(Exception)
     def handle_error(e):
         code = 500
@@ -108,6 +111,62 @@ def configure_hook(app):
 
     @app.after_request
     def after_request(response):
+        def sanitize_path(*, path: str) -> str:
+            """
+            Sanitizes the given path, if it starts with "/api/1/" and LOG_SANITIZE_REQUEST_HEADERS is enabled.
+            It replaces query parameters with '<sanitized_query_parameters>'.
+
+            :param path: The URL path to be sanitized.
+            :return: The sanitized URL path.
+            """
+            # Handle empty paths
+            if not path:
+                return path
+
+            # Don't mess with paths that aren't part of the API
+            if not path.startswith("/api/1/"):
+                return path
+
+            # Skip sanitizing the path if we're told to
+            if not app.config.get("LOG_SANITIZE_REQUEST_HEADERS", True):
+                return path
+
+            parsed_path = urllib.parse.urlparse(path)
+            if parsed_path.query:
+                return urllib.parse.urlunparse(
+                    (
+                        parsed_path.scheme,
+                        parsed_path.netloc,
+                        parsed_path.path,
+                        parsed_path.params,
+                        "<sanitized_query_parameters>",
+                        parsed_path.fragment
+                    )
+                )
+            return path
+
+        # Log request headers
+        skip_endpoints = any(
+            endpoint in request.full_path for endpoint in app.config.get("LOG_REQUEST_HEADERS_SKIP_ENDPOINT", [])
+        )
+        if app.config.get("LOG_REQUEST_HEADERS", False) and not skip_endpoints:
+            app.logger.info({
+                "lemur": socket.gethostname(),
+                "ingress-ip": request.remote_addr,
+                "request-id": request.headers.get("X-Request-Id"),
+                "ip": request.headers.get("X-Real-Ip", request.remote_addr),
+                "method": request.method,
+                "scheme": request.headers.get("X-Scheme", request.scheme),
+                "path": sanitize_path(path=request.full_path),
+                "status": response.status_code,
+                "user-agent": request.headers.get("User-Agent"),
+                "referer": sanitize_path(path=request.headers.get("Referer")),
+                "host": request.headers.get("Host")
+            })
+
+        # Update custom response headers
+        response.headers.update(custom_response_headers)
+
         # Return early if we don't have the start time
         if not hasattr(g, "request_start_time"):
             return response
@@ -125,5 +184,5 @@ def configure_hook(app):
 
         # Record our response time metric
         metrics.send("response_time", "TIMER", elapsed, metric_tags=tags)
-        metrics.send("status_code_{}".format(response.status_code), "counter", 1)
+        metrics.send(f"status_code_{response.status_code}", "counter", 1)
         return response

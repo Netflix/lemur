@@ -18,6 +18,7 @@ from lemur.notifications.schemas import (
 
 from lemur.auth.service import AuthenticatedResource
 from lemur.common.utils import paginated_parser
+from lemur.auth.permissions import StrictRolePermission
 
 from lemur.common.schema import validate_schema
 
@@ -31,7 +32,7 @@ class NotificationsList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(NotificationsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, notifications_output_schema)
     def get(self):
@@ -224,6 +225,8 @@ class NotificationsList(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to create a new notification."), 403
         return service.create(
             data["label"],
             data["plugin"]["slug"],
@@ -236,7 +239,7 @@ class NotificationsList(AuthenticatedResource):
 class Notifications(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Notifications, self).__init__()
+        super().__init__()
 
     @validate_schema(None, notification_output_schema)
     def get(self, notification_id):
@@ -365,6 +368,8 @@ class Notifications(AuthenticatedResource):
            :reqheader Authorization: OAuth token to authenticate
            :statuscode 200: no error
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to update a notification."), 403
         return service.update(
             notification_id,
             data["label"],
@@ -377,6 +382,8 @@ class Notifications(AuthenticatedResource):
         )
 
     def delete(self, notification_id):
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to delete a notification."), 403
         service.delete(notification_id)
         return {"result": True}
 
@@ -385,7 +392,7 @@ class CertificateNotifications(AuthenticatedResource):
     """Defines the 'certificate/<int:certificate_id/notifications'' endpoint"""
 
     def __init__(self):
-        super(CertificateNotifications, self).__init__()
+        super().__init__()
 
     @validate_schema(None, notifications_output_schema)
     def get(self, certificate_id):

@@ -9,35 +9,28 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
-
-import os
-import importlib
-import logmatic
 import errno
+import importlib
+import os
 import socket
 import stat
-
-try:
-    from importlib.metadata import entry_points
-except ImportError:
-    from importlib_metadata import entry_points
-
+from importlib.metadata import entry_points
 from logging import Formatter, StreamHandler
 from logging.handlers import RotatingFileHandler
 
+from pythonjsonlogger.jsonlogger import JsonFormatter
+import sentry_sdk
+from click import get_current_context
 from flask import Flask, current_app
 from flask_replicated import FlaskReplicated
-
-import sentry_sdk
 from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-from sentry_sdk.integrations.flask import FlaskIntegration
 
 from lemur.certificates.hooks import activate_debug_dump
 from lemur.common.health import mod as health
 from lemur.extensions import db, migrate, principal, smtp_mail, metrics, cors
-
 
 DEFAULT_BLUEPRINTS = (health,)
 
@@ -62,6 +55,14 @@ def create_app(app_name=None, blueprints=None, config=None):
         app_name = __name__
 
     app = Flask(app_name)
+    ctx = get_current_context(silent=True)
+
+    # get config option value from command line
+    if ctx and config is None:
+        script_info = ctx.obj
+        if script_info:
+            config = getattr(script_info, 'config', None)
+
     configure_app(app, config)
     configure_blueprints(app, blueprints)
     configure_extensions(app)
@@ -74,6 +75,10 @@ def create_app(app_name=None, blueprints=None, config=None):
         if db.session:
             db.session.remove()
 
+    @app.shell_context_processor
+    def shell_context():
+        return {'app': app, 'db': db}
+
     return app
 
 
@@ -85,15 +90,21 @@ def from_file(file_path, silent=False):
     :param file_path:
     :param silent:
     """
-    module_spec = importlib.util.spec_from_file_location("config", file_path)
-    d = importlib.util.module_from_spec(module_spec)
+
+    if os.path.isfile(file_path):
+        module_spec = importlib.util.spec_from_file_location("config", file_path)
+        d = importlib.util.module_from_spec(module_spec)
+    else:
+        raise FileNotFoundError(
+            f"Unable to load config file: `{file_path}`"
+        )
 
     try:
         with open(file_path) as config_file:
             exec(  # nosec: config file safe
                 compile(config_file.read(), file_path, "exec"), d.__dict__
             )
-    except IOError as e:
+    except OSError as e:
         if silent and e.errno in (errno.ENOENT, errno.EISDIR):
             return False
         e.strerror = "Unable to load configuration file (%s)" % e.strerror
@@ -144,7 +155,7 @@ def configure_extensions(app):
     :param app:
     """
     db.init_app(app)
-    migrate.init_app(app, db)
+    migrate.init_app(app, db, app.config.get("FLASK_MIGRATIONS_PATH", "migrations"))
     principal.init_app(app)
     smtp_mail.init_app(app)
     metrics.init_app(app)
@@ -170,12 +181,16 @@ def configure_extensions(app):
         )
 
     if app.config["CORS"]:
-        app.config["CORS_HEADERS"] = "Content-Type"
+        # set cors defaults, if not in config
+        if "CORS_ORIGINS" not in app.config:
+            app.config["CORS_ORIGINS"] = "*"
+        if "CORS_ALLOW_HEADERS" not in app.config:
+            app.config["CORS_ALLOW_HEADERS"] = ["Authorization", "Content-Type"]
+
+        # cors init app
         cors.init_app(
             app,
             resources=r"/api/*",
-            headers="Content-Type",
-            origin="*",
             supports_credentials=True,
         )
 
@@ -189,7 +204,7 @@ def configure_blueprints(app, blueprints):
     :param blueprints:
     """
     for blueprint in blueprints:
-        app.register_blueprint(blueprint, url_prefix="/api/{0}".format(API_VERSION))
+        app.register_blueprint(blueprint, url_prefix=f"/api/{API_VERSION}")
 
 
 def configure_database(app):
@@ -222,7 +237,9 @@ def configure_logging(app):
 
     if app.config.get("LOG_JSON", False):
         handler.setFormatter(
-            logmatic.JsonFormatter(extra={"hostname": socket.gethostname()})
+            JsonFormatter(fmt="%(asctime) %(name) %(processName) %(filename) %(funcName) %(levelname) %(lineno) %(module) %(threadName) %(message)",
+                 datefmt="%Y-%m-%dT%H:%M:%SZ%z",
+                 defaults={"hostname": socket.gethostname()})
         )
 
     handler.setLevel(app.config.get("LOG_LEVEL", "DEBUG"))
@@ -247,23 +264,14 @@ def install_plugins(app):
     from lemur.plugins import plugins
     from lemur.plugins.base import register
 
-    # entry_points={
-    #    'lemur.plugins': [
-    #         'verisign = lemur_verisign.plugin:VerisignPlugin'
-    #     ],
-    # },
-    if hasattr(entry_points(), "select"):
-        plugin_eps = entry_points(group="lemur.plugins")
-    else:
-        plugin_eps = entry_points().get("lemur.plugins", [])
-    for ep in plugin_eps:
+    for ep in entry_points(group="lemur.plugins"):
         try:
             plugin = ep.load()
         except Exception:
             import traceback
 
             app.logger.error(
-                "Failed to load plugin %r:\n%s\n" % (ep.name, traceback.format_exc())
+                "Failed to load plugin {!r}:\n{}\n".format(ep.name, traceback.format_exc())
             )
         else:
             register(plugin)

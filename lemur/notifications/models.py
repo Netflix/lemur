@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Integer, String, Column, Boolean, Text
 from sqlalchemy_utils import JSONType
 
-from lemur.database import db
+from lemur.database import BaseModel
 from lemur.plugins.base import plugins
 from lemur.models import (
     certificate_notification_associations,
@@ -18,7 +18,7 @@ from lemur.models import (
 )
 
 
-class Notification(db.Model):
+class Notification(BaseModel):
     __tablename__ = "notifications"
     id = Column(Integer, primary_key=True)
     label = Column(String(128), unique=True)
@@ -46,4 +46,4 @@ class Notification(db.Model):
         return plugins.get(self.plugin_name)
 
     def __repr__(self):
-        return "Notification(label={label})".format(label=self.label)
+        return f"Notification(label={self.label})"

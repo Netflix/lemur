@@ -18,7 +18,6 @@ from cryptography.hazmat.primitives import hashes, serialization
 from flask import current_app
 from sentry_sdk import capture_exception
 from sqlalchemy import and_, func, or_, not_, cast, Integer
-from sqlalchemy.sql import text
 from sqlalchemy.sql.expression import false, true
 
 from lemur import database
@@ -160,7 +159,8 @@ def get_all_valid_certs(
         )
 
     if paginate:
-        items = database.paginate(query, page, count)
+        args = {"page": page, "count": count, "sort_by": "id", "sort_dir": "desc"}
+        items = database.sort_and_page(query, Certificate, args)
         return items["items"]
 
     return query.all()
@@ -194,6 +194,21 @@ def get_all_certs_attached_to_endpoint_without_autorotate():
         .filter(Certificate.revoked == false())
         .filter(Certificate.not_after >= arrow.now())
         .filter(not_(Certificate.replaced.any()))
+        .all()  # noqa
+    )
+
+
+def get_all_certs_not_attached_to_endpoint_with_autorotate():
+    """
+    Retrieves all certificates that are not attached to an endpoint, but that have autorotate enabled.
+
+    :return: list of certificates not attached to an endpoint or destination with autorotate
+    """
+    return (
+        Certificate.query.filter(not_(Certificate.endpoints.any()))
+        .filter(Certificate.rotation == true())
+        .filter(Certificate.revoked == false())
+        .filter(Certificate.not_after >= arrow.now())
         .all()  # noqa
     )
 
@@ -299,14 +314,14 @@ def find_duplicates(cert):
         return Certificate.query.filter_by(body=cert["body"].strip(), chain=None).all()
 
 
-def list_duplicate_certs_by_authority(authority_ids, days_since_issuance):
+def list_recent_valid_certs_issued_by_authority(authority_ids, days_since_issuance):
     """
-    Find duplicate certificates issued by given authorities that are still valid, not replaced, have auto-rotation ON,
-    with names that are forced to be unique using serial number like 'some.name.prefix-YYYYMMDD-YYYYMMDD-serialnumber',
-    thus the pattern "%-[0-9]{8}-[0-9]{8}-%"
-    :param authority_ids:
+    Find certificates issued by given authorities in last days_since_issuance number of days, that are still valid,
+    not replaced, have auto-rotation ON.
+
+    :param authority_ids: list of authority ids
     :param days_since_issuance: If not none, include certificates issued in only last days_since_issuance days
-    :return: List of certificates matching criteria
+    :return: List of certificates matching the criteria
     """
 
     now = arrow.now().format("YYYY-MM-DD")
@@ -316,7 +331,6 @@ def list_duplicate_certs_by_authority(authority_ids, days_since_issuance):
         .filter(Certificate.not_after >= now)
         .filter(Certificate.rotation == true())
         .filter(not_(Certificate.replaced.any()))
-        .filter(text("name ~ '.*-[0-9]{8}-[0-9]{8}-.*'"))
     )
 
     if days_since_issuance:
@@ -328,21 +342,32 @@ def list_duplicate_certs_by_authority(authority_ids, days_since_issuance):
     return query.all()
 
 
-def get_certificates_with_same_prefix_with_rotate_on(prefix):
+def get_certificates_with_same_cn_with_rotate_on(cn, date_created):
     """
-    Find certificates with given prefix that are still valid, not replaced and marked for auto-rotate
+    Find certificates with given common name created on date_created that are still valid, not replaced and marked for
+    auto-rotate
 
-    :param prefix: prefix to match
-    :return:
+    :param cn: common name to match
+    :param date_created: creation date
+    :return: List of certificates matching the criteria
     """
     now = arrow.now().format("YYYY-MM-DD")
-    return (
-        Certificate.query.filter(Certificate.name.like(prefix))
-        .filter(Certificate.rotation == true())
-        .filter(Certificate.not_after >= now)
+    date_created_min = date_created.floor('day')
+    date_created_max = date_created.ceil('day')
+
+    query = database.session_query(Certificate)\
+        .filter(Certificate.rotation == true())\
+        .filter(Certificate.not_after >= now)\
+        .filter(Certificate.date_created >= date_created_min)\
+        .filter(Certificate.date_created <= date_created_max)\
         .filter(not_(Certificate.replaced.any()))
-        .all()
-    )
+
+    if cn is not None:
+        query = query.filter(Certificate.cn.like(cn))
+    else:
+        query = query.filter(Certificate.cn.is_(None))
+
+    return query.all()
 
 
 def export(cert, export_plugin):
@@ -502,22 +527,8 @@ def create(**kwargs):
     """
     Creates a new certificate.
     """
-    # Validate destinations do not overlap accounts for the same plugin and path
     if "destinations" in kwargs:
-        dest_plugin_accounts = {}
-        for dest in kwargs["destinations"]:
-            plugin_accounts = dest_plugin_accounts.setdefault(dest.plugin_name, {})
-            account = get_plugin_option("accountNumber", dest.options)
-            path = get_plugin_option("path", dest.options) or ""
-
-            # only AWS destinations have an account number, so we can skip this validation if an account number is not found
-            if account is not None:
-                key = (account, path)
-                if key in plugin_accounts:
-                    raise Exception(
-                        f"Duplicate destination for plugin {dest.plugin_name}, account {account}, path {path}"
-                    )
-                plugin_accounts[key] = True
+        validate_no_duplicate_destinations(kwargs["destinations"])
 
     try:
         cert_body, private_key, cert_chain, external_id, csr = mint(**kwargs)
@@ -526,6 +537,9 @@ def create(**kwargs):
             "message": "Exception minting certificate",
             "issuer": kwargs["authority"].name,
             "cn": kwargs.get("common_name"),
+            "san": ",".join(
+                str(x.value) for x in kwargs["extensions"]["sub_alt_names"]["names"]
+            ),
         }
         current_app.logger.error(log_data, exc_info=True)
         capture_exception()
@@ -593,6 +607,21 @@ def create(**kwargs):
     return cert
 
 
+def validate_no_duplicate_destinations(destinations):
+    """
+    Validates destinations do not overlap accounts for the same plugin (for plugins that don't allow duplicates).
+    """
+    dest_plugin_accounts = {}
+    for dest in destinations:
+        plugin_accounts = dest_plugin_accounts.setdefault(dest.plugin_name, {})
+        account = get_plugin_option("accountNumber", dest.options)
+        dest_plugin = plugins.get(dest.plugin_name)
+        if account in plugin_accounts and not dest_plugin.allow_multiple_per_account():
+            raise Exception(f"Duplicate destinations for plugin {dest.plugin_name} and account {account} are not "
+                            f"allowed")
+        plugin_accounts[account] = True
+
+
 def render(args):
     """
     Helper function that allows use to render our REST Api.
@@ -624,7 +653,7 @@ def render(args):
 
     if filt:
         terms = filt.split(";")
-        term = "%{0}%".format(terms[1])
+        term = f"%{terms[1]}%"
         # Exact matches for quotes. Only applies to name, issuer, and cn
         if terms[1].startswith('"') and terms[1].endswith('"'):
             term = terms[1][1:-1]
@@ -744,13 +773,15 @@ def query_name(certificate_name, args):
 
 def query_common_name(common_name, args):
     """
-    Helper function that queries for not expired certificates by common name (and owner)
+    Helper function that queries for not expired certificates by common name,
+    owner and san. Pagination is supported.
 
     :param common_name:
     :param args:
     :return:
     """
     owner = args.pop("owner")
+    san = args.pop("san")
     page = args.pop("page")
     count = args.pop("count")
 
@@ -772,10 +803,21 @@ def query_common_name(common_name, args):
         # if common_name is a wildcard ('%'), no need to include it in the query
         query = query.filter(Certificate.cn.ilike(common_name))
 
+    if san and san != "%":
+        # if san is a wildcard ('%'), no need to include it in the query
+        query = query.filter(Certificate.id.in_(like_domain_query(san)))
+
     if paginate:
-        return database.paginate(query, page, count)
+        args = {"page": page, "count": count, "sort_by": "id", "sort_dir": "desc"}
+        return database.sort_and_page(query, Certificate, args)
 
     return query.all()
+
+
+def get_ekus(csr: str):
+    """Given a csr PEM, return the """
+    csr_obj = x509.load_pem_x509_csr(csr.encode(), default_backend())
+    return csr_obj.extensions.get_extension_for_class(x509.ExtendedKeyUsage)
 
 
 def create_csr(**csr_config):
@@ -831,7 +873,7 @@ def create_csr(**csr_config):
         if v:
             if k in critical_extensions:
                 current_app.logger.debug(
-                    "Adding Critical Extension: {0} {1}".format(k, v)
+                    f"Adding Critical Extension: {k} {v}"
                 )
                 if k == "sub_alt_names":
                     if v["names"]:
@@ -840,7 +882,7 @@ def create_csr(**csr_config):
                     builder = builder.add_extension(v, critical=True)
 
             if k in noncritical_extensions:
-                current_app.logger.debug("Adding Extension: {0} {1}".format(k, v))
+                current_app.logger.debug(f"Adding Extension: {k} {v}")
                 builder = builder.add_extension(v, critical=False)
 
     ski = extensions.get("subject_key_identifier", {})
@@ -924,17 +966,38 @@ def get_name_from_arn(arn):
     return arn.split("/", 1)[1]
 
 
-def calculate_reissue_range(start, end):
+def calculate_reissue_range(start, end, authority=None, rotation=False):
     """
     Determine what the new validity_start and validity_end dates should be.
     :param start:
     :param end:
+    :param authority: Optional authority to use for default validity calculation
+    :param rotation: Whether this certificate has autorotation enabled
     :return:
     """
-    span = end - start
-
     new_start = arrow.utcnow()
-    new_end = new_start + span
+
+    # Check if we should use default validity for autorotation reissues
+    use_default_validity = (
+        rotation
+        and authority
+        and current_app.config.get("LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY")
+    )
+
+    if use_default_validity:
+        # Use authority's default validity days
+        default_days = authority.default_validity_days
+        new_end = new_start.shift(days=default_days)
+    else:
+        # Use original certificate's validity span
+        span = end - start
+        new_end = new_start + span
+
+    # Enforce authority's maximum validity period if configured
+    if authority and authority.max_issuance_days:
+        calculated_days = (new_end - new_start).days
+        if calculated_days > authority.max_issuance_days:
+            new_end = new_start.shift(days=authority.max_issuance_days)
 
     return new_start, arrow.get(new_end)
 
@@ -947,7 +1010,12 @@ def get_certificate_primitives(certificate):
     :return: dict of certificate primitives, should be enough to effectively re-issue
     certificate via `create`.
     """
-    start, end = calculate_reissue_range(certificate.not_before, certificate.not_after)
+    start, end = calculate_reissue_range(
+        certificate.not_before,
+        certificate.not_after,
+        authority=certificate.authority,
+        rotation=certificate.rotation
+    )
     ser = CertificateInputSchema().load(
         CertificateOutputSchema().dump(certificate).data
     )
@@ -999,6 +1067,41 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
     if replace:
         primitives["replaces"] = [certificate]
 
+    # Support both static authority ID mapping and dynamic callback functions
+    authority_translation = current_app.config.get("ROTATE_AUTHORITY_TRANSLATION", {})
+    if primitives["authority"].id in authority_translation:
+        original_authority_id = primitives["authority"].id
+        original_authority_name = primitives["authority"].name
+        translation_value = authority_translation[primitives["authority"].id]
+
+        # Check if the value is a callable (function)
+        if callable(translation_value):
+            # Call the function with the certificate to determine the new authority ID
+            new_authority_id = translation_value(certificate)
+            if new_authority_id is not None:
+                primitives["authority"] = database.get(Authority, new_authority_id)
+        else:
+            # Static integer mapping (original behavior)
+            new_authority_id = translation_value
+            primitives["authority"] = database.get(Authority, translation_value)
+
+        # Log and metric the translation
+        if new_authority_id is not None:
+            current_app.logger.info(
+                f"Authority translated for certificate {certificate.name}: "
+                f"{original_authority_name} (ID: {original_authority_id}) -> "
+                f"{primitives['authority'].name} (ID: {new_authority_id})"
+            )
+            metrics.send(
+                "certificate_authority_translation",
+                "counter",
+                1,
+                metric_tags={
+                    "original_authority": original_authority_name,
+                    "new_authority": primitives["authority"].name,
+                }
+            )
+
     # Modify description to include the certificate ID being reissued and mention that this is created by Lemur
     # as part of reissue
     reissue_message_prefix = "Reissued by Lemur for cert ID "
@@ -1028,6 +1131,7 @@ def reissue_certificate(certificate, notify=None, replace=None, user=None):
         certificate.cn not in ecc_reissue_exclude_cn_list
     ):
         primitives["key_type"] = "ECCPRIME256V1"
+
 
     # allow celery to send notifications for PendingCertificates using the old cert
     if notify:
@@ -1066,6 +1170,11 @@ def remove_from_destination(certificate, destination):
         current_app.logger.warning(info_text)
     else:
         plugin.clean(certificate=certificate, options=destination.options)
+
+
+def deactivate(certificate):
+    plugin = plugins.get(certificate.authority.plugin_name)
+    return plugin.deactivate_certificate(certificate)
 
 
 def revoke(certificate, reason):
@@ -1242,13 +1351,13 @@ def get_certs_for_expiring_deployed_cert_check(exclude_domains, exclude_owners):
     exclude_conditions = []
     if exclude_domains:
         for e in exclude_domains:
-            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+            exclude_conditions.append(~Certificate.name.ilike(f"%{e}%"))
 
         q = q.filter(and_(*exclude_conditions))
 
     if exclude_owners:
         for e in exclude_owners:
-            exclude_conditions.append(~Certificate.owner.ilike("{}".format(e)))
+            exclude_conditions.append(~Certificate.owner.ilike(f"{e}"))
 
         q = q.filter(and_(*exclude_conditions))
 
@@ -1441,3 +1550,15 @@ def get_certificates_for_expiration_metrics(expiry_window):
 def _get_cert_expiry_in_days(cert_not_after):
     time_until_expiration = arrow.get(cert_not_after) - arrow.utcnow()
     return time_until_expiration.days
+
+
+def update_description(cert, description=None):
+    """
+    Update certificate description
+    :param cert: Certificate object to be updated
+    :param description: new description value
+    :return: Updated certificate
+    """
+    if description is not None:
+        cert.description = description
+    return database.update(cert)

@@ -6,6 +6,7 @@
 
 .. moduleauthor:: Jay Zarfoss
 """
+from typing import Dict, Any
 
 from redis import Redis
 import json
@@ -45,7 +46,7 @@ class AtlasMetricRedisPlugin(MetricPlugin):
         {"name": "redis_port", "type": "int", "required": False, "default": 28527},
     ]
 
-    metric_data = {}
+    metric_data: Dict[str, Any] = {}
     redis_host = None
     redis_port = None
 

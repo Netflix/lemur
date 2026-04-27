@@ -10,6 +10,7 @@
 """
 
 import json
+from typing import Optional
 
 from flask import current_app
 
@@ -24,7 +25,7 @@ from lemur.logs import service as log_service
 from lemur.certificates.service import upload
 
 
-def update(authority_id, description, owner, active, roles):
+def update(authority_id, description, owner, active, roles, options: Optional[str] = None):
     """
     Update an authority with new values.
 
@@ -38,6 +39,8 @@ def update(authority_id, description, owner, active, roles):
     authority.active = active
     authority.description = description
     authority.owner = owner
+    if options:
+        authority.options = options
 
     log_service.audit_log(
         "update_authority", authority.name, "Updating authority"
@@ -67,6 +70,10 @@ def mint(**kwargs):
     """
     issuer = kwargs["plugin"]["plugin_object"]
     values = issuer.create_authority(kwargs)
+
+    # Check body for root cert
+    if values[0] is None:
+        raise ValueError(f"Plugin '{issuer.get_title()}' provided no root certification. Check plugin configuration.")
 
     # support older plugins
     if len(values) == 3:
@@ -108,7 +115,7 @@ def create_authority_roles(roles, owner, plugin_title, creator):
         role = role_service.create(
             r["name"],
             password=r["password"],
-            description="Auto generated role for {0}".format(plugin_title),
+            description=f"Auto generated role for {plugin_title}",
             username=r["username"],
         )
 
@@ -118,7 +125,7 @@ def create_authority_roles(roles, owner, plugin_title, creator):
     owner_role = role_service.get_by_name(owner)
     if not owner_role:
         owner_role = role_service.create(
-            owner, description="Auto generated role based on owner: {0}".format(owner)
+            owner, description=f"Auto generated role based on owner: {owner}"
         )
 
     role_objs.append(owner_role)
@@ -225,8 +232,8 @@ def get_authority_role(ca_name, creator=None):
     """
     if creator:
         if creator.is_admin:
-            return role_service.get_by_name("{0}_admin".format(ca_name))
-    return role_service.get_by_name("{0}_operator".format(ca_name))
+            return role_service.get_by_name(f"{ca_name}_admin")
+    return role_service.get_by_name(f"{ca_name}_operator")
 
 
 def render(args):
@@ -244,7 +251,7 @@ def render(args):
         if "active" in filt:
             query = query.filter(Authority.active == truthiness(terms[1]))
         elif "cn" in filt:
-            term = "%{0}%".format(terms[1])
+            term = f"%{terms[1]}%"
             sub_query = (
                 database.session_query(Certificate.root_authority_id)
                 .filter(Certificate.cn.ilike(term))

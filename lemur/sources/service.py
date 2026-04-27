@@ -37,7 +37,7 @@ def certificate_create(certificate, source):
 
     if errors:
         raise Exception(
-            "Unable to import certificate: {reasons}".format(reasons=errors)
+            f"Unable to import certificate: {errors}"
         )
 
     data["creator"] = certificate["creator"]
@@ -76,14 +76,14 @@ def sync_update_destination(certificate, source):
 
 def sync_endpoints(source):
     new, updated, updated_by_hash = 0, 0, 0
-    current_app.logger.debug("Retrieving endpoints from {0}".format(source.label))
+    current_app.logger.debug(f"Retrieving endpoints from {source.label}")
     s = plugins.get(source.plugin_name)
 
     try:
         endpoints = s.get_endpoints(source.options)
     except NotImplementedError:
         current_app.logger.warning(
-            "Unable to sync endpoints for source {0} plugin has not implemented 'get_endpoints'".format(
+            "Unable to sync endpoints for source {} plugin has not implemented 'get_endpoints'".format(
                 source.label
             )
         )
@@ -187,7 +187,7 @@ def sync_endpoints(source):
             new += 1
 
         else:
-            current_app.logger.debug("Endpoint Updated: {}".format(endpoint))
+            current_app.logger.debug(f"Endpoint Updated: {endpoint}")
             endpoint_service.update(exists.id, **endpoint)
             updated += 1
 
@@ -323,7 +323,7 @@ def find_cert(certificate):
 def sync_certificates(source, user):
     new, updated, updated_by_hash, unlinked = 0, 0, 0, 0
 
-    current_app.logger.debug("Retrieving certificates from {0}".format(source.label))
+    current_app.logger.debug(f"Retrieving certificates from {source.label}")
     s = plugins.get(source.plugin_name)
     certificates = s.get_certificates(source.options)
 

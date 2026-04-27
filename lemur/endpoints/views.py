@@ -26,7 +26,7 @@ class EndpointsList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(EndpointsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, endpoints_output_schema)
     def get(self):
@@ -72,7 +72,7 @@ class EndpointsList(AuthenticatedResource):
 class Endpoints(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Endpoints, self).__init__()
+        super().__init__()
 
     @validate_schema(None, endpoint_output_schema)
     def get(self, endpoint_id):

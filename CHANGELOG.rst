@@ -52,6 +52,183 @@ A few tests have been fixed due to backward incompatible changes introduced by t
 
 The Makefile has been improved to correctly compile the Python package requirements in a single passage.
 
+Unreleased
+~~~~~~~~~~~~~~~~~~~~
+Added ENABLE_AUTOROTATION_FILTER: a configurable, plugin-independent callback that can be used to skip enabling autorotate
+based on your specific business logic. For example, you could disallow enabling autorotate on certs with notifications disabled.
+Added REISSUE_FILTER: a configurable, plugin-independent callback that can be used to reject reissuance requests
+based on your specific business logic. For example, you could disallow reissuing certs on abandoned ELBs
+Added AWS_ELB_IGNORE_TAGS to allow mutiple ELB tags to be ignored.
+Added support for ignoring cloufront distirbutions and IAM certificates via the AWS_CLOUDFRONT_IGNORE_TAGS and AWS_IAM_IGNORE_TAGS config options.
+Added ENABLE_AUTO_ROTATE_ALL_AUTHORITIES configuration to allow all authorities to be considered for destination autorotate task.
+Added CERTIFICATE_UPDATE_REQUEST_VALIDATION: a configurable, plugin-independent callback that can be used to reject requests
+based on your specific business logic. For example, you could disallow certs with rotate set and no destinations to reduce
+volume of unused certs.
+Added CERTIFICATE_CREATE_REQUEST_VALIDATION: a configurable, plugin-independent callback that can be used to reject requests
+based on your specific business logic. For example, you could disallow certs with rotate set and no destinations to reduce
+volume of unused certs.
+Added CERTIFICATE_EXPORT_KEY_REQUEST_VALIDATION: a configurable, plugin-independent callback that can be used to reject
+private key export requests based on your specific business logic. For example, you could block specific API keys from
+exporting private keys for migrated certificates.
+Added the disable_autorotate_without_endpoint celery task, along with a customizable DISABLE_AUTOROTATION_FILTER
+function you can use to determine when to disable autorotate. By default, nothing will be changed by this task when scheduled.
+Added a new API endpoint `/certificates/{certificate_id}/description` for updating just the description field of a certificate, avoiding the need to provide the full certificate object for simple description updates.
+Removed support for Postgres 12, Postgres 15, Python 3.9, and Ubuntu 20.04. Added support for postgres 16.
+
+1.8.2 - `2024-06-11`
+~~~~~~~~~~~~~~~~~~~~
+DigicertCISIssuer create_authority endpoint now defaults root to the name field if authority field isn't specified.
+Added ENTRUST_CLIENT_IDS for using multiple predefined clients.
+
+1.8.1 - `2024-05-20`
+~~~~~~~~~~~~~~~~~~~~
+
+Updated deployment workflow to use `pypa/gh-action-pypi-publish`.
+
+1.8.0 - `2024-05-20`
+~~~~~~~~~~~~~~~~~~~~
+
+- Added `PING_EXCLUDE_USER_PARAMS` config option.
+- Added Google CA issuer plugin. This plugin creates certificates via Google CA Manager API.
+- Allow CN to be optional in reissue and clone.
+
+Special thanks to all who contributed to this release, notably:
+
+- `odopertchouk <https://github.com/odopertchouk>`_
+
+1.7.0 - `2024-01-17`
+~~~~~~~~~~~~~~~~~~~~
+- To avoid confusion, the debug app configuration property has been replaced with the standard DEBUG flask app config.
+- Added ability for new versions of LEMUR_TOKEN_SECRET via the LEMUR_TOKEN_SECRETS config option. This allows for migration and rotation of the secret.
+- Added ENTRUST_INFER_EKU config property which attempts to computes the appropriate EKU value from the csr (default False).
+- Added DIGICERT_CIS_USE_CSR_FIELDS to control the `use_csr_fields` create certificate API field (default False).
+- Added Digicert source plugin. Enable it with DIGICERT_SOURCE_ENABLED
+- Added AWS ACM source plugin. This plugin retreives all certificates for an account and a region.
+- Added AWS ACM destination plugin. This plugin uploads a certificate to AWS ACM.
+- Allow updating options field via authority update API.
+- Fixed a DoS security issue affecting Windows env via the name parameter of the certificate post endpoint.
+
+1.6.0 - `2023-10-23`
+~~~~~~~~~~~~~~~~~~~~
+- Add NTLM auth support for ADCS issuer.
+- Added password complexity requirements:
+
+    - At least 12 characters (required for your Muhlenberg password)—the more characters, the better
+    - A mixture of both uppercase and lowercase letters
+    - A mixture of letters and numbers
+    - Inclusion of at least one special character, e.g., ! @ # ? ]
+
+- If you don't want password complexity requirements, you can set CHECK_PASSWORD_STRENGTH to False.
+- Added ability to limit authority creation to admins only using config option `ADMIN_ONLY_AUTHORITY_CREATION`.
+- User passwords can now be updated by admins with the update user endpoint.
+- Route53 find_zone_dns now selects the maximum suffix match for zone id (previously we selected the first match).
+
+1.5.0 - `2023-07-05`
+~~~~~~~~~~~~~~~~~~~~
+- Fixed a bug where S3 deletes wouldn't work due to not respecting the configured exportPlugin.
+- Flask 2.3.2 Upgrade.
+- Implemented Click CLI.
+- Removed flask-script.
+- Updated werkzeug to 2.3.6 and jinja2 to 3.1.2.
+- Updated CORS settings to use Flask-CORS Configuration Options.
+- Added new Custom Response Headers option to Lemur Configuration.
+- Added legacy p12 export type to openssl plugin. New versions of openssl produce keystores incompatible with older
+- versions of JDK8, so in some cases it may be useful to export in this format. Note that legacy p12 files do *NOT* feature strong encryption, and you should not rely on confidentiality of the exported resource.
+
+CLI Command Updates:
+- `runserver` cmd has been replaced by the default `run` cmd.
+- `show_urls` cmd has been replaced by the default `routes` cmd.
+- `clean` cmd has been removed. currently there is no default replacement for the `clean` cmd.
+
+
+1.4.0 - `2023-04-04`
+~~~~~~~~~~~~~~~~~~~~
+Added support for Python 3.10, Postgres 15, and Ubuntu 22.04.
+Removed support for Postgres 10 and Ubuntu 18.04.
+
+Python 3.11 is known not to work with the current version of Flask.
+
+All combinations tested via GitHub Actions are listed below:
+
+.. list-table:: Version Support Matrix
+   :header-rows: 1
+
+   * - Python
+     - Postgres
+     - Ubuntu
+   * - 3.8
+     - 12
+     - 20.04
+   * - 3.8
+     - 15
+     - 20.04
+   * - 3.9
+     - 12
+     - 20.04
+   * - 3.9
+     - 15
+     - 20.04
+   * - 3.9
+     - 15
+     - 20.04
+   * - 3.10
+     - 12
+     - 22.04
+   * - 3.10
+     - 15
+     - 22.04
+
+Added additional validation and logging for destinations.
+Destination labels are now limited to 32 characters, and s3
+prefixes can no longer begin with /.
+S3 destination path prefixes now default to "" instead of "None/"
+
+Enforce case consistency in authority signing algorithms. Specifically, this renames SHA384withECDSA -> sha384WithECDSA
+and SHA512withECDSA -> sha512WithECDSA. Notably, the backend schema will still accept the uppercase equivalents to
+maintain backwards compatibility.
+
+1.3.2 - `2023-02-24`
+~~~~~~~~~~~~~~~~~~~~
+This release contains a fix for a security vulnerability.
+
+1.3.1 - `2023-02-15`
+~~~~~~~~~~~~~~~~~~~~
+This release contains no changes.
+
+1.3.0 - `2023-02-13`
+~~~~~~~~~~~~~~~~~~~~
+This release contains many dependency updates, and numerous added or improved features over the last year.
+
+Some of the notable changes in this release are:
+
+- Removal of AWS S3 destinations and the respetive resources via the UI
+- No fine-grained authz for role global_cert_issuer
+- De-activate endpoint (Entrust Plugin)
+- Remove unsafe paginate method and replace with sort_and_page
+- Move to github workflows for tests
+- Detect duplicate certs
+- Metrics for certificate expiry
+- Sync source: handling idle/invalidated connection
+- Sync endpoint: capture error and continue
+- Domain-level fine-grained authz 
+- Handle and report authz warmup exception
+- Ensure secondary certificates are not removed when rotating AWS endpoints
+- Improved metric around expired endpoints
+- Change pkg_resources call in plugin loading to use resolve rather than load
+- Log when an expiring deployed certificate is detected 
+- NS1 DNS ACME Plugin
+- Add a new endpoint that allows updating a certificate owner
+- Support rotating endpoints with non-unique names via CLI
+- Restrict multiple accounts on a certificate, by plugin
+- Moving to dependabot's auto versioning strategy
+
+Special thanks to all who contributed to this release, notably:
+
+- `Neil Schelly <https://github.com/neilschelly>`_
+- `Mitch Cail <https://github.com/mitchcail>`_
+- `Bob Shannon <https://github.com/bobmshannon>`_
+- `alwaysjolley <https://github.com/alwaysjolley>`_
+
 1.2.0 - `2022-01-31`
 ~~~~~~~~~~~~~~~~~~~~
 

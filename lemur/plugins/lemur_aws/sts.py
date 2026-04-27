@@ -9,10 +9,10 @@
 from functools import wraps
 
 import boto3
-
 from botocore.config import Config
+from botocore.credentials import RefreshableCredentials
+from botocore.session import get_session
 from flask import current_app
-
 
 config = Config(retries=dict(max_attempts=20))
 
@@ -37,35 +37,32 @@ def sts_client(service, service_type="client"):
                 profile=current_app.config.get("LEMUR_INSTANCE_PROFILE", "Lemur"),
             )
 
-            # TODO add user specific information to RoleSessionName
-            role = sts.assume_role(RoleArn=arn, RoleSessionName="lemur")
+            def refresh():
+                # TODO add user specific information to RoleSessionName
+                role = sts.assume_role(RoleArn=arn, RoleSessionName="lemur")
+                c = role["Credentials"]
+                return {
+                    "access_key": c["AccessKeyId"],
+                    "secret_key": c["SecretAccessKey"],
+                    "token": c["SessionToken"],
+                    "expiry_time": c["Expiration"].isoformat(),
+                }
+
+            credentials = RefreshableCredentials.create_from_metadata(
+                metadata=refresh(),
+                refresh_using=refresh,
+                method="sts-assume-role",
+            )
+            botocore_session = get_session()
+            botocore_session._credentials = credentials
+            session = boto3.Session(botocore_session=botocore_session, region_name=kwargs.pop("region", current_app.config.get("LEMUR_AWS_REGION", "us-east-1")))
 
             if service_type == "client":
-                client = boto3.client(
-                    service,
-                    region_name=kwargs.pop(
-                        "region",
-                        current_app.config.get("LEMUR_AWS_REGION", "us-east-1"),
-                    ),
-                    aws_access_key_id=role["Credentials"]["AccessKeyId"],
-                    aws_secret_access_key=role["Credentials"]["SecretAccessKey"],
-                    aws_session_token=role["Credentials"]["SessionToken"],
-                    config=config,
-                )
-                kwargs["client"] = client
+                kwargs["client"] = session.client(service, config=config)
             elif service_type == "resource":
-                resource = boto3.resource(
-                    service,
-                    region_name=kwargs.pop(
-                        "region",
-                        current_app.config.get("LEMUR_AWS_REGION", "us-east-1"),
-                    ),
-                    aws_access_key_id=role["Credentials"]["AccessKeyId"],
-                    aws_secret_access_key=role["Credentials"]["SecretAccessKey"],
-                    aws_session_token=role["Credentials"]["SessionToken"],
-                    config=config,
-                )
-                kwargs["resource"] = resource
+                kwargs["resource"] = session.resource(service, config=config)
+
+
             return f(*args, **kwargs)
 
         return decorated_function

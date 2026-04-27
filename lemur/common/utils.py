@@ -9,15 +9,17 @@
 
 import base64
 import json
-import secrets
 import re
+import secrets
 import socket
 import ssl
 import string
 
 import OpenSSL
+import josepy as jose
 import pem
 import sqlalchemy
+from certbot.crypto_util import CERT_PEM_REGEX
 from cryptography import x509
 from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.backends import default_backend
@@ -30,12 +32,11 @@ from cryptography.hazmat.primitives.serialization import (
 )
 from flask_restful.reqparse import RequestParser
 from sqlalchemy import and_, func
+from sqlalchemy.dialects.postgresql import TEXT
 
-from certbot.crypto_util import CERT_PEM_REGEX
 from lemur.constants import CERTIFICATE_KEY_TYPES
 from lemur.exceptions import InvalidConfiguration
 from lemur.utils import Vault
-from sqlalchemy.dialects.postgresql import TEXT
 
 paginated_parser = RequestParser()
 
@@ -63,27 +64,15 @@ def get_psuedo_random_string():
     """
     Create a random and strongish challenge.
     """
-    challenge = "".join(secrets.choice(string.ascii_uppercase) for x in range(6))  # noqa
-    challenge += "".join(secrets.choice("~!@#$%^&*()_+") for x in range(6))  # noqa
-    challenge += "".join(secrets.choice(string.ascii_lowercase) for x in range(6))
-    challenge += "".join(secrets.choice(string.digits) for x in range(6))  # noqa
+    chars = string.ascii_uppercase + string.ascii_lowercase + string.digits + "~!@#$%^&*()_+"
+    challenge = "".join(secrets.choice(chars) for x in range(24))
     return challenge
 
 
 def get_random_secret(length):
     """Similar to get_pseudo_random_string, but accepts a length parameter."""
-    secret_key = "".join(
-        secrets.choice(string.ascii_uppercase) for x in range(round(length / 4))
-    )
-    secret_key = secret_key + "".join(
-        secrets.choice("~!@#$%^&*()_+") for x in range(round(length / 4))
-    )
-    secret_key = secret_key + "".join(
-        secrets.choice(string.ascii_lowercase) for x in range(round(length / 4))
-    )
-    return secret_key + "".join(
-        secrets.choice(string.digits) for x in range(round(length / 4))
-    )
+    chars = string.ascii_uppercase + string.ascii_lowercase + string.digits + "~!@#$%^&*()_+"
+    return "".join(secrets.choice(chars) for x in range(length))
 
 
 def get_state_token_secret():
@@ -260,6 +249,23 @@ def generate_private_key(key_type):
         )
 
 
+def key_to_alg(key):
+    algorithm = jose.RS256
+    # Determine alg with kty (and crv).
+    if key.typ == "EC":
+        crv = key.fields_to_partial_json().get("crv", None)
+        if crv == "P-256" or not crv:
+            algorithm = jose.ES256
+        elif crv == "P-384":
+            algorithm = jose.ES384
+        elif crv == "P-521":
+            algorithm = jose.ES512
+    elif key.typ == "oct":
+        algorithm = jose.HS256
+
+    return algorithm
+
+
 def check_cert_signature(cert, issuer_public_key):
     """
     Check a certificate's signature against an issuer public key.
@@ -332,7 +338,7 @@ def validate_conf(app, required_vars):
     for var in required_vars:
         if var not in app.config:
             raise InvalidConfiguration(
-                "Required variable '{var}' is not set in Lemur's conf.".format(var=var)
+                f"Required variable '{var}' is not set in Lemur's conf."
             )
 
 
@@ -399,8 +405,7 @@ def windowed_query(q, column, windowsize):
     """ "Break a Query into windows on a given column."""
 
     for whereclause in column_windows(q.session, column, windowsize):
-        for row in q.filter(whereclause).order_by(column):
-            yield row
+        yield from q.filter(whereclause).order_by(column)
 
 
 def truthiness(s):
@@ -528,7 +533,13 @@ def drop_last_cert_from_chain(full_chain: str) -> str:
         OpenSSL.crypto.FILETYPE_PEM,
         OpenSSL.crypto.load_certificate(
             OpenSSL.crypto.FILETYPE_PEM,
-            "".join(cert.decode() for cert in full_chain_certs[:-1]),
+            "".join(cert.decode() for cert in full_chain_certs[:-1]).encode(),
         ),
     ).decode()
     return pem_certificate
+
+
+def csr_to_string(csr):
+    if isinstance(csr, str):
+        return csr.encode("ascii")
+    return csr

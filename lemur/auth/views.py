@@ -6,35 +6,38 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 
-import jwt
+from __future__ import annotations  # Import annotations to make type hints backwards compatible with Python 3.7/3.8
+
 import base64
-import requests
 import time
 
+import jwt
+import requests
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, hmac
-
 from lemur.auth.vault_jwt_auth import JWTAuthenticator
 
 from flask import Blueprint, current_app
-
-from flask_restful import reqparse, Resource, Api
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_principal import Identity, identity_changed
+from flask_restful import reqparse, Resource, Api
 
-from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
-from lemur.extensions import metrics
-from lemur.common.utils import get_psuedo_random_string, get_state_token_secret
-
-from lemur.users import service as user_service
-from lemur.roles import service as role_service
-from lemur.logs import service as log_service
-from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
 from lemur.auth import ldap
+from lemur.auth.service import create_token, fetch_token_header, get_rsa_public_key
+from lemur.common.utils import get_psuedo_random_string, get_state_token_secret
+from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
+from lemur.exceptions import TokenExchangeFailed
+from lemur.extensions import metrics
+from lemur.logs import service as log_service
 from lemur.plugins.base import plugins
+from lemur.roles import service as role_service
+from lemur.users import service as user_service
 
 mod = Blueprint("auth", __name__)
 api = Api(mod)
+limiter = Limiter(app=current_app, key_func=get_remote_address)
 
 
 def exchange_for_access_token(
@@ -62,15 +65,15 @@ def exchange_for_access_token(
     }
 
     # the secret and cliendId will be given to you when you signup for the provider
-    token = "{0}:{1}".format(client_id, secret)
+    token = f"{client_id}:{secret}"
 
     basic = base64.b64encode(bytes(token, "utf-8"))
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
     if current_app.config.get("TOKEN_AUTH_HEADER_CASE_SENSITIVE"):
-        headers["Authorization"] = "Basic {0}".format(basic.decode("utf-8"))
+        headers["Authorization"] = "Basic {}".format(basic.decode("utf-8"))
     else:
-        headers["authorization"] = "basic {0}".format(basic.decode("utf-8"))
+        headers["authorization"] = "basic {}".format(basic.decode("utf-8"))
 
     # exchange authorization code for access token.
     r = requests.post(
@@ -80,8 +83,24 @@ def exchange_for_access_token(
         r = requests.post(
             access_token_url, headers=headers, data=params, verify=verify_cert
         )
-    id_token = r.json()["id_token"]
-    access_token = r.json()["access_token"]
+
+    response = r.json()
+
+    if not r.ok or "error" in response:
+        raise TokenExchangeFailed(response.get("error", "Unknown error"), response.get("error_description", ""))
+
+    id_token = response.get("id_token")
+    access_token = response.get("access_token")
+
+    if id_token is None or access_token is None:
+        error = "missing tokens"
+        missing_tokens = []
+        if id_token is None:
+            missing_tokens.append("id_token is missing")
+        if access_token is None:
+            missing_tokens.append("access_token is missing")
+        description = " and ".join(missing_tokens)
+        raise TokenExchangeFailed(error, description)
 
     return id_token, access_token
 
@@ -140,7 +159,10 @@ def retrieve_user(user_api_url, access_token):
     r = requests.get(user_api_url, params=user_params, headers=headers)
     # Some IDPs, like "Keycloak", require a POST instead of a GET
     if r.status_code == 400:
-        r = requests.post(user_api_url, data=user_params, headers=headers)
+        if current_app.config.get("PING_EXCLUDE_USER_PARAMS", False):
+            r = requests.post(user_api_url, headers=headers)
+        else:
+            r = requests.post(user_api_url, data=user_params, headers=headers)
 
     profile = r.json()
 
@@ -170,46 +192,92 @@ def retrieve_user_memberships(user_api_url, user_membership_provider, access_tok
     return user, user_membership
 
 
-def create_user_roles(profile):
-    """Creates new roles based on profile information.
+def create_user_roles(profile: dict) -> list[str]:
+    """
+    Generate a list of Lemur role names based on the provided user profile.
 
-    :param profile:
-    :return:
+    The function maps the user's roles from the identity provider to corresponding roles in Lemur,
+    creates roles dynamically based on the profile data, and assigns a unique role for each user.
+
+    :param profile: A dictionary containing user information, including roles/groups from the identity provider.
+    :return: A list of Lemur role names corresponding to the provided user profile.
     """
     roles = []
 
-    # update their google 'roles'
-    if "googleGroups" in profile:
-        for group in profile["googleGroups"]:
-            role = role_service.get_by_name(group)
-            if not role:
-                role = role_service.create(
-                    group,
-                    description="This is a google group based role created by Lemur",
-                    third_party=True,
-                )
-            if (group != "admin") and (not role.third_party):
-                role = role_service.set_third_party(role.id, third_party_status=True)
-            roles.append(role)
-    else:
-        current_app.logger.warning(
-            "'googleGroups' not sent by identity provider, no specific roles will assigned to the user."
-        )
+    # We default to pulling in "googleGroups" as that was historically hard coded
+    idp_groups_keys = current_app.config.get("IDP_GROUPS_KEYS", ["googleGroups"])
 
-    role = role_service.get_by_name(profile["email"])
+    if isinstance(idp_groups_keys, str):
+        idp_groups_keys = [idp_groups_keys]
 
-    if not role:
-        role = role_service.create(
-            profile["email"],
-            description="This is a user specific role",
-            third_party=True,
-        )
-    if not role.third_party:
-        role = role_service.set_third_party(role.id, third_party_status=True)
+    for idp_groups_key in idp_groups_keys:
+        if idp_groups_key not in profile:
+            current_app.logger.warning(
+                f"""'{idp_groups_key}' not sent by identity provider for user {profile["email"]}."""
+            )
+            continue
 
-    roles.append(role)
+        if not isinstance(profile[idp_groups_key], list) and all(isinstance(item, str) for item in profile[idp_groups_key]):
+            # Catch instances where roles are not a list of strings
+            current_app.logger.warning(
+                f"""'{idp_groups_key}' sent by identity provider for user {profile["email"]} is not a list of strings."""
+            )
+            continue
 
-    # every user is an operator (tied to a default role)
+        # Take a fixed set of groups/roles and map it to Lemur roles.
+        # If the IDP_GROUPS_TO_ROLES is empty or not set, nothing happens.
+        idp_group_to_role_map = current_app.config.get("IDP_ROLES_MAPPING", {})
+        matched_roles = [
+            idp_group_to_role_map[role] for role in profile.get(idp_groups_key, []) if role in idp_group_to_role_map
+        ]
+        roles.extend(matched_roles)
+
+        # Automatically create and assign roles from the user profile.
+        if current_app.config.get("IDP_ASSIGN_ROLES_FROM_USER_GROUPS", True):
+            idp_roles_description = current_app.config.get("IDP_ROLES_DESCRIPTION",
+                                                           f"Identity provider role from '{idp_groups_key}' (generated by Lemur)")
+            idp_roles_prefix = current_app.config.get("IDP_ROLES_PREFIX", "")
+            idp_roles_suffix = current_app.config.get("IDP_ROLES_SUFFIX", "")
+            for group in profile.get(idp_groups_key, []):
+                if group in ["admin", "operator", "read-only"] and current_app.config.get("IDP_PROTECT_BUILTINS", True):
+                    current_app.logger.warning(
+                        f"""Attempted to assign built in '{group}' to user {profile["email"]}. Group not assigned.""")
+                    continue
+
+                # Check if the group matches naming conventions
+                if group.startswith(idp_roles_prefix) and group.endswith(idp_roles_suffix):
+                    # Get the role from Lemur if it already exists
+                    role = role_service.get_by_name(group)
+
+                    if not role and current_app.config.get("IDP_CREATE_ROLES_FROM_USER_GROUPS", True):
+                        current_app.logger.debug(
+                            f"""Role '{group}' does not exist. Creating role from user {profile["email"]}""")
+                        role = role_service.create(
+                            group,
+                            description=idp_roles_description,
+                            third_party=True,
+                        )
+
+                    if role:
+                        roles.append(role)
+
+    # Create a unique role for each user. This is a kludge in order to assign a specific user to a specific cert
+    # Defaults to enabled as this was previous/existing behavior
+    if current_app.config.get("IDP_CREATE_PER_USER_ROLE", True):
+        role = role_service.get_by_name(profile["email"])
+
+        if not role:
+            current_app.logger.debug(
+                f"""Role '{profile["email"]}' does not exist. Creating role from user {profile["email"]}""")
+            role = role_service.create(
+                profile["email"],
+                description="This is a user specific role",
+                third_party=True,
+            )
+
+        roles.append(role)
+
+    # every user is a <default> (ties user to a default role, the default configuration is operator)
     if current_app.config.get("LEMUR_DEFAULT_ROLE"):
         default = role_service.get_by_name(current_app.config["LEMUR_DEFAULT_ROLE"])
         if not default:
@@ -217,9 +285,10 @@ def create_user_roles(profile):
                 current_app.config["LEMUR_DEFAULT_ROLE"],
                 description="This is the default Lemur role.",
             )
-        if not default.third_party:
-            role_service.set_third_party(default.id, third_party_status=True)
         roles.append(default)
+
+    # Dedupe the roles
+    roles = list(set(roles))
 
     return roles
 
@@ -347,8 +416,9 @@ class Login(Resource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Login, self).__init__()
+        super().__init__()
 
+    @limiter.limit("10/5minute")
     def post(self):
         """
         .. http:post:: /auth/login
@@ -426,7 +496,7 @@ class Login(Resource):
                     )
                     return dict(token=create_token(user))
             except Exception as e:
-                current_app.logger.error("ldap error: {0}".format(e))
+                current_app.logger.error(f"ldap error: {e}")
                 ldap_message = "ldap error: %s" % e
                 metrics.send(
                     "login", "counter", 1, metric_tags={"status": FAILURE_METRIC_STATUS}
@@ -453,7 +523,7 @@ class Ping(Resource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Ping, self).__init__()
+        super().__init__()
 
     def get(self):
         return "Redirecting..."
@@ -513,7 +583,7 @@ class Ping(Resource):
 class OAuth2(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(OAuth2, self).__init__()
+        super().__init__()
 
     def get(self):
         return "Redirecting..."
@@ -576,7 +646,7 @@ class OAuth2(Resource):
 class Google(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Google, self).__init__()
+        super().__init__()
 
     def post(self):
         access_token_url = "https://accounts.google.com/o/oauth2/token"
@@ -604,7 +674,7 @@ class Google(Resource):
         token = r.json()
 
         # Step 2. Retrieve information about the current user
-        headers = {"Authorization": "Bearer {0}".format(token["access_token"])}
+        headers = {"Authorization": "Bearer {}".format(token["access_token"])}
 
         r = requests.get(user_info_url, headers=headers)
         profile = r.json()
@@ -731,7 +801,7 @@ class Providers(Resource):
                         "redirectUri": current_app.config.get("OAUTH2_REDIRECT_URI"),
                         "clientId": current_app.config.get("OAUTH2_CLIENT_ID"),
                         "responseType": "code",
-                        "scope": ["openid", "email", "profile", "groups"],
+                        "scope": current_app.config.get("OAUTH2_SCOPE", ["openid", "email", "profile", "groups"]),
                         "scopeDelimiter": " ",
                         "authorizationEndpoint": current_app.config.get(
                             "OAUTH2_AUTH_ENDPOINT"

@@ -1,32 +1,31 @@
-from __future__ import unicode_literals  # at top of module
-
 import datetime
+from flask import current_app
 import json
 import ssl
 import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from tempfile import NamedTemporaryFile
+from unittest.mock import patch
 
 import arrow
 import pytest
 from cryptography import x509
-from cryptography.x509.oid import ExtensionOID
 from cryptography.hazmat.backends import default_backend
-from marshmallow import ValidationError
+from cryptography.x509.oid import ExtensionOID
 from freezegun import freeze_time
-from unittest.mock import patch
-
+from marshmallow import ValidationError
 from sqlalchemy.testing import fail
 
 from lemur.certificates.service import (
     create_csr,
     identify_and_persist_expiring_deployed_certificates,
+    reissue_certificate,
 )
 from lemur.certificates.views import *  # noqa
 from lemur.common import utils
 from lemur.domains.models import Domain
+from lemur.tests.factories import DestinationFactory, DuplicateAllowedDestinationFactory
 from lemur.tests.test_messaging import create_cert_that_expires_in_days
-
 from lemur.tests.vectors import (
     VALID_ADMIN_API_TOKEN,
     VALID_ADMIN_HEADER_TOKEN,
@@ -49,7 +48,7 @@ def test_get_or_increase_name(session, certificate):
 
     assert get_or_increase_name(
         certificate.name, certificate.serial
-    ) == "{0}-{1}".format(certificate.name, serial)
+    ) == f"{certificate.name}-{serial}"
 
     certificate.name = "test-cert-11111111"
     assert (
@@ -69,7 +68,7 @@ def test_get_or_increase_name(session, certificate):
 
     assert get_or_increase_name(
         "certificate1", int(serial, 16)
-    ) == "certificate1-{}-1".format(serial)
+    ) == f"certificate1-{serial}-1"
 
 
 def test_get_all_certs(session, certificate):
@@ -999,6 +998,188 @@ def test_reissue_certificate(
     assert new_cert.organization == certificate.organization
 
 
+def test_reissue_certificate_authority_translation(
+    issuer_plugin, crypto_authority, certificate, logged_in_user, authority
+):
+    from lemur.certificates.service import reissue_certificate
+
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = authority
+    current_app.config["ROTATE_AUTHORITY_TRANSLATION"] = {authority.id: crypto_authority.id}
+    new_cert = reissue_certificate(certificate)
+    assert new_cert.authority_id == crypto_authority.id
+
+
+def test_reissue_certificate_authority_translation_with_callback(
+    issuer_plugin, crypto_authority, certificate, logged_in_user, authority
+):
+    from lemur.certificates.service import reissue_certificate
+
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = authority
+
+    # Define a callback function that determines authority based on certificate properties
+    def determine_authority(cert):
+        # Example: choose authority based on owner or destinations
+        if cert.owner == "joe@example.com":
+            return crypto_authority.id
+        return None
+
+    current_app.config["ROTATE_AUTHORITY_TRANSLATION"] = {authority.id: determine_authority}
+    new_cert = reissue_certificate(certificate)
+    assert new_cert.authority_id == crypto_authority.id
+
+
+def test_reissue_certificate_with_autorotation_default_validity_disabled(
+    issuer_plugin, crypto_authority, certificate, logged_in_user
+):
+    """Test that when LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY is False (default),
+    reissued certificates maintain the original validity period."""
+    from lemur.certificates.service import reissue_certificate
+
+    # Enable rotation on the certificate
+    certificate.authority = crypto_authority
+    certificate.rotation = True
+
+    # Store original validity span
+    original_span = certificate.not_after - certificate.not_before
+
+    # Ensure the feature is disabled (default behavior)
+    current_app.config["LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY"] = False
+
+    # Reissue the certificate
+    new_cert = reissue_certificate(certificate)
+
+    # The new certificate should maintain the original validity span
+    new_span = new_cert.not_after - new_cert.not_before
+    assert abs((new_span - original_span).total_seconds()) < 60  # Allow 1 minute tolerance
+
+
+def test_reissue_certificate_with_autorotation_default_validity_enabled(
+    issuer_plugin, crypto_authority, certificate, logged_in_user
+):
+    """Test that when LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY is True,
+    reissued certificates with autorotation use the authority's default validity."""
+    from lemur.certificates.service import reissue_certificate
+    from lemur.authorities.service import update_options
+
+    # Enable rotation on the certificate
+    certificate.authority = crypto_authority
+    certificate.rotation = True
+
+    # Store original validity span (should be different from default)
+    original_span = certificate.not_after - certificate.not_before
+
+    # Enable the feature
+    current_app.config["LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY"] = True
+
+    # Set a specific default validity on the authority (different from original span)
+    # For non-CAB compliant authorities, default is DEFAULT_VALIDITY_DAYS (365 days)
+    update_options(crypto_authority.id, '[{"name": "cab_compliant","value":false}]')
+
+    # Reissue the certificate
+    new_cert = reissue_certificate(certificate)
+
+    # The new certificate should use authority's default validity (365 days)
+    expected_days = crypto_authority.default_validity_days
+    new_span_days = (new_cert.not_after - new_cert.not_before).days
+
+    # Allow 1 day tolerance for calculation differences
+    assert abs(new_span_days - expected_days) <= 1
+
+
+def test_reissue_certificate_without_autorotation_ignores_default_validity(
+    issuer_plugin, crypto_authority, certificate, logged_in_user
+):
+    """Test that certificates without autorotation enabled use original validity
+    even when LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY is True."""
+    from lemur.certificates.service import reissue_certificate
+
+    # Disable rotation on the certificate
+    certificate.authority = crypto_authority
+    certificate.rotation = False
+
+    # Store original validity span
+    original_span = certificate.not_after - certificate.not_before
+
+    # Enable the feature (should be ignored for non-rotation certificates)
+    current_app.config["LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY"] = True
+
+    # Reissue the certificate
+    new_cert = reissue_certificate(certificate)
+
+    # The new certificate should maintain the original validity span
+    new_span = new_cert.not_after - new_cert.not_before
+    assert abs((new_span - original_span).total_seconds()) < 60  # Allow 1 minute tolerance
+
+
+def test_reissue_command_by_name(
+        issuer_plugin, crypto_authority, logged_in_user
+):
+    from lemur.certificates.cli import reissue
+    from lemur.tests.conf import LEMUR_DEFAULT_ORGANIZATION
+    from lemur.tests.factories import CertificateFactory
+
+    certificate = CertificateFactory(name="to_be_reissued_cert", authority=crypto_authority)
+
+    reissue(certificate.name, False, True, None)
+
+    new_cert = certificate.replaced[0]
+    assert new_cert
+    assert new_cert.key_type == "RSA2048"
+    assert new_cert.organization != certificate.organization
+    # Check for default value since authority does not have cab_compliant option set
+    assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+    assert new_cert.description.startswith(f"Reissued by Lemur for cert ID {certificate.id}")
+
+
+def test_reissue_command_by_serial_numbers(
+    issuer_plugin, crypto_authority, logged_in_user
+):
+    from lemur.certificates.cli import reissue
+    from lemur.tests.conf import LEMUR_DEFAULT_ORGANIZATION
+    from lemur.tests.factories import CertificateFactory
+
+    cert1 = CertificateFactory(name="to_be_reissued_cert_1", authority=crypto_authority)
+    cert2 = CertificateFactory(name="to_be_reissued_cert_2", authority=crypto_authority)
+    cert3 = CertificateFactory(name="to_be_reissued_cert_3", authority=crypto_authority)
+
+    reissue(None, False, True, [cert1.serial, cert2.serial, cert3.serial])
+
+    for cert in [cert1, cert2, cert3]:
+        new_cert = cert.replaced[0]
+        assert new_cert
+        assert new_cert.key_type == "RSA2048"
+        assert new_cert.organization != cert.organization
+        # Check for default value since authority does not have cab_compliant option set
+        assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+        assert new_cert.description.startswith(f"Reissued by Lemur for cert ID {cert.id}")
+
+
+def test_reissue_command_by_name_and_serial_numbers(
+    issuer_plugin, crypto_authority, logged_in_user
+):
+    from lemur.certificates.cli import reissue
+    from lemur.tests.conf import LEMUR_DEFAULT_ORGANIZATION
+    from lemur.tests.factories import CertificateFactory
+
+    cert1 = CertificateFactory(name="to_be_reissued_cert_1", authority=crypto_authority)
+    cert2 = CertificateFactory(name="to_be_reissued_cert_2", authority=crypto_authority)
+    cert3 = CertificateFactory(name="to_be_reissued_cert_3", authority=crypto_authority)
+    cert4 = CertificateFactory(name="to_be_reissued_cert_4", authority=crypto_authority)
+
+    reissue(cert1.name, False, True, [cert2.serial, cert3.serial, cert4.serial])
+
+    for cert in [cert1, cert2, cert3, cert4]:
+        new_cert = cert.replaced[0]
+        assert new_cert
+        assert new_cert.key_type == "RSA2048"
+        assert new_cert.organization != cert.organization
+        # Check for default value since authority does not have cab_compliant option set
+        assert new_cert.organization == LEMUR_DEFAULT_ORGANIZATION
+        assert new_cert.description.startswith(f"Reissued by Lemur for cert ID {cert.id}")
+
+
 def test_create_csr():
     csr, private_key = create_csr(
         owner="joe@example.com",
@@ -1698,9 +1879,7 @@ def run_server(port, cert_file_name):
         print(f"Started https server on port {port} using cert file {cert_file_name}")
 
     daemon = threading.Thread(name=f"server_{cert_file_name}", target=start_server)
-    daemon.setDaemon(
-        True
-    )  # Set as a daemon so it will be killed once the main thread is dead.
+    daemon.daemon = True  # Set as a daemon so it will be killed once the main thread is dead.
     daemon.start()
     return daemon
 
@@ -1819,7 +1998,7 @@ def test_allowed_issuance_for_domain(
             else:
                 assert (
                     False
-                ), f"UnauthorizedError occured, input: CN({common_name}), SAN({extensions})"
+                ), f"UnauthorizedError occurred, input: CN({common_name}), SAN({extensions})"
 
         assert wrapper.call_count == authz_check_count
 
@@ -1860,3 +2039,175 @@ def test_get_cert_expiry_in_days(certificate):
     new_cert = create_cert_that_expires_in_days(10)
 
     assert _get_cert_expiry_in_days(new_cert.not_after) == 10
+
+
+def test_query_common_name(session):
+    from lemur.tests.factories import CertificateFactory
+    from lemur.certificates.service import query_common_name
+    from datetime import timedelta
+
+    cn1 = "testcn1.example.org"
+    cert_cn1_replaced = CertificateFactory()
+    cert_cn1_replaced.cn = cn1
+    cert_cn1_valid = CertificateFactory()
+    cert_cn1_valid.cn = cn1
+    cert_cn1_valid.domains = [Domain(name=cn1)]
+    cert_cn1_valid.owner = "owner1@example.org"
+    cert_cn1_valid.replaces.append(cert_cn1_replaced)
+    cert_cn1_valid2 = CertificateFactory()
+    cert_cn1_valid2.cn = cn1
+    cert_cn1_valid2.domains = [Domain(name=cn1)]
+    cert_cn1_valid2.owner = "owner2@example.org"
+    yesterday = arrow.utcnow() + timedelta(days=-1)
+    cert_cn1_expired = CertificateFactory()
+    cert_cn1_expired.cn = cn1
+    cert_cn1_expired.not_after = yesterday
+    cert_cn1_revoked = CertificateFactory()
+    cert_cn1_revoked.cn = cn1
+    cert_cn1_revoked.status = "revoked"
+
+    cn2 = "testcn2.example.org"
+    cert_cn2 = CertificateFactory()
+    cert_cn2.cn = cn2
+
+    cn1_valid_certs = query_common_name(cn1, {"owner": "", "san": "", "page": "", "count": ""})
+    assert len(cn1_valid_certs) == 2
+
+    # since CN is also stored as SAN, count should be the same if filtered using cn1 as SAN
+    cn1_san_valid_certs = query_common_name('%', {"owner": "", "san": cn1, "page": "", "count": ""})
+    assert len(cn1_san_valid_certs) == 2
+
+    cn1_valid_certs_paged = query_common_name(cn1, {"owner": "", "san": "", "page": 1, "count": 100})
+    assert cn1_valid_certs_paged["total"] == 2
+    assert len(cn1_valid_certs_paged["items"]) == 2
+
+    cn1_valid_certs_paged_single = query_common_name(cn1, {"owner": "", "san": "", "page": 1, "count": 1})
+    assert cn1_valid_certs_paged_single["total"] == 2
+    assert len(cn1_valid_certs_paged_single["items"]) == 1
+
+    cn1_owner1_valid_certs = query_common_name(cn1, {"owner": "owner1@example.org", "san": "", "page": "", "count": ""})
+    assert len(cn1_owner1_valid_certs) == 1
+
+    cn1_owner1_valid_certs_paged = query_common_name(cn1, {"owner": "owner1@example.org", "san": "", "page": 1, "count": 100})
+    assert cn1_owner1_valid_certs_paged["total"] == 1
+    assert len(cn1_owner1_valid_certs_paged["items"]) == 1
+
+    cn1_owner2_valid_certs = query_common_name(cn1, {"owner": "owner2@example.org", "san": "", "page": "", "count": ""})
+    assert len(cn1_owner2_valid_certs) == 1
+
+    cn1_owner3_valid_certs = query_common_name(cn1, {"owner": "owner3@example.org", "san": "", "page": "", "count": ""})
+    assert len(cn1_owner3_valid_certs) == 0
+
+    cn2_valid_certs = query_common_name(cn2, {"owner": "", "san": "", "page": "", "count": ""})
+    assert len(cn2_valid_certs) == 1
+
+
+def test_query_san(session):
+    from lemur.tests.factories import CertificateFactory
+    from lemur.certificates.service import query_common_name
+
+    san1 = "testsan1.example.org"
+    san2 = "testsan2.example.org"
+
+    cert_one_san_valid = CertificateFactory()
+    cert_one_san_valid.domains = [Domain(name=san1)]
+    cert_one_san_valid.owner = "owner1@example.org"
+
+    cert_two_san_valid = CertificateFactory()
+    cert_two_san_valid.domains = [Domain(name=san1), Domain(name=san2)]
+    cert_two_san_valid.owner = "owner2@example.org"
+
+    san1_valid_certs = query_common_name('%', {"owner": "", "san": san1, "page": "", "count": ""})
+    assert len(san1_valid_certs) == 2
+
+    san1_owner1_valid_certs = query_common_name('%', {"owner": "owner1@example.org", "san": san1, "page": "", "count": ""})
+    assert len(san1_owner1_valid_certs) == 1
+
+    san1_valid_certs = query_common_name('%', {"owner": "", "san": san2, "page": "", "count": ""})
+    assert len(san1_valid_certs) == 1
+
+
+def test_reissue_certificate_with_duplicate_destinations_not_allowed(session,
+                                                                     logged_in_user,
+                                                                     crypto_authority,
+                                                                     issuer_plugin,
+                                                                     destination_plugin,
+                                                                     certificate):
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = crypto_authority
+
+    destination1 = DestinationFactory()
+    destination2 = DestinationFactory()
+    certificate.destinations.append(destination1)
+    certificate.destinations.append(destination2)
+    with pytest.raises(Exception, match='Duplicate destinations for plugin test-destination and account 1234567890 '
+                                        'are not allowed'):
+        reissue_certificate(certificate)
+
+
+def test_reissue_certificate_with_duplicate_destinations_allowed(session,
+                                                                 logged_in_user,
+                                                                 crypto_authority,
+                                                                 issuer_plugin,
+                                                                 duplicate_allowed_destination_plugin,
+                                                                 certificate):
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = crypto_authority
+
+    destination1 = DuplicateAllowedDestinationFactory()
+    destination2 = DuplicateAllowedDestinationFactory()
+    certificate.destinations.append(destination1)
+    certificate.destinations.append(destination2)
+    new_cert = reissue_certificate(certificate)
+    assert new_cert
+    assert len(new_cert.destinations) == 2
+    assert destination1 in new_cert.destinations
+    assert destination2 in new_cert.destinations
+
+
+def test_certificate_update_duplicate_destinations_not_allowed(client, crypto_authority, certificate, issuer_plugin,
+                                                               destination_plugin):
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = crypto_authority
+
+    destination1 = DestinationFactory()
+    destination2 = DestinationFactory()
+    certificate.destinations.append(destination1)
+    certificate.destinations.append(destination2)
+
+    resp = client.put(
+        api.url_for(Certificates, certificate_id=certificate.id),
+        data=json.dumps(
+            certificate_output_schema.dump(certificate).data
+        ),
+        headers=VALID_ADMIN_HEADER_TOKEN,
+    )
+    assert resp.status_code == 400
+    assert 'Duplicate destinations for plugin test-destination and account 1234567890 are not allowed' \
+           in resp.json['message']
+
+
+def test_certificate_update_duplicate_destinations_allowed(client, crypto_authority, certificate, issuer_plugin,
+                                                           duplicate_allowed_destination_plugin):
+    from lemur.destinations.schemas import destination_output_schema
+
+    # test-authority would return a mismatching private key, so use 'cryptography-issuer' plugin instead.
+    certificate.authority = crypto_authority
+
+    destination1 = DuplicateAllowedDestinationFactory()
+    destination2 = DuplicateAllowedDestinationFactory()
+    certificate.destinations.append(destination1)
+    certificate.destinations.append(destination2)
+
+    resp = client.put(
+        api.url_for(Certificates, certificate_id=certificate.id),
+        data=json.dumps(
+            certificate_output_schema.dump(certificate).data
+        ),
+        headers=VALID_ADMIN_HEADER_TOKEN,
+    )
+    assert resp.status_code == 200
+    resp_cert = resp.json
+    assert len(resp_cert['destinations']) == 2
+    assert destination_output_schema.dump(destination1).data in resp_cert['destinations']
+    assert destination_output_schema.dump(destination2).data in resp_cert['destinations']

@@ -36,7 +36,7 @@ from werkzeug.utils import cached_property
 
 from lemur.common import defaults, utils, validators
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
-from lemur.database import db
+from lemur.database import BaseModel
 from lemur.domains.models import Domain
 from lemur.extensions import metrics
 from lemur.models import (
@@ -79,14 +79,14 @@ def get_or_increase_name(name, serial):
     if not certificates:
         return name
 
-    serial_name = "{0}-{1}".format(name, hex(int(serial))[2:].upper())
+    serial_name = f"{name}-{hex(int(serial))[2:].upper()}"
     certificates = Certificate.query.filter(Certificate.name == serial_name).all()
 
     if not certificates:
         return serial_name
 
     certificates = Certificate.query.filter(
-        Certificate.name.ilike("{0}%".format(serial_name))
+        Certificate.name.ilike(f"{serial_name}%")
     ).all()
 
     ends = [0]
@@ -96,10 +96,10 @@ def get_or_increase_name(name, serial):
         if end:
             ends.append(end)
 
-    return "{0}-{1}".format(root, max(ends) + 1)
+    return f"{root}-{max(ends) + 1}"
 
 
-class Certificate(db.Model):
+class Certificate(BaseModel):
     __tablename__ = "certificates"
     __table_args__ = (
         Index(
@@ -346,7 +346,7 @@ class Certificate(db.Model):
         if arrow.Arrow.fromdatetime(self.not_after) <= arrow.utcnow():
             return True
 
-    @expired.expression
+    @expired.expression  # type: ignore
     def expired(cls):
         return case([(cls.not_after <= arrow.utcnow(), True)], else_=False)
 
@@ -355,7 +355,7 @@ class Certificate(db.Model):
         if "revoked" == self.status:
             return True
 
-    @revoked.expression
+    @revoked.expression  # type: ignore
     def revoked(cls):
         return case([(cls.status == "revoked", True)], else_=False)
 
@@ -363,7 +363,7 @@ class Certificate(db.Model):
     def has_private_key(self):
         return self.private_key is not None
 
-    @has_private_key.expression
+    @has_private_key.expression  # type: ignore
     def has_private_key(cls):
         return case([(cls.private_key.is_(None), True)], else_=False)
 
@@ -380,7 +380,7 @@ class Certificate(db.Model):
         if self.not_after <= end:
             return True
 
-    @in_rotation_window.expression
+    @in_rotation_window.expression  # type: ignore
     def in_rotation_window(cls):
         """
         Determines if a certificate is available for rotation based
@@ -433,12 +433,6 @@ class Certificate(db.Model):
                     return_extensions["crl_distribution_points"] = {
                         "include_crl_dp": value
                     }
-
-                # TODO: Not supporting custom OIDs yet. https://github.com/Netflix/lemur/issues/665
-                else:
-                    current_app.logger.warning(
-                        "Custom OIDs not yet supported for clone operation."
-                    )
         except InvalidCodepoint as e:
             capture_exception()
             current_app.logger.warning(
@@ -452,10 +446,10 @@ class Certificate(db.Model):
         return return_extensions
 
     def __repr__(self):
-        return "Certificate(name={name})".format(name=self.name)
+        return f"Certificate(name={self.name})"
 
 
-class CertificateAssociation(db.Model):
+class CertificateAssociation(BaseModel):
     __tablename__ = "certificate_associations"
     __table_args__ = (
         Index(

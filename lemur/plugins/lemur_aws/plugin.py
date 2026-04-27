@@ -32,8 +32,9 @@
 .. moduleauthor:: Mikhail Khodorovskiy <mikhail.khodorovskiy@jivesoftware.com>
 .. moduleauthor:: Harm Weites <harm@weites.com>
 """
-
 import sys
+from os.path import join
+
 from acme.errors import ClientError
 from flask import current_app
 from sentry_sdk import capture_exception
@@ -42,7 +43,7 @@ from lemur.common.utils import check_validation
 from lemur.extensions import metrics
 from lemur.plugins import lemur_aws as aws, ExpirationNotificationPlugin
 from lemur.plugins.bases import DestinationPlugin, ExportDestinationPlugin, SourcePlugin
-from lemur.plugins.lemur_aws import iam, s3, elb, ec2, sns, cloudfront
+from lemur.plugins.lemur_aws import iam, s3, elb, ec2, sns, cloudfront, acm
 
 
 def get_region_from_dns(dns):
@@ -130,19 +131,20 @@ def get_elb_endpoints(account_number, region, elb_dict):
             )
             endpoint["policy"] = format_elb_cipher_policy(policy)
 
-        current_app.logger.debug("Found new endpoint. Endpoint: {}".format(endpoint))
+        current_app.logger.debug(f"Found new endpoint. Endpoint: {endpoint}")
 
         endpoints.append(endpoint)
 
     return endpoints
 
 
-def get_elb_endpoints_v2(account_number, region, elb_dict):
+def get_elb_endpoints_v2(account_number, region, elb_dict, policy_cache=None):
     """
     Retrieves endpoint information from elbv2 response data.
     :param account_number:
     :param region:
     :param elb_dict:
+    :param policy_cache:
     :return:
     """
     endpoints = []
@@ -184,9 +186,15 @@ def get_elb_endpoints_v2(account_number, region, elb_dict):
                 endpoint["sni_certificates"].append(crt)
 
         if listener["SslPolicy"]:
-            policy = elb.describe_ssl_policies_v2(
-                [listener["SslPolicy"]], account_number=account_number, region=region
-            )
+            ssl_policy = listener["SslPolicy"]
+            if policy_cache is not None and ssl_policy in policy_cache:
+                policy = policy_cache[ssl_policy]
+            else:
+                policy = elb.describe_ssl_policies_v2(
+                    [ssl_policy], account_number=account_number, region=region
+                )
+                if policy_cache is not None:
+                    policy_cache[ssl_policy] = policy
             endpoint["policy"] = format_elb_cipher_policy_v2(policy)
 
         endpoints.append(endpoint)
@@ -326,38 +334,83 @@ class AWSSourcePlugin(SourcePlugin):
         else:
             regions = "".join(regions.split()).split(",")
 
+        excluded_regions = current_app.config.get("LEMUR_EXCLUDED_REGIONS", [])
+        if excluded_regions:
+            regions = [r for r in regions if r not in excluded_regions]
+
+        policy_cache = {}
         for region in regions:
-            elbs = elb.get_all_elbs(account_number=account_number, region=region)
-            current_app.logger.info(
-                {
-                    "message": "Describing classic load balancers",
+            try:
+                elbs = elb.get_all_elbs(account_number=account_number, region=region)
+            except Exception:  # noqa
+                current_app.logger.warning({
+                    "message": "Failed to describe classic load balancers, skipping region",
                     "account_number": account_number,
                     "region": region,
-                    "number_of_load_balancers": len(elbs),
-                }
+                })
+                capture_exception()
+                metrics.send(
+                    "source_sync_fail",
+                    "counter",
+                    1,
+                    metric_tags={"source": f"{account_number}/{region}/classic"},
+                )
+                continue
+
+            current_app.logger.info({
+                "message": "Describing classic load balancers",
+                "account_number": account_number,
+                "region": region,
+                "number_of_load_balancers": len(elbs),
+            })
+            metrics.send(
+                "get_load_balancers.elb_count",
+                "gauge",
+                len(elbs),
+                metric_tags={"account": account_number, "region": region},
             )
 
             for e in elbs:
                 try:
                     endpoints.extend(get_elb_endpoints(account_number, region, e))
-                except Exception as e:  # noqa
+                except Exception:  # noqa
                     capture_exception()
                     continue
 
             # fetch advanced ELBs
-            elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
-            current_app.logger.info(
-                {
-                    "message": "Describing advanced load balancers",
+            try:
+                elbs_v2 = elb.get_all_elbs_v2(account_number=account_number, region=region)
+            except Exception:  # noqa
+                current_app.logger.warning({
+                    "message": "Failed to describe advanced load balancers, skipping region",
                     "account_number": account_number,
                     "region": region,
-                    "number_of_load_balancers": len(elbs_v2),
-                }
+                })
+                capture_exception()
+                metrics.send(
+                    "source_sync_fail",
+                    "counter",
+                    1,
+                    metric_tags={"source": f"{account_number}/{region}/elbv2"},
+                )
+                continue
+
+            current_app.logger.info({
+                "message": "Describing advanced load balancers",
+                "account_number": account_number,
+                "region": region,
+                "number_of_load_balancers": len(elbs_v2),
+            })
+            metrics.send(
+                "get_load_balancers.elbv2_count",
+                "gauge",
+                len(elbs_v2),
+                metric_tags={"account": account_number, "region": region},
             )
 
             for e in elbs_v2:
                 try:
-                    endpoints.extend(get_elb_endpoints_v2(account_number, region, e))
+                    endpoints.extend(get_elb_endpoints_v2(account_number, region, e, policy_cache=policy_cache))
                 except Exception as e:  # noqa
                     capture_exception()
                     continue
@@ -422,28 +475,33 @@ class AWSSourcePlugin(SourcePlugin):
 
         # relies on the fact that region is included in DNS name
         region = get_region_from_dns(endpoint.dnsname)
-        if endpoint.type == "elbv2":
-            listener_arn = elb.get_listener_arn_from_endpoint(
-                endpoint.name,
-                endpoint.port,
-                account_number=account_number,
-                region=region,
-            )
-            elb.attach_certificate_v2(
-                listener_arn,
-                endpoint.port,
-                [{"CertificateArn": arn}],
-                account_number=account_number,
-                region=region,
-            )
-        elif endpoint.type == "elb":
-            elb.attach_certificate(
-                endpoint.name,
-                endpoint.port,
-                arn,
-                account_number=account_number,
-                region=region,
-            )
+        try:
+            if endpoint.type == "elbv2":
+                listener_arn = elb.get_listener_arn_from_endpoint(
+                    endpoint.name,
+                    endpoint.port,
+                    account_number=account_number,
+                    region=region,
+                )
+                elb.attach_certificate_v2(
+                    listener_arn,
+                    endpoint.port,
+                    [{"CertificateArn": arn}],
+                    account_number=account_number,
+                    region=region,
+                )
+            elif endpoint.type == "elb":
+                elb.attach_certificate(
+                    endpoint.name,
+                    endpoint.port,
+                    arn,
+                    account_number=account_number,
+                    region=region,
+                )
+        except Exception as e:
+            current_app.logger.warning(
+                f"Error attaching certificate to endpoint named {endpoint.name} (ID {endpoint.id}) on port {endpoint.port} in account {account_number} and region {region}: {e}")
+            raise e
 
     def replace_sni_certificate(self, endpoint, old_cert, new_cert):
         options = endpoint.source.options
@@ -518,9 +576,7 @@ class AWSSourcePlugin(SourcePlugin):
                 )
         except ClientError:
             current_app.logger.warning(
-                "get_elb_certificate_failed: Unable to get certificate for {0}".format(
-                    certificate_name
-                )
+                f"get_elb_certificate_failed: Unable to get certificate for {certificate_name}"
             )
             capture_exception()
             metrics.send(
@@ -679,27 +735,41 @@ class S3DestinationPlugin(ExportDestinationPlugin):
             "name": "prefix",
             "type": "str",
             "required": False,
+            "validation": check_validation("^(?:[^/].*|)$"),
             "helpMessage": "Must be a valid S3 object prefix!",
+            "default": ""
         },
     ]
 
     def __init__(self, *args, **kwargs):
-        super(S3DestinationPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def upload(self, name, body, private_key, chain, options, **kwargs):
         files = self.export(body, private_key, chain, options)
+        function = f"{__name__}.{sys._getframe().f_code.co_name}"
 
         for ext, passphrase, data in files:
-            s3.put(
+            filename = join(self.get_option("prefix", options), f"{name}.{ext.lstrip('.')}")
+            response = s3.put(
                 self.get_option("bucket", options),
                 self.get_option("region", options),
-                "{prefix}/{name}.{extension}".format(
-                    prefix=self.get_option("prefix", options), name=name, extension=ext
-                ),
+                filename,
                 data,
                 self.get_option("encrypt", options),
                 account_number=self.get_option("accountNumber", options),
             )
+            res = "Success" if response else "Failure"
+            log_data = {
+                "function": function,
+                "message": "upload s3 file",
+                "result": res,
+                "bucket_name": self.get_option("bucket", options),
+                "filename": filename
+            }
+            current_app.logger.info(log_data)
+
+    def allow_multiple_per_account(self):
+        return True
 
     def upload_acme_token(self, token_path, token, options, **kwargs):
         """
@@ -793,6 +863,26 @@ class S3DestinationPlugin(ExportDestinationPlugin):
         )
         return response
 
+    def clean(self, certificate, options, **kwargs):
+        files = self.export(certificate.body, certificate.private_key, certificate.chain, options)
+        function = f"{__name__}.{sys._getframe().f_code.co_name}"
+        prefix = self.get_option("prefix", options)
+
+        for ext, passphrase, data in files:
+            filename = join(prefix, f"{certificate.name}.{ext.lstrip('.')}")
+            response = s3.delete(bucket_name=self.get_option("bucket", options),
+                  prefixed_object_name=filename,
+                  account_number=self.get_option("accountNumber", options))
+            res = "Success" if response else "Failure"
+            log_data = {
+                "function": function,
+                "message": "delete s3 file",
+                "result": res,
+                "bucket_name": self.get_option("bucket", options),
+                "filename": filename
+            }
+            current_app.logger.info(log_data)
+
 
 class SNSNotificationPlugin(ExpirationNotificationPlugin):
     title = "AWS SNS"
@@ -850,3 +940,85 @@ class SNSNotificationPlugin(ExpirationNotificationPlugin):
             options,
             region_name=self.get_option("region", options),
         )
+
+
+class AWSACMSourcePlugin(SourcePlugin):
+    title = "AWS-ACM"
+    slug = "aws-acm-source"
+    description = "Discovers all ACM TLS certificates in an AWS account"
+    version = aws.VERSION
+
+    author_url = "https://github.com/netflix/lemur"
+
+    options = [
+        {
+            "name": "accountNumber",
+            "type": "str",
+            "required": True,
+            "validation": check_validation("^[0-9]{12,12}$"),
+            "helpMessage": "Must be a valid AWS account number!",
+        },
+        {
+            "name": "regions",
+            "type": "str",
+            "helpMessage": "Comma separated list of regions to search in, if no region is specified we look in all regions.",
+        },
+    ]
+
+    def get_certificates(self, options, **kwargs):
+        cert_data = acm.get_all_certificates(
+            account_number=self.get_option("accountNumber", options)
+        )
+
+        return [
+            dict(
+                body=c["Certificate"],
+                chain=c.get("CertificateChain"),
+                name=c["name"],
+                external_id=c["external_id"],
+            )
+            for c in cert_data
+        ]
+
+
+class ACMDestinationPlugin(DestinationPlugin):
+    title = "AWS-ACM"
+    slug = "aws-acm-dest"
+    description = "Allow the uploading of certificates to Amazon ACM"
+    version = aws.VERSION
+
+    author_url = "https://github.com/Netflix/lemur"
+
+    options = [
+        {
+            "name": "accountNumber",
+            "type": "str",
+            "required": True,
+            "validation": check_validation("[0-9]{12}"),
+            "helpMessage": "A valid AWS account number with permission to access ACM",
+        },
+        {
+            "name": "region",
+            "type": "str",
+            "default": "us-east-1",
+            "required": False,
+            "helpMessage": "Region bucket exists",
+            "available": ["us-east-1", "us-west-2", "eu-west-1"],
+        },
+    ]
+
+    def upload(self, name, body, private_key, cert_chain, options, **kwargs):
+        try:
+            acm.upload_cert(
+                name,
+                body,
+                private_key,
+                cert_chain=cert_chain,
+                account_number=self.get_option("accountNumber", options),
+            )
+        except ClientError:
+            capture_exception()
+
+    def clean(self, certificate, options, **kwargs):
+        account_number = self.get_option("accountNumber", options)
+        acm.delete_cert(certificate["external_id"], account_number=account_number)

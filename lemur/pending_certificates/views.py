@@ -9,7 +9,7 @@ from flask import Blueprint, g, make_response, jsonify
 from flask_restful import Api, reqparse, inputs
 
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import CertificatePermission
+from lemur.auth.permissions import CertificatePermission, StrictRolePermission
 
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
@@ -33,7 +33,7 @@ api = Api(mod)
 class PendingCertificatesList(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(PendingCertificatesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, pending_certificate_output_schema)
     def get(self):
@@ -130,7 +130,7 @@ class PendingCertificatesList(AuthenticatedResource):
 class PendingCertificates(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(PendingCertificates, self).__init__()
+        super().__init__()
 
     @validate_schema(None, pending_certificate_output_schema)
     def get(self, pending_certificate_id):
@@ -320,7 +320,7 @@ class PendingCertificates(AuthenticatedResource):
                 if not pending_cert.private_key:
                     return (
                         dict(
-                            message="Unable to add destination: {0}. Certificate does not have required private key.".format(
+                            message="Unable to add destination: {}. Certificate does not have required private key.".format(
                                 destination.label
                             )
                         ),
@@ -396,7 +396,7 @@ class PendingCertificates(AuthenticatedResource):
 
 class PendingCertificatePrivateKey(AuthenticatedResource):
     def __init__(self):
-        super(PendingCertificatePrivateKey, self).__init__()
+        super().__init__()
 
     def get(self, pending_certificate_id):
         """
@@ -457,7 +457,7 @@ class PendingCertificatesUpload(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(PendingCertificatesUpload, self).__init__()
+        super().__init__()
 
     @validate_schema(
         pending_certificate_upload_input_schema, pending_certificate_output_schema
@@ -546,6 +546,8 @@ class PendingCertificatesUpload(AuthenticatedResource):
            :statuscode 200: no error
 
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to upload a pending certificate."), 403
         return service.upload(pending_certificate_id, **data)
 
 

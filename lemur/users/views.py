@@ -9,24 +9,21 @@
 from flask import g, Blueprint
 from flask_restful import reqparse, Api
 
+from lemur.auth.permissions import admin_permission
+from lemur.auth.service import AuthenticatedResource
+from lemur.certificates import service as certificate_service
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
-
-from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import admin_permission
-
-from lemur.users import service
-from lemur.certificates import service as certificate_service
 from lemur.roles import service as role_service
-
+from lemur.users import service
 from lemur.users.schemas import (
     user_input_schema,
     user_output_schema,
     users_output_schema,
+    user_create_input_schema,
     break_glass_grant_input_schema,
     break_glass_grant_output_schema,
 )
-
 
 mod = Blueprint("users", __name__)
 api = Api(mod)
@@ -37,7 +34,7 @@ class UsersList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(UsersList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, users_output_schema)
     def get(self):
@@ -96,8 +93,8 @@ class UsersList(AuthenticatedResource):
         args = parser.parse_args()
         return service.render(args)
 
+    @validate_schema(user_create_input_schema, user_output_schema)
     @admin_permission.require(http_exception=403)
-    @validate_schema(user_input_schema, user_output_schema)
     def post(self, data=None):
         """
         .. http:post:: /users
@@ -177,7 +174,7 @@ class UsersList(AuthenticatedResource):
 class Users(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Users, self).__init__()
+        super().__init__()
 
     @validate_schema(None, user_output_schema)
     def get(self, user_id):
@@ -215,8 +212,8 @@ class Users(AuthenticatedResource):
         """
         return service.get(user_id)
 
-    @admin_permission.require(http_exception=403)
     @validate_schema(user_input_schema, user_output_schema)
+    @admin_permission.require(http_exception=403)
     def put(self, user_id, data=None):
         """
         .. http:put:: /users/1
@@ -285,13 +282,14 @@ class Users(AuthenticatedResource):
             data["active"],
             None,
             data["roles"],
+            data.get("password")
         )
 
 
 class CertificateUsers(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificateUsers, self).__init__()
+        super().__init__()
 
     @validate_schema(None, user_output_schema)
     def get(self, certificate_id):
@@ -333,7 +331,7 @@ class CertificateUsers(AuthenticatedResource):
 class RoleUsers(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(RoleUsers, self).__init__()
+        super().__init__()
 
     @validate_schema(None, users_output_schema)
     def get(self, role_id):
@@ -422,7 +420,7 @@ class UserBreakGlass(AuthenticatedResource):
 
 class Me(AuthenticatedResource):
     def __init__(self):
-        super(Me, self).__init__()
+        super().__init__()
 
     @validate_schema(None, user_output_schema)
     def get(self):

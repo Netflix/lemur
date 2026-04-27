@@ -10,10 +10,10 @@
 
 from sqlalchemy import Column, Integer, String, Boolean
 
-from lemur.database import db
+from lemur.database import BaseModel
 
 
-class Domain(db.Model):
+class Domain(BaseModel):
     __tablename__ = "domains"
     __table_args__ = ()
     id = Column(Integer, primary_key=True)
@@ -21,4 +21,4 @@ class Domain(db.Model):
     sensitive = Column(Boolean, default=False)
 
     def __repr__(self):
-        return "Domain(name={name})".format(name=self.name)
+        return f"Domain(name={self.name})"

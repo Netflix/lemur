@@ -7,11 +7,11 @@
 """
 
 import base64
-from builtins import str
 
 from flask import Blueprint, make_response, jsonify, g, current_app
 from flask_restful import reqparse, Api, inputs
 
+from lemur.certificates.service import validate_no_duplicate_destinations
 from lemur.common import validators
 from lemur.plugins.bases.authorization import UnauthorizedError
 from sentry_sdk import capture_exception
@@ -20,7 +20,7 @@ from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
 
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import AuthorityPermission, CertificatePermission
+from lemur.auth.permissions import AuthorityPermission, CertificatePermission, StrictRolePermission
 
 from lemur.certificates import service
 from lemur.certificates.models import Certificate
@@ -49,7 +49,7 @@ class CertificatesListValid(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificatesListValid, self).__init__()
+        super().__init__()
 
     @validate_schema(None, certificates_output_schema)
     def get(self):
@@ -69,7 +69,7 @@ class CertificatesListValid(AuthenticatedResource):
               Host: example.com
               Accept: application/json, text/javascript
 
-           **Example response (with single cert to be concise)**:
+           **Example response**:
 
            .. sourcecode:: http
 
@@ -139,6 +139,7 @@ class CertificatesListValid(AuthenticatedResource):
         # using non-paginated parser to ensure backward compatibility
         self.reqparse.add_argument("filter", type=str, location="args")
         self.reqparse.add_argument("owner", type=str, location="args")
+        self.reqparse.add_argument("san", type=str, location="args")
         self.reqparse.add_argument("count", type=int, location="args")
         self.reqparse.add_argument("page", type=int, location="args")
 
@@ -153,7 +154,7 @@ class CertificatesNameQuery(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificatesNameQuery, self).__init__()
+        super().__init__()
 
     @validate_schema(None, certificates_output_schema)
     def get(self, certificate_name):
@@ -255,7 +256,12 @@ class CertificatesNameQuery(AuthenticatedResource):
 
         args = parser.parse_args()
         args["user"] = g.user
-        return service.query_name(certificate_name, args)
+        result = service.query_name(certificate_name, args)
+        resolver = current_app.config.get("CERT_NAME_RESOLVER")
+        if resolver:
+            caller = getattr(g, "caller_application", None)
+            result = resolver(certificate_name, result, caller)
+        return result
 
 
 class CertificatesList(AuthenticatedResource):
@@ -263,7 +269,7 @@ class CertificatesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificatesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, certificates_list_output_schema_factory)
     def get(self):
@@ -504,6 +510,9 @@ class CertificatesList(AuthenticatedResource):
            :statuscode 403: unauthenticated
 
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to create a new certificate."), 403
+
         if not validators.is_valid_owner(data["owner"]):
             return (
                 dict(
@@ -511,6 +520,11 @@ class CertificatesList(AuthenticatedResource):
                 ),
                 412,
             )
+
+        if current_app.config.get("CERTIFICATE_CREATE_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_CREATE_REQUEST_VALIDATION")(data)
+            if message and code:
+                return dict(message=message), code
 
         role = role_service.get_by_name(data["authority"].owner)
 
@@ -532,8 +546,8 @@ class CertificatesList(AuthenticatedResource):
         data["creator"] = g.user
         # allowed_issuance_for_domain throws UnauthorizedError if caller is not authorized
         try:
-            # unless admin, perform fine grained authorization
-            if not g.user.is_admin and not data["authority"].is_private_authority:
+            # unless admin or global_cert_issuer, perform fine grained authorization
+            if not g.user.is_admin_or_global_cert_issuer and not data["authority"].is_private_authority:
                 service.allowed_issuance_for_domain(
                     data["common_name"], data["extensions"]
                 )
@@ -552,7 +566,7 @@ class CertificatesUpload(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificatesUpload, self).__init__()
+        super().__init__()
 
     @validate_schema(certificate_upload_input_schema, certificate_output_schema)
     def post(self, data=None):
@@ -648,6 +662,9 @@ class CertificatesUpload(AuthenticatedResource):
            :statuscode 200: no error
 
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to upload a certificate."), 403
+
         data["creator"] = g.user
         if data.get("destinations"):
             if data.get("private_key"):
@@ -656,6 +673,10 @@ class CertificatesUpload(AuthenticatedResource):
                 raise Exception(
                     "Private key must be provided in order to upload certificate to AWS"
                 )
+        if current_app.config.get("CERTIFICATE_CREATE_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_CREATE_REQUEST_VALIDATION")(data)
+            if message and code:
+                return dict(message=message), code
         return service.upload(**data)
 
 
@@ -664,7 +685,7 @@ class CertificatesStats(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificatesStats, self).__init__()
+        super().__init__()
 
     def get(self):
         self.reqparse.add_argument("metric", type=str, location="args")
@@ -687,7 +708,7 @@ class CertificatesStats(AuthenticatedResource):
 
 class CertificatePrivateKey(AuthenticatedResource):
     def __init__(self):
-        super(CertificatePrivateKey, self).__init__()
+        super().__init__()
 
     def get(self, certificate_id):
         """
@@ -736,6 +757,11 @@ class CertificatePrivateKey(AuthenticatedResource):
         if "break-glass" not in effective_roles:
             return dict(message="Break-glass access is required to view private keys"), 403
 
+        if current_app.config.get("CERTIFICATE_EXPORT_KEY_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_EXPORT_KEY_REQUEST_VALIDATION")(cert, g.current_user)
+            if message and code:
+                return dict(message=message), code
+
         log_service.create(g.current_user, "key_view", certificate=cert)
         response = make_response(jsonify(key=cert.private_key), 200)
         response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
@@ -750,7 +776,7 @@ class CertificatePrivateKey(AuthenticatedResource):
 class Certificates(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Certificates, self).__init__()
+        super().__init__()
 
     @validate_schema(None, certificate_output_schema)
     def get(self, certificate_id):
@@ -939,12 +965,25 @@ class Certificates(AuthenticatedResource):
                     403,
                 )
 
+        if current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION")(data, cert)
+            if message and code:
+                return dict(message=message), code
+
+        try:
+            validate_no_duplicate_destinations(data["destinations"])
+        except Exception as e:
+            return (
+                dict(message=str(e)),
+                400,
+            )
+
         for destination in data["destinations"]:
             if destination.plugin.requires_key:
                 if not cert.private_key:
                     return (
                         dict(
-                            message="Unable to add destination: {0}. Certificate does not have required private key.".format(
+                            message="Unable to add destination: {}. Certificate does not have required private key.".format(
                                 destination.label
                             )
                         ),
@@ -1089,6 +1128,11 @@ class Certificates(AuthenticatedResource):
                     403,
                 )
 
+        if current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION")(data, cert)
+            if message and code:
+                return dict(message=message), code
+
         cert = service.update_switches(
             cert, notify_flag=data.get("notify"), rotation_flag=data.get("rotation")
         )
@@ -1151,7 +1195,7 @@ class Certificates(AuthenticatedResource):
 class CertificateUpdateOwner(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificateUpdateOwner, self).__init__()
+        super().__init__()
 
     @validate_schema(certificate_edit_input_schema, certificate_output_schema)
     def post(self, certificate_id, data=None):
@@ -1264,6 +1308,11 @@ class CertificateUpdateOwner(AuthenticatedResource):
                     403,
                 )
 
+        if current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION")(data, cert)
+            if message and code:
+                return dict(message=message), code
+
         cert = service.update_owner(cert, data)
 
         log_service.create(g.current_user, "update_cert", certificate=cert)
@@ -1275,7 +1324,7 @@ class NotificationCertificatesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(NotificationCertificatesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, certificates_output_schema)
     def get(self, notification_id):
@@ -1387,7 +1436,7 @@ class NotificationCertificatesList(AuthenticatedResource):
 class CertificatesReplacementsList(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificatesReplacementsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, certificates_output_schema)
     def get(self, certificate_id):
@@ -1479,7 +1528,7 @@ class CertificatesReplacementsList(AuthenticatedResource):
 class CertificateExport(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificateExport, self).__init__()
+        super().__init__()
 
     @validate_schema(certificate_export_input_schema, None)
     def post(self, certificate_id, data=None):
@@ -1560,7 +1609,7 @@ class CertificateExport(AuthenticatedResource):
             if not cert.private_key:
                 return (
                     dict(
-                        message="Unable to export certificate, plugin: {0} requires a private key but no key was found.".format(
+                        message="Unable to export certificate, plugin: {} requires a private key but no key was found.".format(
                             plugin.slug
                         )
                     ),
@@ -1590,6 +1639,11 @@ class CertificateExport(AuthenticatedResource):
             cert.body, cert.chain, cert.private_key, options
         )
 
+        # Clear memory for last passphrase if it's in plugin.options
+        for option in plugin.options:
+            if 'value' in option and option['value'] == passphrase:
+                del option['value']
+
         # we take a hit in message size when b64 encoding
         return dict(
             extension=extension,
@@ -1601,7 +1655,7 @@ class CertificateExport(AuthenticatedResource):
 class CertificateRevoke(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(CertificateRevoke, self).__init__()
+        super().__init__()
 
     @validate_schema(certificate_revoke_schema, None)
     def put(self, certificate_id, data=None):
@@ -1695,6 +1749,153 @@ class CertificateRevoke(AuthenticatedResource):
             return dict(message=f"Failed to revoke: {str(e)}"), 400
 
 
+class CertificateDeactivate(AuthenticatedResource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super().__init__()
+
+    def put(self, certificate_id):
+        """
+        .. http:put:: /certificates/1/deactivate
+
+           deactivate a certificate (integration test only)
+           **Example request**:
+
+           .. sourcecode:: http
+
+              PUT /certificates/1/deactivate HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+              {
+                "id": 1
+              }
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated or cert attached to LB
+           :statuscode 400: encountered error, more details in error message
+
+        """
+        cert = service.get(certificate_id)
+
+        if not cert:
+            return dict(message="Cannot find specified certificate"), 404
+
+        # allow creators
+        if g.current_user != cert.user:
+            owner_role = role_service.get_by_name(cert.owner)
+            permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
+
+            if not permission.can():
+                return (
+                    dict(message="You are not authorized to deactivate this certificate."),
+                    403,
+                )
+
+        try:
+            error_message = service.deactivate(cert)
+            log_service.create(g.current_user, "deactivate_cert", certificate=cert)
+
+            if error_message:
+                return dict(message=f"Certificate (id:{cert.id}) is deactivated - {error_message}"), 400
+            return dict(id=cert.id)
+        except NotImplementedError as ne:
+            return dict(message="Deactivate is not implemented for issuer of this certificate"), 400
+        except Exception as e:
+            capture_exception()
+            return dict(message=f"Failed to Deactivate: {str(e)}"), 400
+
+
+class CertificateDescriptionUpdate(AuthenticatedResource):
+    """ Defines the 'certificates/<int:certificate_id>/description' endpoint """
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        super().__init__()
+
+    @validate_schema(None, certificate_output_schema)
+    def put(self, certificate_id):
+        """
+        .. http:put:: /certificates/1/description
+
+           Update a certificate's description
+
+           **Example request**:
+
+           .. sourcecode:: http
+
+              PUT /certificates/1/description HTTP/1.1
+              Host: example.com
+              Accept: application/json, text/javascript
+              Content-Type: application/json;charset=UTF-8
+
+              {
+                 "description": "Updated certificate description"
+              }
+
+           **Example response**:
+
+           .. sourcecode:: http
+
+              HTTP/1.1 200 OK
+              Vary: Accept
+              Content-Type: text/javascript
+
+              {
+                "status": null,
+                "cn": "*.test.example.net",
+                ... certificate data ...
+              }
+
+           :reqheader Authorization: OAuth token to authenticate
+           :statuscode 200: no error
+           :statuscode 403: unauthenticated
+           :statuscode 404: certificate not found
+           :statuscode 400: bad request
+        """
+        cert = service.get(certificate_id)
+        if not cert:
+            return dict(message="Certificate not found"), 404
+
+        # allow creators
+        if g.current_user != cert.user:
+            owner_role = role_service.get_by_name(cert.owner)
+            permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
+
+            if not permission.can():
+                return (
+                    dict(message="You are not authorized to update this certificate"),
+                    403,
+                )
+
+        self.reqparse.add_argument('description', type=str, location='json', required=True)
+        args = self.reqparse.parse_args()
+        description = args.get('description')
+
+        if current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION"):
+            message, code = current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION")({"description": description}, cert)
+            if message and code:
+                return dict(message=message), code
+
+        cert = service.update_description(cert, description=description)
+        log_service.create(g.current_user, "update_cert", certificate=cert)
+        return cert
+
+
+api.add_resource(
+    CertificateDeactivate,
+    "/certificates/<int:certificate_id>/deactivate",
+    endpoint="deactivateCertificate",
+)
 api.add_resource(
     CertificateRevoke,
     "/certificates/<int:certificate_id>/revoke",
@@ -1745,4 +1946,9 @@ api.add_resource(
     CertificatesReplacementsList,
     "/certificates/<int:certificate_id>/replacements",
     endpoint="replacements",
+)
+api.add_resource(
+    CertificateDescriptionUpdate,
+    "/certificates/<int:certificate_id>/description",
+    endpoint="certificateDescriptionUpdate",
 )

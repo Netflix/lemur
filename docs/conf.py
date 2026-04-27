@@ -13,6 +13,7 @@
 # serve to show the default.
 import sys
 import os
+from typing import Dict, Any
 from unittest.mock import MagicMock
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -76,7 +77,7 @@ copyright = "2018, Netflix Inc."
 # built documents.
 #
 base_dir = os.path.join(os.path.dirname(__file__), os.pardir)
-about = {}
+about: Dict[str, Any] = {}
 with open(os.path.join(base_dir, "lemur", "__about__.py")) as f:
     exec(f.read(), about)  # nosec
 
@@ -213,7 +214,7 @@ htmlhelp_basename = "lemurdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+latex_elements: Dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     #'papersize': 'letterpaper',
     # The font size ('10pt', '11pt' or '12pt').

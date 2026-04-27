@@ -8,12 +8,12 @@
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy_utils import JSONType
-from lemur.database import db
+from lemur.database import BaseModel
 
 from lemur.plugins.base import plugins
 
 
-class Authorization(db.Model):
+class Authorization(BaseModel):
     __tablename__ = "pending_dns_authorizations"
     id = Column(Integer, primary_key=True, autoincrement=True)
     account_number = Column(String(128))
@@ -26,7 +26,7 @@ class Authorization(db.Model):
         return plugins.get(self.plugin_name)
 
     def __repr__(self):
-        return "Authorization(id={id})".format(id=self.id)
+        return f"Authorization(id={self.id})"
 
     def __init__(self, account_number, domains, dns_provider_type, options=None):
         self.account_number = account_number

@@ -13,6 +13,7 @@ from lemur.extensions import metrics
 from lemur.plugins.lemur_aws.sts import sts_client
 
 
+@sts_client("cloudfront")
 def get_all_distributions(**kwargs):
     """
     Fetches all distributions for a given account/region
@@ -29,10 +30,13 @@ def get_all_distributions(**kwargs):
             if not list:
                 return distributions
 
-            distributions += list["Items"]
+            items = list.get("Items")
+            if not items:
+                return distributions
+            distributions += items
 
             if not list.get("IsTruncated"):
-                return distributions
+                return _filter_ignored_distributions(distributions, **kwargs)
             else:
                 kwargs.update(dict(Marker=list["NextMarker"]))
     except Exception as e:  # noqa
@@ -41,7 +45,51 @@ def get_all_distributions(**kwargs):
         raise
 
 
-@sts_client("cloudfront")
+def _filter_ignored_distributions(distributions, **kwargs):
+    """
+    Look up tags and remove any CloudFront distributions that should be ignored based on tags.
+    :param distributions: List of CloudFront distribution items
+    :param kwargs: must contain a 'client' from @sts_client
+    :return: Filtered list of distributions
+    """
+    if not distributions:
+        return distributions
+
+    # Get the ignore tag configuration
+    ignore_tags = current_app.config.get("AWS_CLOUDFRONT_IGNORE_TAGS", [])
+
+    if not ignore_tags:
+        return distributions
+
+    try:
+        client = kwargs.pop("client")
+        filtered_distributions = []
+
+        # AWS CloudFront only allows one ARN per call to list_tags_for_resource, so we need to loop
+        for distribution in distributions:
+            distribution_arn = distribution.get("ARN")
+            if not distribution_arn:
+                filtered_distributions.append(distribution)
+                continue
+
+            tags_response = client.list_tags_for_resource(Resource=distribution_arn)
+            tags = tags_response.get("Tags", {}).get("Items", [])
+
+            # If the distribution has any ignore tags, skip it
+            if any(tag["Key"] == ignore_tag for tag in tags for ignore_tag in ignore_tags):
+                current_app.logger.info(f"Ignoring CloudFront distribution due to ignore tag: {distribution.get('Id')}")
+                continue
+
+            filtered_distributions.append(distribution)
+
+        return filtered_distributions
+
+    except Exception as e:
+        metrics.send("list_tags_for_resource_error", "counter", 1, metric_tags={"error": str(e)})
+        capture_exception()
+        raise
+
+
 def get_distributions(**kwargs):
     """
     Fetches one page CloudFront distribution objects for a given account and region.
@@ -109,7 +157,7 @@ def attach_certificate(distribution_id, iam_cert_id, **kwargs):
             raise InvalidDistribution(distribution_id)
         if iam_cert_id == viewer_cert["IAMCertificateId"]:
             current_app.logger.warning(
-                "distribution {0} already assigned to IAM certificate {1}, not updated".format(
+                "distribution {} already assigned to IAM certificate {}, not updated".format(
                     distribution_id, iam_cert_id
                 )
             )

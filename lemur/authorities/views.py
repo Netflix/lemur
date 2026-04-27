@@ -13,7 +13,7 @@ from lemur.common import validators
 from lemur.common.utils import paginated_parser
 from lemur.common.schema import validate_schema
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import AuthorityPermission
+from lemur.auth.permissions import AuthorityCreatorPermission, AuthorityPermission, StrictRolePermission
 
 from lemur.certificates import service as certificate_service
 
@@ -35,7 +35,7 @@ class AuthoritiesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(AuthoritiesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, authorities_output_schema)
     def get(self):
@@ -225,9 +225,14 @@ class AuthoritiesList(AuthenticatedResource):
            :arg serialNumber: serial number of the authority
            :arg firstSerial: specifies the starting serial number for certificates issued off of this authority
            :reqheader Authorization: OAuth token to authenticate
-           :statuscode 403: unauthenticated
+           :statuscode 401: unauthenticated
+           :statuscode 403: unauthorized
            :statuscode 200: no error
         """
+        permission = AuthorityCreatorPermission()
+        if not permission.can() or not StrictRolePermission().can():
+            return dict(message="You are not allowed to create a new authority."), 403
+
         if not validators.is_valid_owner(data["owner"]):
             return (
                 dict(
@@ -244,7 +249,7 @@ class AuthoritiesList(AuthenticatedResource):
 class Authorities(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Authorities, self).__init__()
+        super().__init__()
 
     @validate_schema(None, authority_output_schema)
     def get(self, authority_id):
@@ -412,21 +417,22 @@ class Authorities(AuthenticatedResource):
         roles = [x.name for x in authority.roles]
         permission = AuthorityPermission(authority_id, roles)
 
-        if permission.can():
-            return service.update(
-                authority_id,
-                owner=data["owner"],
-                description=data["description"],
-                active=data["active"],
-                roles=data["roles"],
-            )
+        if not permission.can() or not StrictRolePermission().can():
+            return dict(message="You are not authorized to update this authority."), 403
 
-        return dict(message="You are not authorized to update this authority."), 403
+        return service.update(
+            authority_id,
+            owner=data["owner"],
+            description=data["description"],
+            active=data["active"],
+            roles=data["roles"],
+            options=data.get("options")
+        )
 
 
 class CertificateAuthority(AuthenticatedResource):
     def __init__(self):
-        super(CertificateAuthority, self).__init__()
+        super().__init__()
 
     @validate_schema(None, authority_output_schema)
     def get(self, certificate_id):

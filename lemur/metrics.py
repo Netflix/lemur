@@ -3,17 +3,18 @@
     :copyright: (c) 2018 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+from typing import List
 
 from flask import current_app
 from lemur.plugins.base import plugins
 
 
-class Metrics(object):
+class Metrics:
     """
     :param app: The Flask application object. Defaults to None.
     """
 
-    _providers = []
+    _providers: List[str] = []
 
     def __init__(self, app=None):
         if app is not None:

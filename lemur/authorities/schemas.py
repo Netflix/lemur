@@ -7,11 +7,14 @@
 """
 
 from flask import current_app
-
 from marshmallow import fields, validates_schema, pre_load
 from marshmallow import validate
 from marshmallow.exceptions import ValidationError
 
+from lemur.common import validators, missing
+from lemur.common.fields import ArrowDateTime
+from lemur.common.schema import LemurInputSchema, LemurOutputSchema
+from lemur.constants import CERTIFICATE_KEY_TYPES
 from lemur.schemas import (
     PluginInputSchema,
     PluginOutputSchema,
@@ -20,11 +23,6 @@ from lemur.schemas import (
     AssociatedRoleSchema,
 )
 from lemur.users.schemas import UserNestedOutputSchema
-from lemur.common.schema import LemurInputSchema, LemurOutputSchema
-from lemur.common import validators, missing
-
-from lemur.common.fields import ArrowDateTime
-from lemur.constants import CERTIFICATE_KEY_TYPES
 
 
 class AuthorityInputSchema(LemurInputSchema):
@@ -67,6 +65,8 @@ class AuthorityInputSchema(LemurInputSchema):
                 "sha256WithECDSA",
                 "SHA384withECDSA",
                 "SHA512withECDSA",
+                "sha384WithECDSA",
+                "sha512WithECDSA",
             ]
         ),
         missing="sha256WithRSA",
@@ -107,6 +107,7 @@ class AuthorityUpdateSchema(LemurInputSchema):
     description = fields.String()
     active = fields.Boolean(missing=True)
     roles = fields.Nested(AssociatedRoleSchema(many=True))
+    options = fields.String()
 
 
 class RootAuthorityCertificateOutputSchema(LemurOutputSchema):

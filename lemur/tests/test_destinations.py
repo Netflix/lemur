@@ -10,6 +10,13 @@ from .vectors import (
 )
 
 
+def test_invalid_label():
+    from lemur.destinations.models import Destination
+    with pytest.raises(ValueError) as e:
+        Destination(label="too_long" * 50)
+    assert "Label exceeds max length" in str(e)
+
+
 def test_destination_input_schema(client, destination_plugin, destination):
     from lemur.destinations.schemas import DestinationInputSchema
 
@@ -65,7 +72,7 @@ def test_destination_post_(client, token, status):
 @pytest.mark.parametrize(
     "token,status",
     [
-        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_USER_HEADER_TOKEN, 400),
         (VALID_ADMIN_HEADER_TOKEN, 400),
         (VALID_ADMIN_API_TOKEN, 400),
         ("", 401),
@@ -119,7 +126,7 @@ def test_destination_patch(client, token, status):
 @pytest.mark.parametrize(
     "token,status",
     [
-        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_USER_HEADER_TOKEN, 400),
         (VALID_ADMIN_HEADER_TOKEN, 400),
         (VALID_ADMIN_API_TOKEN, 400),
         ("", 401),

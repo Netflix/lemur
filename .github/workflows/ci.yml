@@ -1,0 +1,97 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: [ "3.10", "3.11" ]
+        postgres-version: [16, 17]
+        os: [ubuntu-22.04]
+        include:
+          - python-version: "3.10"
+            toxenv: py310
+          - python-version: "3.11"
+            toxenv: py311
+      fail-fast: false # run all matrix jobs even if one fails, so we know if the problem is version-specific
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres-version }}
+        env:
+          POSTGRES_USER: lemur
+          POSTGRES_PASSWORD: lemur
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+    env:
+      TOXENV: ${{ matrix.toxenv }}
+      PIP_DOWNLOAD_CACHE: .pip_download_cache
+      # The following line is a temporary workaround for this issue: https://github.com/pypa/setuptools/issues/2230
+      SETUPTOOLS_USE_DISTUTILS: stdlib
+      # do not load /etc/boto.cfg with Python 3 incompatible plugin
+      # https://github.com/travis-ci/travis-ci/issues/5246#issuecomment-166460882
+      BOTO_CONFIG: /doesnotexist
+      # Enable colors in pytest output: https://github.com/pytest-dev/pytest/issues/7443
+      PY_COLORS: 1
+      # Enable colors in chalk output: https://github.com/chalk/chalk#chalklevel
+      FORCE_COLOR: 1
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      - name: Set up Node.js 16
+        uses: actions/setup-node@v6
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: |
+          python -m venv ~/env
+          source ~/env/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools
+          pip install bandit
+          sudo apt-get update
+          sudo apt-get install libsasl2-dev libldap2-dev xvfb
+      - name: Test
+        run: |
+          python -m venv ~/env
+          source ~/env/bin/activate
+          make test
+      - name: Test JS
+        run: |
+          python -m venv ~/env
+          source ~/env/bin/activate
+          bandit -r . -ll -ii -x lemur/tests/,docs
+          xvfb-run make test-js
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v2
+        if: matrix.python-version == '3.11' && matrix.postgres-version == 17 && matrix.os == 'ubuntu-22.04'
+        with:
+          parallel: true
+          flag-name: Python ${{ matrix.python-version }} Postgres ${{ matrix.postgres-version }} OS ${{ matrix.os }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  coveralls:
+      name: Indicate completion to coveralls.io
+      needs: build
+      if: ${{ always() }}
+      runs-on: ubuntu-latest
+      steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@v2
+        with:
+          parallel-finished: true

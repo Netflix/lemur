@@ -83,7 +83,7 @@ class CertificateCreationSchema(CertificateSchema):
             data[
                 "notifications"
             ] += notification_service.create_default_expiration_notifications(
-                "DEFAULT_{0}".format(data["owner"].split("@")[0].upper()),
+                "DEFAULT_{}".format(data["owner"].split("@")[0].upper()),
                 [data["owner"]],
             )
 
@@ -270,7 +270,7 @@ class CertificateEditInputSchema(CertificateSchema):
         :return:
         """
         if data.get("owner"):
-            notification_name = "DEFAULT_{0}".format(
+            notification_name = "DEFAULT_{}".format(
                 data["owner"].split("@")[0].upper()
             )
 
@@ -423,6 +423,11 @@ class CertificateOutputSchema(LemurOutputSchema):
         for field in subject_details:
             if field in data and data[field] is None:
                 data.pop(field)
+
+        # Earlier common_name was a required field and thus in most places it is checked not be None
+        # Now that it is optional, setting value as empty string instead of None for backward compatibility
+        if data.get("common_name") is None:
+            data["common_name"] = ""
 
         # Remove certificate body for non-admin users
         return remove_body_for_non_admins(data)

@@ -35,7 +35,7 @@ class RolesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(RolesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, roles_output_schema)
     def get(self):
@@ -93,8 +93,8 @@ class RolesList(AuthenticatedResource):
         args["user"] = g.current_user
         return service.render(args)
 
-    @admin_permission.require(http_exception=403)
     @validate_schema(role_input_schema, role_output_schema)
+    @admin_permission.require(http_exception=403)
     def post(self, data=None):
         """
         .. http:post:: /roles
@@ -154,7 +154,7 @@ class RolesList(AuthenticatedResource):
 
 class RoleViewCredentials(AuthenticatedResource):
     def __init__(self):
-        super(RoleViewCredentials, self).__init__()
+        super().__init__()
 
     def get(self, role_id):
         """
@@ -212,7 +212,7 @@ class RoleViewCredentials(AuthenticatedResource):
 class Roles(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Roles, self).__init__()
+        super().__init__()
 
     @validate_schema(None, role_output_schema)
     def get(self, role_id):
@@ -345,7 +345,7 @@ class UserRolesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(UserRolesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, roles_output_schema)
     def get(self, user_id):
@@ -405,7 +405,7 @@ class AuthorityRolesList(AuthenticatedResource):
 
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(AuthorityRolesList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, roles_output_schema)
     def get(self, authority_id):

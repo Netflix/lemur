@@ -10,18 +10,8 @@ _basedir = os.path.abspath(os.path.dirname(__file__))
 
 # generate random secrets for unittest
 def get_random_secret(length):
-    secret_key = "".join(
-        secrets.choice(string.ascii_uppercase) for x in range(round(length / 4))
-    )
-    secret_key = secret_key + "".join(
-        secrets.choice("~!@#$%^&*()_+") for x in range(round(length / 4))
-    )
-    secret_key = secret_key + "".join(
-        secrets.choice(string.ascii_lowercase) for x in range(round(length / 4))
-    )
-    return secret_key + "".join(
-        secrets.choice(string.digits) for x in range(round(length / 4))
-    )
+    chars = string.ascii_uppercase + string.ascii_lowercase + string.digits + "~!@#$%^&*()_+"
+    return "".join(secrets.choice(chars) for x in range(length))
 
 
 THREADS_PER_PAGE = 8
@@ -30,9 +20,13 @@ THREADS_PER_PAGE = 8
 
 # These will need to be set to `True` if you are developing locally
 CORS = False
-debug = False
+DEBUG = False
 
 TESTING = True
+
+# All the secrets below must be generated using CRYPTOGRAPHICALLY SECURE RANDOMNESS and kept private
+# (ideally they would not be stored directly in this config file).
+# See Lemur's documentation for more information on secret management.
 
 # this is the secret key used by flask session management (utf8 encoded)
 SECRET_KEY = get_random_secret(length=32).encode("utf8")
@@ -40,6 +34,7 @@ SECRET_KEY = get_random_secret(length=32).encode("utf8")
 
 # You should consider storing these separately from your config (should be URL-safe)
 LEMUR_TOKEN_SECRET = "test"
+LEMUR_TOKEN_SECRETS = [LEMUR_TOKEN_SECRET]
 LEMUR_ENCRYPTION_KEYS = base64.urlsafe_b64encode(
     get_random_secret(length=32).encode("utf8")
 )
@@ -290,4 +285,9 @@ ENTRUST_PHONE = "123456"
 ENTRUST_ISSUING = ""
 ENTRUST_PRODUCT_ENTRUST = "ADVANTAGE_SSL"
 
-AWS_ELB_IGNORE_TAG = "lemur-test-ignore"
+AWS_ELB_IGNORE_TAGS = ["lemur-test-ignore"]
+AWS_CLOUDFRONT_IGNORE_TAGS = ["lemur-test-ignore-cloudfront"]
+AWS_IAM_IGNORE_TAGS = ["lemur-test-ignore-iam"]
+
+
+ADMIN_ONLY_AUTHORITY_CREATION = True

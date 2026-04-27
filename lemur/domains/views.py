@@ -13,7 +13,7 @@ from flask_restful import reqparse, Api
 
 from lemur.domains import service
 from lemur.auth.service import AuthenticatedResource
-from lemur.auth.permissions import SensitiveDomainPermission
+from lemur.auth.permissions import SensitiveDomainPermission, StrictRolePermission
 
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
@@ -32,7 +32,7 @@ class DomainsList(AuthenticatedResource):
     """Defines the 'domains' endpoint"""
 
     def __init__(self):
-        super(DomainsList, self).__init__()
+        super().__init__()
 
     @validate_schema(None, domains_output_schema)
     def get(self):
@@ -129,13 +129,15 @@ class DomainsList(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
+        if not StrictRolePermission().can():
+            return dict(message="You are not authorized to create a domain"), 403
         return service.create(data["name"], data["sensitive"])
 
 
 class Domains(AuthenticatedResource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        super(Domains, self).__init__()
+        super().__init__()
 
     @validate_schema(None, domain_output_schema)
     def get(self, domain_id):
@@ -210,17 +212,16 @@ class Domains(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        if SensitiveDomainPermission().can():
-            return service.update(domain_id, data["name"], data["sensitive"])
-
-        return dict(message="You are not authorized to modify this domain"), 403
+        if not StrictRolePermission().can() or not SensitiveDomainPermission().can():
+            return dict(message="You are not authorized to modify this domain."), 403
+        return service.update(domain_id, data["name"], data["sensitive"])
 
 
 class CertificateDomains(AuthenticatedResource):
     """Defines the 'domains' endpoint"""
 
     def __init__(self):
-        super(CertificateDomains, self).__init__()
+        super().__init__()
 
     @validate_schema(None, domains_output_schema)
     def get(self, certificate_id):

@@ -1,16 +1,19 @@
-import arrow
-import requests
 import json
 import sys
-from flask import current_app
-from retrying import retry
-from requests.packages.urllib3.util.retry import Retry
 
+import arrow
+import requests
+from flask import current_app
+from random import choice
+from retrying import retry
+from urllib3.util.retry import Retry
+
+from lemur.certificates.service import get_ekus
+from lemur.common.utils import validate_conf, get_key_type_from_certificate
 from lemur.constants import CRLReason
+from lemur.extensions import metrics
 from lemur.plugins import lemur_entrust as entrust
 from lemur.plugins.bases import IssuerPlugin, SourcePlugin
-from lemur.extensions import metrics
-from lemur.common.utils import validate_conf, get_key_type_from_certificate
 
 
 def log_status_code(r, *args, **kwargs):
@@ -48,12 +51,13 @@ def determine_end_date(end_date):
     return end_date.format("YYYY-MM-DD")
 
 
-def process_options(options, client_id):
+def process_options(options, client_id, csr=None):
     """
     Processes and maps the incoming issuer options to fields/options that
     Entrust understands
 
     :param options:
+    :param csr:
     :return: dict of valid entrust options
     """
     # if there is a config variable ENTRUST_PRODUCT_<upper(authority.name)>
@@ -77,15 +81,25 @@ def process_options(options, client_id):
         "requesterEmail": current_app.config.get("ENTRUST_EMAIL"),
         "requesterPhone": current_app.config.get("ENTRUST_PHONE"),
     }
+    eku = "SERVER_AND_CLIENT_AUTH"
+    if current_app.config.get("ENTRUST_INFER_EKU", False) and csr:
+        ekus = get_ekus(csr)
+        client_auth = any(usage._name == 'clientAuth' for usage in ekus.value)
+        server_auth = any(usage._name == 'serverAuth' for usage in ekus.value)
+
+        if client_auth and not server_auth:
+            eku = "CLIENT_AUTH"
+        elif server_auth and not client_auth:
+            eku = "SERVER_AUTH"
 
     data = {
         "signingAlg": "SHA-2",
-        "eku": "SERVER_AND_CLIENT_AUTH",
         "certType": product_type,
         "certExpiryDate": validity_end,
         "tracking": tracking_data,
         "org": options.get("organization"),
         "clientId": client_id,
+        "eku": eku,
     }
     return data
 
@@ -93,7 +107,7 @@ def process_options(options, client_id):
 @retry(stop_max_attempt_number=5, wait_fixed=1000)
 def get_client_id(session, organization):
     """
-    Helper function for looking up clientID pased on Organization and parsing the response.
+    Helper function for looking up clientID based on Organization and parsing the response.
     :param session:
     :param organization: the validated org with Entrust, for instance "Company, Inc."
     :return: ClientID
@@ -116,16 +130,23 @@ def get_client_id(session, organization):
         # catch an empty json object here
         d = {"response": "No detailed message"}
 
+    if 'status' in d and d['status'] >= 300:
+        error_messages = d['errors']
+        raise Exception(f"Error for Getting Organization {error_messages}")
+
+    if 'organizations' not in d:
+        raise Exception("Error for Getting Organization: no org returned")
+
     found = False
     for y in d["organizations"]:
-        if y["name"] == organization:
+        if y["name"] == organization and y["verificationStatus"] == 'APPROVED':
             found = True
             client_id = y["clientId"]
     if found:
         return client_id
     else:
         raise Exception(
-            f"Error on Organization - Use on of the List: {d['organizations']}"
+            f"Error on Organization - Use one from the list: {d['organizations']}"
         )
 
 
@@ -199,11 +220,19 @@ class EntrustIssuerPlugin(IssuerPlugin):
     author = "sirferl"
     author_url = "https://github.com/sirferl/lemur"
 
+    options = [
+        {
+            "name": "staging_account",
+            "type": "bool",
+            "required": False,
+            "helpMessage": "Set to True if this is an Entrust staging account.",
+            "default": False,
+        }
+    ]
+
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
         required_vars = [
-            "ENTRUST_API_CERT",
-            "ENTRUST_API_KEY",
             "ENTRUST_API_USER",
             "ENTRUST_API_PASS",
             "ENTRUST_URL",
@@ -215,11 +244,13 @@ class EntrustIssuerPlugin(IssuerPlugin):
         validate_conf(current_app, required_vars)
 
         self.session = requests.Session()
-        cert_file = current_app.config.get("ENTRUST_API_CERT")
-        key_file = current_app.config.get("ENTRUST_API_KEY")
+        cert_file = current_app.config.get("ENTRUST_API_CERT", None)
+        key_file = current_app.config.get("ENTRUST_API_KEY", None)
         user = current_app.config.get("ENTRUST_API_USER")
         password = current_app.config.get("ENTRUST_API_PASS")
-        self.session.cert = (cert_file, key_file)
+        if cert_file and key_file:
+            # API key can be used with Client TLS certificate
+            self.session.cert = (cert_file, key_file)
         self.session.auth = (user, password)
         self.session.hooks = dict(response=log_status_code)
         # self.session.config['keep_alive'] = False
@@ -233,7 +264,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
-        super(EntrustIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         """
@@ -253,6 +284,8 @@ class EntrustIssuerPlugin(IssuerPlugin):
         if current_app.config.get("ENTRUST_USE_DEFAULT_CLIENT_ID"):
             # The ID of the primary client is 1.
             client_id = 1
+        elif current_app.config.get("ENTRUST_CLIENT_IDS"):
+            client_id = choice(current_app.config.get("ENTRUST_CLIENT_IDS"))
         else:
             client_id = get_client_id(self.session, issuer_options.get("organization"))
         log_data = {
@@ -263,7 +296,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
         url = current_app.config.get("ENTRUST_URL") + "/certificates"
 
-        data = process_options(issuer_options, client_id)
+        data = process_options(issuer_options, client_id, csr)
         data["csr"] = csr
 
         response_dict = order_and_download_certificate(self.session, url, data)
@@ -316,11 +349,16 @@ class EntrustIssuerPlugin(IssuerPlugin):
 
     @retry(stop_max_attempt_number=3, wait_fixed=1000)
     def deactivate_certificate(self, certificate):
-        """Deactivates an Entrust certificate, as long as it is still active, and not already deactivcated."""
+        """Deactivates an Entrust certificate, as long as it is still active, and not already deactivated."""
         log_data = {
             "function": f"{__name__}.{sys._getframe().f_code.co_name}",
             "external_id": f"{certificate.external_id}",
         }
+
+        # backwards compatible change to protect this endpoint from being used in production
+        for option in self.options:
+            if option.get("name") == "staging_account" and option.get("value") is True:
+                raise Exception("This issuer is not configured to deactivate certificates.")
 
         # Let's first check the status of the certificate
         base_url = current_app.config.get("ENTRUST_URL")
@@ -343,7 +381,7 @@ class EntrustIssuerPlugin(IssuerPlugin):
             metrics.send("entrust_deactivate_certificate", "counter", 1)
             return handle_response(response)
         else:
-            # the certificate is no longer valid, or doesn't exist and cannot be deacticated
+            # the certificate is no longer valid, or doesn't exist and cannot be deactivated
             return 200
 
     @staticmethod
@@ -383,8 +421,6 @@ class EntrustSourcePlugin(SourcePlugin):
     def __init__(self, *args, **kwargs):
         """Initialize the issuer with the appropriate details."""
         required_vars = [
-            "ENTRUST_API_CERT",
-            "ENTRUST_API_KEY",
             "ENTRUST_API_USER",
             "ENTRUST_API_PASS",
             "ENTRUST_URL",
@@ -396,11 +432,13 @@ class EntrustSourcePlugin(SourcePlugin):
         validate_conf(current_app, required_vars)
 
         self.session = requests.Session()
-        cert_file = current_app.config.get("ENTRUST_API_CERT")
-        key_file = current_app.config.get("ENTRUST_API_KEY")
+        cert_file = current_app.config.get("ENTRUST_API_CERT", None)
+        key_file = current_app.config.get("ENTRUST_API_KEY", None)
         user = current_app.config.get("ENTRUST_API_USER")
         password = current_app.config.get("ENTRUST_API_PASS")
-        self.session.cert = (cert_file, key_file)
+        if cert_file and key_file:
+            # API key can be used with Client TLS certificate
+            self.session.cert = (cert_file, key_file)
         self.session.auth = (user, password)
         self.session.hooks = dict(response=log_status_code)
 
@@ -413,7 +451,7 @@ class EntrustSourcePlugin(SourcePlugin):
         adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
 
-        super(EntrustSourcePlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_certificates(self, options, **kwargs):
         """Fetch all Entrust certificates"""
@@ -443,7 +481,7 @@ class EntrustSourcePlugin(SourcePlugin):
             if status_code > 399:
                 raise Exception(f"ENTRUST error: {status_code}\n{data['errors']}")
             for c in data["certificates"]:
-                download_url = "{0}{1}".format(host, c["uri"])
+                download_url = f"{host}{c['uri']}"
                 cert_response = self.session.get(download_url)
                 certificate = json.loads(cert_response.content)
                 # normalize serial
@@ -462,7 +500,7 @@ class EntrustSourcePlugin(SourcePlugin):
                 break
             else:
                 offset += 1
-        current_app.logger.info(f"Retrieved {processed_certs} ertificates")
+        current_app.logger.info(f"Retrieved {processed_certs} certificates")
         return certs
 
     def get_endpoints(self, options, **kwargs):

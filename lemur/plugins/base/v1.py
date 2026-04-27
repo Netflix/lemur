@@ -6,10 +6,11 @@
 
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import re
+from threading import local
+from typing import Optional, Dict, List, Any
 
 from flask import current_app
-from threading import local
-import re
 
 
 # stolen from https://github.com/getsentry/sentry/
@@ -41,18 +42,18 @@ class IPlugin(local):
     """
 
     # Generic plugin information
-    title = None
-    slug = None
-    description = None
-    version = None
-    author = None
-    author_url = None
+    title: Optional[str] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    version: Optional[str] = None
+    author: Optional[str] = None
+    author_url: Optional[str] = None
     resource_links = ()
 
     # Configuration specifics
     conf_key = None
     conf_title = None
-    options = {}
+    options: List[Dict[str, Any]] = []
 
     # Global enabled state
     enabled = True
@@ -133,7 +134,7 @@ class IPlugin(local):
             validation = class_opt.get("validation")
             if not validation:
                 return value
-            if not re.match(validation, value):
+            if (callable(validation) and not validation(value)) or not re.match(validation, value):
                 raise ValueError(f"Option '{option_name}' cannot be validated")
         elif opt_type == "select":
             available = class_opt.get("available")

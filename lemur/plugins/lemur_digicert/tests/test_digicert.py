@@ -1,24 +1,35 @@
+import ipaddress
 import json
+from unittest import mock
 from unittest.mock import patch, Mock
 
 import arrow
 import pytest
+import requests
 from cryptography import x509
 from freezegun import freeze_time
 from lemur.plugins.lemur_digicert import plugin
 from lemur.tests.vectors import CSR_STR
 
+_base_config = {
+    "DIGICERT_ORG_ID": 111111,
+    "DIGICERT_PRIVATE": False,
+    "DIGICERT_DEFAULT_SIGNING_ALGORITHM": "sha256",
+    "DIGICERT_CIS_PROFILE_NAMES": {"digicert": 'digicert'},
+    "DIGICERT_CIS_SIGNING_ALGORITHMS": {"digicert": 'digicert'},
+    "DIGICERT_CIS_ROOTS": {"root": "ROOT"},
+    "DIGICERT_CIS_USE_CSR_FIELDS": False,
+}
+
 
 def config_mock(*args):
-    values = {
-        "DIGICERT_ORG_ID": 111111,
-        "DIGICERT_PRIVATE": False,
-        "DIGICERT_DEFAULT_SIGNING_ALGORITHM": "sha256",
-        "DIGICERT_CIS_PROFILE_NAMES": {"digicert": "digicert"},
-        "DIGICERT_CIS_SIGNING_ALGORITHMS": {"digicert": "digicert"},
-        "DIGICERT_CIS_ROOTS": {"root": "ROOT"},
-    }
-    return values[args[0]]
+    return _base_config[args[0]]
+
+
+def config_mock_use_csr(*args):
+    values = _base_config.copy()
+    values["DIGICERT_CIS_USE_CSR_FIELDS"] = True
+    return values.get(args[0])
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
@@ -44,7 +55,7 @@ def test_determine_end_date(mock_current_app):
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
-def test_map_fields_with_validity_years(mock_current_app):
+def test_map_fields_with_validity_years_and_ip_addr(mock_current_app):
     mock_current_app.config.get = Mock(side_effect=config_mock)
 
     with patch(
@@ -53,12 +64,16 @@ def test_map_fields_with_validity_years(mock_current_app):
         mock_signature_hash.return_value = "sha256"
 
         names = ["one.example.com", "two.example.com", "three.example.com"]
+        ip_addr_names = ["1.2.3.4", "2001:db8:85a3::8a2e:370:7334"]
         options = {
             "common_name": "example.com",
             "owner": "bob@example.com",
             "description": "test certificate",
             "extensions": {
-                "sub_alt_names": {"names": [x509.DNSName(x) for x in names]}
+                "sub_alt_names": {
+                    "names": [x509.DNSName(x) for x in names]
+                    + [x509.IPAddress(ipaddress.ip_address(x)) for x in ip_addr_names]
+                }
             },
             "validity_years": 1,
         }
@@ -66,7 +81,7 @@ def test_map_fields_with_validity_years(mock_current_app):
             "certificate": {
                 "csr": CSR_STR,
                 "common_name": "example.com",
-                "dns_names": names,
+                "dns_names": names + ip_addr_names,
                 "signature_hash": "sha256",
             },
             "organization": {"id": 111111},
@@ -112,8 +127,8 @@ def test_map_fields_with_validity_end_and_start(mock_current_app):
 
 
 @patch("lemur.plugins.lemur_digicert.plugin.current_app")
-def test_map_cis_fields_with_validity_years(mock_current_app, authority):
-    mock_current_app.config.get = Mock(side_effect=config_mock)
+def test_map_cis_fields_with_validity_years_and_use_csr(mock_current_app, authority):
+    mock_current_app.config.get = Mock(side_effect=config_mock_use_csr)
     plugin.determine_end_date = Mock(return_value=arrow.get(2018, 11, 3))
 
     with patch(
@@ -145,6 +160,7 @@ def test_map_cis_fields_with_validity_years(mock_current_app, authority):
                 "valid_to": arrow.get(2018, 11, 3).format("YYYY-MM-DDTHH:mm:ss") + "Z"
             },
             "profile_name": None,
+            "use_csr_fields": True,
         }
 
         assert expected == plugin.map_cis_fields(options, CSR_STR)
@@ -306,3 +322,20 @@ def test_create_cis_authority(mock_current_app, authority):
             "name": "digicert_test_Digicert_CIS_authority_admin",
         }
     ]
+
+
+@patch("lemur.plugins.lemur_digicert.plugin.current_app")
+def test_handle_cis_response_no_key_logging(mock_current_app):
+    from lemur.plugins.lemur_digicert.plugin import handle_cis_response
+    mock_response = mock.Mock()
+    mock_response.status_code = 406
+    session = requests.Session()
+    session.headers.update({"X-DC-DEVKEY": "some_value"})
+
+    # Calling the function
+    with pytest.raises(Exception) as context:
+        handle_cis_response(session, mock_response)
+
+    # Asserting the exception and headers
+    assert "wrong header" in str(context)
+    assert "X-DC-DEVKEY" not in str(context)

@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import patch, Mock
 
 from flask import Flask
+
 from lemur.plugins.lemur_acme import plugin, nsone
 
 

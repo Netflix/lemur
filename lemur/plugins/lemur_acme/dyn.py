@@ -62,7 +62,7 @@ def wait_for_dns_change(change_id, account_number=None):
     number_of_attempts = 20
     for attempts in range(0, number_of_attempts):
         status = _has_dns_propagated(fqdn, token)
-        current_app.logger.debug("Record status for fqdn: {}: {}".format(fqdn, status))
+        current_app.logger.debug(f"Record status for fqdn: {fqdn}: {status}")
         if status:
             metrics.send(
                 "wait_for_dns_change_success", "counter", 1, metric_tags={"dns": fqdn}
@@ -98,7 +98,7 @@ def get_zone_name(domain):
                 zone_name = z.name
     if not zone_name:
         metrics.send("dyn_no_zone_name", "counter", 1)
-        raise Exception("No Dyn zone found for domain: {}".format(domain))
+        raise Exception(f"No Dyn zone found for domain: {domain}")
     return zone_name
 
 
@@ -116,16 +116,16 @@ def create_txt_record(domain, token, account_number):
     zone_name = get_zone_name(domain)
     zone_parts = len(zone_name.split("."))
     node_name = ".".join(domain.split(".")[:-zone_parts])
-    fqdn = "{0}.{1}".format(node_name, zone_name)
+    fqdn = f"{node_name}.{zone_name}"
     zone = Zone(zone_name)
 
     try:
         zone.add_record(
-            node_name, record_type="TXT", txtdata='"{}"'.format(token), ttl=5
+            node_name, record_type="TXT", txtdata=f'"{token}"', ttl=5
         )
         zone.publish()
         current_app.logger.debug(
-            "TXT record created: {0}, token: {1}".format(fqdn, token)
+            f"TXT record created: {fqdn}, token: {token}"
         )
     except (DynectCreateError, DynectUpdateError) as e:
         if "Cannot duplicate existing record data" in e.message:
@@ -152,7 +152,7 @@ def delete_txt_record(change_id, account_number, domain, token):
     zone_name = get_zone_name(domain)
     zone_parts = len(zone_name.split("."))
     node_name = ".".join(domain.split(".")[:-zone_parts])
-    fqdn = "{0}.{1}".format(node_name, zone_name)
+    fqdn = f"{node_name}.{zone_name}"
 
     zone = Zone(zone_name)
     node = Node(zone_name, fqdn)
@@ -164,8 +164,8 @@ def delete_txt_record(change_id, account_number, domain, token):
         # No Text Records remain or host is not in the zone anymore because all records have been deleted.
         return
     for txt_record in all_txt_records:
-        if txt_record.txtdata == ("{}".format(token)):
-            current_app.logger.debug("Deleting TXT record name: {0}".format(fqdn))
+        if txt_record.txtdata == (f"{token}"):
+            current_app.logger.debug(f"Deleting TXT record name: {fqdn}")
             try:
                 txt_record.delete()
             except DynectDeleteError:
@@ -221,14 +221,14 @@ def delete_acme_txt_records(domain):
     zone_name = get_zone_name(domain)
     zone_parts = len(zone_name.split("."))
     node_name = ".".join(domain.split(".")[:-zone_parts])
-    fqdn = "{0}.{1}".format(node_name, zone_name)
+    fqdn = f"{node_name}.{zone_name}"
 
     zone = Zone(zone_name)
     node = Node(zone_name, fqdn)
 
     all_txt_records = node.get_all_records_by_type("TXT")
     for txt_record in all_txt_records:
-        current_app.logger.debug("Deleting TXT record name: {0}".format(fqdn))
+        current_app.logger.debug(f"Deleting TXT record name: {fqdn}")
         try:
             txt_record.delete()
         except DynectDeleteError:

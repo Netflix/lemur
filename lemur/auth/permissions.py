@@ -17,7 +17,7 @@ from flask_principal import Permission, RoleNeed
 operator_permission = Permission(RoleNeed("operator"))
 admin_permission = Permission(RoleNeed("admin"))
 
-CertificateOwner = namedtuple("certificate", ["method", "value"])
+CertificateOwner = namedtuple("CertificateOwner", ["method", "value"])
 CertificateOwnerNeed = partial(CertificateOwner, "role")
 
 
@@ -30,7 +30,7 @@ class SensitiveDomainPermission(Permission):
             for role in sensitive_domain_roles:
                 needs.append(RoleNeed(role))
 
-        super(SensitiveDomainPermission, self).__init__(*needs)
+        super().__init__(*needs)
 
 
 class CertificatePermission(Permission):
@@ -42,28 +42,37 @@ class CertificatePermission(Permission):
             if str(r) != str(r).lower():
                 needs.append(CertificateOwnerNeed(str(r).lower()))
 
-        super(CertificatePermission, self).__init__(*needs)
+        super().__init__(*needs)
 
 
 class ApiKeyCreatorPermission(Permission):
     def __init__(self):
-        super(ApiKeyCreatorPermission, self).__init__(RoleNeed("admin"))
+        super().__init__(RoleNeed("admin"))
 
 
-RoleMember = namedtuple("role", ["method", "value"])
+RoleMember = namedtuple("RoleMember", ["method", "value"])
 RoleMemberNeed = partial(RoleMember, "member")
 
 
 class RoleMemberPermission(Permission):
     def __init__(self, role_id):
         needs = [RoleNeed("admin"), RoleMemberNeed(role_id)]
-        super(RoleMemberPermission, self).__init__(*needs)
+        super().__init__(*needs)
 
 
-AuthorityCreator = namedtuple("authority", ["method", "value"])
+class AuthorityCreatorPermission(Permission):
+    def __init__(self):
+        requires_admin = current_app.config.get("ADMIN_ONLY_AUTHORITY_CREATION", False)
+        if requires_admin:
+            super().__init__(RoleNeed("admin"))
+        else:
+            super().__init__()
+
+
+AuthorityCreator = namedtuple("AuthorityCreator", ["method", "value"])
 AuthorityCreatorNeed = partial(AuthorityCreator, "authorityUse")
 
-AuthorityOwner = namedtuple("authority", ["method", "value"])
+AuthorityOwner = namedtuple("AuthorityOwner", ["method", "value"])
 AuthorityOwnerNeed = partial(AuthorityOwner, "role")
 
 
@@ -73,4 +82,14 @@ class AuthorityPermission(Permission):
         for r in roles:
             needs.append(AuthorityOwnerNeed(str(r)))
 
-        super(AuthorityPermission, self).__init__(*needs)
+        super().__init__(*needs)
+
+
+class StrictRolePermission(Permission):
+    def __init__(self):
+        strict_role_enforcement = current_app.config.get("LEMUR_STRICT_ROLE_ENFORCEMENT", False)
+        if strict_role_enforcement:
+            needs = [RoleNeed("admin"), RoleNeed("operator")]
+            super().__init__(*needs)
+        else:
+            super().__init__()

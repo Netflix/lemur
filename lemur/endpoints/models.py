@@ -16,7 +16,7 @@ from sqlalchemy.sql.expression import case
 
 from sqlalchemy_utils import ArrowType
 
-from lemur.database import db
+from lemur.database import BaseModel
 
 from lemur.models import policies_ciphers, EndpointsCertificates
 
@@ -25,7 +25,7 @@ from deprecated import deprecated
 BAD_CIPHERS = ["Protocol-SSLv3", "Protocol-SSLv2", "Protocol-TLSv1"]
 
 
-class Cipher(db.Model):
+class Cipher(BaseModel):
     __tablename__ = "ciphers"
     id = Column(Integer, primary_key=True)
     name = Column(String(128), nullable=False)
@@ -34,26 +34,26 @@ class Cipher(db.Model):
     def deprecated(self):
         return self.name in BAD_CIPHERS
 
-    @deprecated.expression
+    @deprecated.expression  # type: ignore
     def deprecated(cls):
         return case([(cls.name in BAD_CIPHERS, True)], else_=False)
 
 
-class Policy(db.Model):
+class Policy(BaseModel):
     ___tablename__ = "policies"
     id = Column(Integer, primary_key=True)
     name = Column(String(128), nullable=True)
     ciphers = relationship("Cipher", secondary=policies_ciphers, backref="policy")
 
 
-class EndpointDnsAlias(db.Model):
+class EndpointDnsAlias(BaseModel):
     __tablename__ = "endpoint_dnsalias"
     id = Column(Integer, primary_key=True)
     endpoint_id = Column(Integer, ForeignKey("endpoints.id"))
     alias = Column(String(256))
 
 
-class Endpoint(db.Model):
+class Endpoint(BaseModel):
     __tablename__ = "endpoints"
     id = Column(Integer, primary_key=True)
     owner = Column(String(128))
@@ -102,7 +102,7 @@ class Endpoint(db.Model):
                 issues.append(
                     {
                         "name": "deprecated cipher",
-                        "value": "{0} has been deprecated consider removing it.".format(
+                        "value": "{} has been deprecated consider removing it.".format(
                             cipher.name
                         ),
                     }
@@ -222,4 +222,4 @@ class Endpoint(db.Model):
                 assoc.path = path
 
     def __repr__(self):
-        return "Endpoint(name={name})".format(name=self.name)
+        return f"Endpoint(name={self.name})"

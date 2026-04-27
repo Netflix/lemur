@@ -52,7 +52,7 @@ def get_certificates(exclude=None):
     exclude_conditions = []
     if exclude:
         for e in exclude:
-            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+            exclude_conditions.append(~Certificate.name.ilike(f"%{e}%"))
 
         q = q.filter(and_(*exclude_conditions))
 
@@ -88,7 +88,7 @@ def get_certificates_for_security_summary_email(exclude=None):
     exclude_conditions = []
     if exclude:
         for e in exclude:
-            exclude_conditions.append(~Certificate.name.ilike("%{}%".format(e)))
+            exclude_conditions.append(~Certificate.name.ilike(f"%{e}%"))
 
         q = q.filter(and_(*exclude_conditions))
 
@@ -450,7 +450,7 @@ def send_revocation_notification(certificate):
     )
 
 
-def send_rotation_notification(certificate):
+def send_rotation_notification(certificate, endpoint=None):
     data = certificate_notification_output_schema.dump(certificate).data
     data["security_email"] = current_app.config.get("LEMUR_SECURITY_TEAM_EMAIL")
     email_tags = {
@@ -459,7 +459,7 @@ def send_rotation_notification(certificate):
         "owner": certificate.owner,
     }
     return send_default_notification(
-        "rotation", data, [data["owner"]], email_tags=email_tags
+        "rotation", data, [data["owner"]], email_tags=email_tags, endpoint=endpoint
     )
 
 

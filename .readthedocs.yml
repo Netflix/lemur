@@ -14,10 +14,19 @@ sphinx:
 formats: all
 
 # Set the version of Python and requirements required to build the docs
+build:
+   os: ubuntu-22.04
+   tools:
+      python: "3.11"
+   jobs:
+      pre_install:
+         - grep -v "python-ldap" requirements.txt > tempreqs && mv tempreqs requirements.txt
+         - grep -v "python-ldap" requirements-docs.txt > tempreqs && mv tempreqs requirements-docs.txt
+
+
 python:
-   version: 3.8
    install:
-   - requirements: requirements-docs.txt
-   - method: setuptools
+   - method: pip
      path: .
-   system_packages: true
+     extra_requirements:
+       - docs

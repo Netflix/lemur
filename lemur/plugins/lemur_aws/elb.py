@@ -7,13 +7,13 @@
 """
 
 import botocore
+from celery.exceptions import SoftTimeLimitExceeded
 from flask import current_app
-
 from retrying import retry
 from sentry_sdk import capture_exception
 
-from lemur.extensions import metrics
 from lemur.exceptions import InvalidListener
+from lemur.extensions import metrics
 from lemur.plugins.lemur_aws.sts import sts_client
 
 
@@ -23,7 +23,6 @@ def retry_throttled(exception):
     :param exception:
     :return:
     """
-    from celery.exceptions import SoftTimeLimitExceeded
     if isinstance(exception, SoftTimeLimitExceeded):
         return False
 
@@ -129,8 +128,10 @@ def _filter_ignored_elbs(elbs, key_field, arg_name, response_key_field, **kwargs
     """
     if not elbs:
         return elbs
-    ignore_tag = current_app.config.get("AWS_ELB_IGNORE_TAG")
-    if not ignore_tag:
+    ignore_tags = current_app.config.get("AWS_ELB_IGNORE_TAGS", [])
+    if current_app.config.get("AWS_ELB_IGNORE_TAG"):
+        ignore_tags.append(current_app.config.get("AWS_ELB_IGNORE_TAG"))
+    if not ignore_tags:
         return elbs
     try:
         keys = [elb[key_field] for elb in elbs]
@@ -149,7 +150,7 @@ def _filter_ignored_elbs(elbs, key_field, arg_name, response_key_field, **kwargs
             key = tags[response_key_field]
             tags = tags["Tags"]
             for tag in tags:
-                if tag["Key"] == ignore_tag:
+                if any(tag["Key"] == ignore_tag for ignore_tag in ignore_tags):
                     current_app.logger.info(f"Ignoring ELB due to ignore tag: {key}")
                     ignored_keys[key] = True
 
@@ -456,9 +457,19 @@ def attach_certificate_v2(listener_arn, port, certificates, **kwargs):
     :param certificates:
     """
     try:
-        return kwargs["client"].modify_listener(
+        needs_cert_update_for_sni = has_listener_cert_for_sni(listener_arn, kwargs["client"])
+
+        modified_listener = kwargs["client"].modify_listener(
             ListenerArn=listener_arn, Port=port, Certificates=certificates
         )
+
+        if needs_cert_update_for_sni:
+            current_app.logger.info(f"Adding cert as listener cert for SNI. listener_arn: {listener_arn}")
+            kwargs["client"].add_listener_certificates(
+                ListenerArn=listener_arn, Certificates=certificates
+            )
+        return modified_listener
+
     except botocore.exceptions.ClientError as e:
         if e.response["Error"]["Code"] == "LoadBalancerNotFound":
             current_app.logger.warning("Loadbalancer does not exist.")
@@ -517,6 +528,52 @@ def remove_listener_certificates_v2(listener_arn, certificates, **kwargs):
             "counter",
             1,
             metric_tags={
+                "listener_arn": listener_arn,
+            },
+        )
+        capture_exception(
+            extra={
+                "listener_arn": listener_arn,
+            }
+        )
+        raise
+
+
+def has_listener_cert_for_sni(listener_arn, client):
+    """
+    Describe listener to list certificates in use
+    For cert added as SNI listener, it will be listed with both, default true and false
+    :param listener_arn:
+    :return: True/False
+    """
+    try:
+        listener_certificates = client.describe_listener_certificates(
+            ListenerArn=listener_arn
+        )
+
+        default_cert = ""
+
+        for cert in listener_certificates["Certificates"]:
+            if "IsDefault" in cert and cert["IsDefault"]:
+                default_cert = cert["CertificateArn"]
+                break
+
+        if not default_cert:
+            return False
+
+        for cert in listener_certificates["Certificates"]:
+            if "IsDefault" in cert and cert["IsDefault"] is False and cert["CertificateArn"] == default_cert:
+                return True
+
+        return False
+
+    except Exception as e:  # noqa
+        metrics.send(
+            "has_listener_cert_for_SNI_error",
+            "counter",
+            1,
+            metric_tags={
+                "error": str(e),
                 "listener_arn": listener_arn,
             },
         )

@@ -5,6 +5,9 @@
     "type": "git",
     "url": "git://github.com/netflix/lemur.git"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "bower": "^1.8.8",
     "browser-sync": "^2.26.7",
@@ -57,7 +60,8 @@
     "test": "gulp test"
   },
   "devDependencies": {
-    "gulp": "^4.0.2",
+    "gulp": "^5.0.1",
+    "gulp-clean-css": "^4.3.0",
     "gulp-util": "^3.0.8",
     "jshint": "^2.11.0",
     "karma-chrome-launcher": "^3.1.0"

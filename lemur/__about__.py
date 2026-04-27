@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 __all__ = [
     "__title__",
     "__summary__",
@@ -15,10 +13,10 @@ __title__ = "lemur"
 __summary__ = "Certificate management and orchestration service"
 __uri__ = "https://github.com/Netflix/lemur"
 
-__version__ = "1.2.dev0"
+__version__ = "1.3.dev0"
 
 __author__ = "The Lemur developers"
 __email__ = "security@netflix.com"
 
 __license__ = "Apache License, Version 2.0"
-__copyright__ = "Copyright 2018 {0}".format(__author__)
+__copyright__ = f"Copyright 2018 {__author__}"

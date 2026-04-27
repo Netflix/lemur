@@ -1,39 +1,48 @@
-import time
 import json
+import time
+
 import arrow
-
-from flask_script import Manager
+import click
 from flask import current_app
-
+from flask.cli import with_appcontext
 from sentry_sdk import capture_exception
+
 from lemur.common.utils import check_validation
 from lemur.constants import SUCCESS_METRIC_STATUS
 from lemur.plugins import plugins
 from lemur.plugins.lemur_acme.plugin import AcmeHandler
 from lemur.plugins.lemur_aws import s3
 
-manager = Manager(usage="Handles all ACME related tasks")
+@click.group(name="acme", help="Handles all ACME related tasks")
+@with_appcontext
+def cli():
+    pass
 
 
-@manager.option(
+@cli.command("dnstest")
+@click.option(
     "-d",
     "--domain",
-    dest="domain",
+    "domain",
     required=True,
     help='Name of the Domain to store to (ex. "_acme-chall.test.com".',
 )
-@manager.option(
+@click.option(
     "-t",
     "--token",
-    dest="token",
+    "token",
     required=True,
-    help="Value of the Token to store in DNS as content.",
+    help="Value of the Token to store in DNS as content."
 )
+def dnstest_command(domain, token):
+    dnstest(domain, token)
+
+
 def dnstest(domain, token):
     """
     Create, verify, and delete DNS TXT records using an autodetected provider.
     """
-    print("[+] Starting ACME Tests.")
+    click.echo("[+] Starting ACME Tests.")
     change_id = (domain, token)
 
     acme_handler = AcmeHandler()
@@ -47,11 +56,11 @@ def dnstest(domain, token):
         dns_provider_options = json.loads(dns_provider.credentials)
         account_number = dns_provider_options.get("account_id")
 
-        print(f"[+] Creating TXT Record in `{dns_provider.name}` provider")
+        click.echo(f"[+] Creating TXT Record in `{dns_provider.name}` provider")
         change_id = dns_provider_plugin.create_txt_record(domain, token, account_number)
 
-    print("[+] Verifying TXT Record has propagated to DNS.")
-    print("[+] This step could take a while...")
+    click.echo("[+] Verifying TXT Record has propagated to DNS.")
+    click.echo("[+] This step could take a while...")
     time.sleep(10)
 
     # Verify TXT Records
@@ -62,7 +71,7 @@ def dnstest(domain, token):
 
         try:
             dns_provider_plugin.wait_for_dns_change(change_id, account_number)
-            print(f"[+] Verified TXT Record in `{dns_provider.name}` provider")
+            click.echo(f"[+] Verified TXT Record in `{dns_provider.name}` provider")
         except Exception:
             capture_exception()
             current_app.logger.debug(
@@ -70,7 +79,7 @@ def dnstest(domain, token):
                 f"{account_number}",
                 exc_info=True,
             )
-            print(f"[+] Unable to Verify TXT Record in `{dns_provider.name}` provider")
+            click.echo(f"[+] Unable to Verify TXT Record in `{dns_provider.name}` provider")
 
     time.sleep(10)
 
@@ -82,50 +91,55 @@ def dnstest(domain, token):
 
         # TODO(csine@: Add Exception Handling
         dns_provider_plugin.delete_txt_record(change_id, account_number, domain, token)
-        print(f"[+] Deleted TXT Record in `{dns_provider.name}` provider")
+        click.echo(f"[+] Deleted TXT Record in `{dns_provider.name}` provider")
 
     status = SUCCESS_METRIC_STATUS
-    print("[+] Done with ACME Tests.")
+    click.echo("[+] Done with ACME Tests.")
 
 
-@manager.option(
+@cli.command("upload_acme_token_s3")
+@click.option(
     "-t",
     "--token",
-    dest="token",
+    "token",
     default="date: " + arrow.utcnow().format("YYYY-MM-DDTHH-mm-ss"),
     required=False,
-    help="Value of the Token",
+    help="Value of the Token to store in DNS as content."
 )
-@manager.option(
+@click.option(
     "-n",
     "--token_name",
-    dest="token_name",
+    "token_name",
     default="Token-" + arrow.utcnow().format("YYYY-MM-DDTHH-mm-ss"),
     required=False,
-    help="path",
+    help="path"
 )
-@manager.option(
+@click.option(
     "-p",
     "--prefix",
-    dest="prefix",
+    "prefix",
     default="test/",
     required=False,
-    help="S3 bucket prefix",
+    help="S3 bucket prefix"
 )
-@manager.option(
+@click.option(
     "-a",
     "--account_number",
-    dest="account_number",
+    "account_number",
     required=True,
-    help="AWS Account",
+    help="AWS Account"
 )
-@manager.option(
+@click.option(
     "-b",
     "--bucket_name",
-    dest="bucket_name",
+    "bucket_name",
     required=True,
     help="Bucket Name",
 )
+def upload_acme_token_s3_command(token, token_name, prefix, account_number, bucket_name):
+    upload_acme_token_s3(token, token_name, prefix, account_number, bucket_name)
+
+
 def upload_acme_token_s3(token, token_name, prefix, account_number, bucket_name):
     """
     This method serves for testing the upload_acme_token to S3, fetching the token to verify it, and then deleting it.

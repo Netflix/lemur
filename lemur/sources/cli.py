@@ -5,29 +5,30 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-
-from copy import deepcopy
 import sys
 import time
+from copy import deepcopy
 
-from tabulate import tabulate
-from flask_script import Manager
+import click
 from flask import current_app
+from flask.cli import with_appcontext
 from sentry_sdk import capture_exception
+from tabulate import tabulate
 
+from lemur.certificates import service as certificate_service
 from lemur.constants import SUCCESS_METRIC_STATUS, FAILURE_METRIC_STATUS
-
+from lemur.destinations import service as dest_service
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
 from lemur.plugins.utils import get_plugin_option, set_plugin_option
-
-from lemur.destinations import service as dest_service
 from lemur.sources import service as source_service
 from lemur.users import service as user_service
-from lemur.certificates import service as certificate_service
 
 
-manager = Manager(usage="Handles all source related tasks.")
+@click.group(name="source", help="Handles all source related tasks.")
+@with_appcontext
+def cli():
+    pass
 
 
 def validate_sources(source_strings):
@@ -37,8 +38,8 @@ def validate_sources(source_strings):
         for source in source_service.get_all():
             table.append([source.label, source.active, source.description])
 
-        print("No source specified choose from below:")
-        print(tabulate(table, headers=["Label", "Active", "Description"]))
+        click.echo("No source specified choose from below:")
+        click.echo(tabulate(table, headers=["Label", "Active", "Description"]))
         sys.exit(1)
 
     if "all" in source_strings:
@@ -48,8 +49,8 @@ def validate_sources(source_strings):
             source = source_service.get_by_label(source_str)
 
             if not source:
-                print(
-                    "Unable to find specified source with label: {0}".format(source_str)
+                click.echo(
+                    f"Unable to find specified source with label: {source_str}"
                 )
                 sys.exit(1)
 
@@ -63,8 +64,8 @@ def validate_destinations(destination_strings):
         for dest in dest_service.get_all():
             table.append([dest.label, dest.description])
 
-        print("No destination specified choose from below:")
-        print(tabulate(table, headers=["Label", "Description"]))
+        click.echo("No destination specified choose from below:")
+        click.echo(tabulate(table, headers=["Label", "Description"]))
         sys.exit(1)
 
     if "all" in destination_strings:
@@ -75,7 +76,9 @@ def validate_destinations(destination_strings):
         dest = dest_service.get_by_label(label)
 
         if not dest:
-            print("Unable to find specified destination with label: {0}".format(label))
+            click.echo(
+                f"Unable to find specified destination with label: {label}"
+            )
             sys.exit(1)
 
         destinations.append(dest)
@@ -100,28 +103,33 @@ def execute_clean(plugin, certificate, source):
         capture_exception()
 
 
-@manager.option(
+@cli.command("sync")
+@click.option(
     "-s",
     "--sources",
-    dest="source_strings",
-    action="append",
+    "source_strings",
+    multiple=True,
     help="Sources to operate on.",
 )
-@manager.option(
+@click.option(
     "-ttl",
     "--time-to-live",
+    "ttl",
     type=int,
-    dest="ttl",
     default=2,
     help="Time in hours, after which endpoint has not been refreshed, to remove endpoints from the source.",
 )
+def sync_command(source_strings, ttl):
+    sync(source_strings, ttl)
+
+
 def sync(source_strings, ttl):
     sources = validate_sources(source_strings)
     for source in sources:
         status = FAILURE_METRIC_STATUS
 
         start_time = time.time()
-        print(
+        click.echo(
             "[+] Staring to sync source: {label} and expire endpoints ttl={ttl}h\n".format(
                 label=source.label, ttl=ttl
             )
@@ -130,19 +138,19 @@ def sync(source_strings, ttl):
 
         try:
             data = source_service.sync(source, user, ttl_hours=ttl)
-            print(
+            click.echo(
                 "[+] Certificates: New: {new} Updated: {updated}".format(
                     new=data["certificates"][0], updated=data["certificates"][1]
                 )
             )
-            print(
+            click.echo(
                 "[+] Endpoints: New: {new} Updated: {updated} Expired: {expired}".format(
                     new=data["endpoints"][0],
                     updated=data["endpoints"][1],
                     expired=data["endpoints"][2],
                 )
             )
-            print(
+            click.echo(
                 "[+] Finished syncing source: {label}. Run Time: {time}".format(
                     label=source.label, time=(time.time() - start_time)
                 )
@@ -152,7 +160,7 @@ def sync(source_strings, ttl):
         except Exception as e:
             current_app.logger.exception(e)
 
-            print("[X] Failed syncing source {label}!\n".format(label=source.label))
+            click.echo(f"[X] Failed syncing source {source.label}!\n")
 
             capture_exception()
             metrics.send(
@@ -170,21 +178,26 @@ def sync(source_strings, ttl):
         )
 
 
-@manager.option(
+@cli.command("clean")
+@click.option(
     "-s",
     "--sources",
-    dest="source_strings",
-    action="append",
+    "source_strings",
+    multiple=True,
     help="Sources to operate on.",
 )
-@manager.option(
+@click.option(
     "-c",
     "--commit",
-    dest="commit",
-    action="store_true",
+    "commit",
+    type=bool,
     default=False,
     help="Persist changes.",
 )
+def clean_command(source_strings, commit):
+    clean(source_strings, commit)
+
+
 def clean(source_strings, commit):
     sources = validate_sources(source_strings)
     for source in sources:
@@ -193,12 +206,12 @@ def clean(source_strings, commit):
         if not hasattr(s, "clean"):
             info_text = f"Cannot clean source: {source.label}, source plugin does not implement 'clean()'"
             current_app.logger.warning(info_text)
-            print(info_text)
+            click.echo(info_text)
             continue
 
         start_time = time.time()
 
-        print("[+] Staring to clean source: {label}!\n".format(label=source.label))
+        click.echo(f"[+] Staring to clean source: {source.label}!\n")
 
         cleaned = 0
         certificates = certificate_service.get_all_pending_cleaning_expired(source)
@@ -227,34 +240,38 @@ def clean(source_strings, commit):
             f"Removed {cleaned} certificates from source. "
             f"Run Time: {(time.time() - start_time)}\n"
         )
-        print(info_text)
+        click.echo(info_text)
         current_app.logger.warning(info_text)
 
 
-@manager.option(
+@cli.command("clean_unused_and_expiring_within_days")
+@click.option(
     "-s",
     "--sources",
-    dest="source_strings",
-    action="append",
+    "source_strings",
+    multiple=True,
     help="Sources to operate on.",
 )
-@manager.option(
+@click.option(
     "-d",
     "--days",
-    dest="days_to_expire",
+    "days_to_expire",
     type=int,
-    action="store",
     required=True,
     help="The expiry range within days.",
 )
-@manager.option(
+@click.option(
     "-c",
     "--commit",
-    dest="commit",
-    action="store_true",
+    "commit",
+    type=bool,
     default=False,
     help="Persist changes.",
 )
+def clean_unused_and_expiring_within_days_command(source_strings, days_to_expire, commit):
+    clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit)
+
+
 def clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit):
     sources = validate_sources(source_strings)
     for source in sources:
@@ -263,12 +280,12 @@ def clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit
         if not hasattr(s, "clean"):
             info_text = f"Cannot clean source: {source.label}, source plugin does not implement 'clean()'"
             current_app.logger.warning(info_text)
-            print(info_text)
+            click.echo(info_text)
             continue
 
         start_time = time.time()
 
-        print("[+] Staring to clean source: {label}!\n".format(label=source.label))
+        click.echo(f"[+] Staring to clean source: {source.label}!\n")
 
         cleaned = 0
         certificates = certificate_service.get_all_pending_cleaning_expiring_in_days(
@@ -299,34 +316,38 @@ def clean_unused_and_expiring_within_days(source_strings, days_to_expire, commit
             f"Removed {cleaned} certificates from source. "
             f"Run Time: {(time.time() - start_time)}\n"
         )
-        print(info_text)
+        click.echo(info_text)
         current_app.logger.warning(info_text)
 
 
-@manager.option(
+@cli.command("clean_unused_and_issued_since_days")
+@click.option(
     "-s",
     "--sources",
-    dest="source_strings",
-    action="append",
+    "source_strings",
+    multiple=True,
     help="Sources to operate on.",
 )
-@manager.option(
+@click.option(
     "-d",
     "--days",
-    dest="days_since_issuance",
+    "days_since_issuance",
     type=int,
-    action="store",
     required=True,
     help="Days since issuance.",
 )
-@manager.option(
+@click.option(
     "-c",
     "--commit",
-    dest="commit",
-    action="store_true",
+    "commit",
+    type=bool,
     default=False,
     help="Persist changes.",
 )
+def clean_unused_and_issued_since_days_command(source_strings, days_since_issuance, commit):
+    clean_unused_and_issued_since_days(source_strings, days_since_issuance, commit)
+
+
 def clean_unused_and_issued_since_days(source_strings, days_since_issuance, commit):
     sources = validate_sources(source_strings)
     for source in sources:
@@ -335,12 +356,12 @@ def clean_unused_and_issued_since_days(source_strings, days_since_issuance, comm
         if not hasattr(s, "clean"):
             info_text = f"Cannot clean source: {source.label}, source plugin does not implement 'clean()'"
             current_app.logger.warning(info_text)
-            print(info_text)
+            click.echo(info_text)
             continue
 
         start_time = time.time()
 
-        print("[+] Staring to clean source: {label}!\n".format(label=source.label))
+        click.echo(f"[+] Staring to clean source: {source.label}!\n")
 
         cleaned = 0
         certificates = certificate_service.get_all_pending_cleaning_issued_since_days(
@@ -371,17 +392,22 @@ def clean_unused_and_issued_since_days(source_strings, days_since_issuance, comm
             f"Removed {cleaned} certificates from source. "
             f"Run Time: {(time.time() - start_time)}\n"
         )
-        print(info_text)
+        click.echo(info_text)
         current_app.logger.warning(info_text)
 
 
-@manager.option(
+@cli.command("sync_source_destination")
+@click.option(
     "-d",
     "--destinations",
-    dest="labels",
-    action="append",
+    "labels",
+    multiple=True,
     help="Destinations to operate on.",
 )
+def sync_source_destination_command(labels):
+    sync_source_destination(labels)
+
+
 def sync_source_destination(labels):
     """
     This command will sync destination and source, to make sure eligible destinations are also present as source.
@@ -396,11 +422,16 @@ def sync_source_destination(labels):
     for destination in destinations:
         if source_service.add_destination_to_sources(destination):
             info_text = f"[+] New source added: {destination.label}.\n"
-            print(info_text)
+            click.echo(info_text)
             current_app.logger.warning(info_text)
 
 
-@manager.option("-s", "--source", dest="source_label")
+@cli.command("enable_cloudfront")
+@click.option("-s", "--source", "source_label")
+def enable_cloudfront_command(source_label):
+    enable_cloudfront(source_label)
+
+
 def enable_cloudfront(source_label):
     """
     Given the label of a legacy AWS source (without path or endpointType options), set up the source for CloudFront:
@@ -454,15 +485,15 @@ def enable_cloudfront(source_label):
             f"CloudFront certificates and distributions for {source_label}",
         )
 
-        print(
+        click.echo(
             f"[+] Limited source {source_label} to discover ELBs and ELB certificates.\n"
         )
-        print(
+        click.echo(
             f"[+] Created source {cloudfront_label} to discover CloudFront distributions and certificates.\n"
         )
 
     except ValidationError as e:
-        print(f"[+] Error: {str(e)}")
+        click.echo(f"[+] Error: {str(e)}")
         sys.exit(1)
 
 
@@ -474,12 +505,12 @@ def recreate_sources_from_destinations():
     for source in sources:
         if source_service.delete(source.id):
             info_text = f"[+] Source deleted: {source.label}.\n"
-            print(info_text)
+            click.echo(info_text)
             current_app.logger.warning(info_text)
 
     destinations = dest_service.get_all()
     for destination in destinations:
         if source_service.add_destination_to_sources(destination):
             info_text = f"[+] New source added: {destination.label}.\n"
-            print(info_text)
+            click.echo(info_text)
             current_app.logger.warning(info_text)

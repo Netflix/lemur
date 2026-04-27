@@ -32,6 +32,20 @@ class SourcePlugin(Plugin):
     def clean(self, certificate, options, **kwargs):
         raise NotImplementedError
 
+    def remove_old_certificate(self, endpoint, old_cert, **kwargs):
+        """
+        Called after a certificate rotation to detach the old certificate
+        from the endpoint. Plugins that support multi-certificate endpoints
+        (e.g. GCP load balancers) should override this method.
+
+        By default this is a no-op, which is appropriate for providers
+        like AWS ELBs that handle cert swaps atomically.
+
+        :param endpoint:
+        :param old_cert:
+        """
+        pass
+
     @property
     def options(self):
         """

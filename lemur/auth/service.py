@@ -8,28 +8,24 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 
 """
+import binascii
+import json
+from datetime import datetime, timedelta
+from functools import wraps
 
 import jwt
-import json
-import binascii
-
-from functools import wraps
-from datetime import datetime, timedelta
-
-from flask import g, current_app, jsonify, request
-
-from flask_restful import Resource
-from flask_principal import identity_loaded, RoleNeed, UserNeed
-
-from flask_principal import Identity, identity_changed
-
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
+from flask import g, current_app, jsonify, request
+from flask_principal import Identity, identity_changed
+from flask_principal import identity_loaded, RoleNeed, UserNeed
+from flask_restful import Resource
 
-from lemur.users import service as user_service
 from lemur.api_keys import service as api_key_service
 from lemur.auth.permissions import AuthorityCreatorNeed, RoleMemberNeed
+from lemur.extensions import metrics
+from lemur.users import service as user_service
 
 
 def get_rsa_public_key(n, e):
@@ -58,9 +54,21 @@ def create_token(user, aid=None, ttl=None):
     :param user:
     :return:
     """
-    expiration_delta = timedelta(
-        days=int(current_app.config.get("LEMUR_TOKEN_EXPIRATION", 1))
-    )
+    expiration_delta = timedelta(days=1)
+    custom_expiry = current_app.config.get("LEMUR_TOKEN_EXPIRATION")
+    if custom_expiry:
+        if isinstance(custom_expiry, str) and custom_expiry.endswith("m"):
+            expiration_delta = timedelta(
+                minutes=int(custom_expiry.rstrip("m"))
+            )
+        elif isinstance(custom_expiry, str) and custom_expiry.endswith("h"):
+            expiration_delta = timedelta(
+                hours=int(custom_expiry.rstrip("h"))
+            )
+        else:
+            expiration_delta = timedelta(
+                days=int(custom_expiry)
+            )
     payload = {"iat": datetime.utcnow(), "exp": datetime.utcnow() + expiration_delta}
 
     # Handle Just a User ID & User Object.
@@ -77,8 +85,44 @@ def create_token(user, aid=None, ttl=None):
             del payload["exp"]
         else:
             payload["exp"] = datetime.utcnow() + timedelta(days=ttl)
-    token = jwt.encode(payload, current_app.config["LEMUR_TOKEN_SECRET"])
+    token_secrets = current_app.config.get("LEMUR_TOKEN_SECRETS", [current_app.config["LEMUR_TOKEN_SECRET"]])
+    token = jwt.encode(payload, token_secrets[0])
     return token
+
+
+def decode_with_multiple_secrets(encoded_jwt, secrets, algorithms):
+    errors = []
+    for index, secret in enumerate(secrets):
+        try:
+            # verify_sub=False for backward compatibility to allow use of old tokens that have integer sub
+            # PyJWT now enforces sub to be a StringOrURI as per RFC 7519 making Old tokens with integer sub non-compliant. New tokens are now created with sub as a string.
+            payload = jwt.decode(
+                encoded_jwt,
+                secret,
+                algorithms=algorithms,
+                options={
+                    # Disable strict 'sub' validation to support both old tokens (int sub)
+                    # and new tokens (string sub) during migration to PyJWT 2.10+
+                    "verify_sub": False,
+                    # Disable built-in exp verification: API keys with ttl=-1 have no exp
+                    # claim. Expiration is handled manually by callers for both API keys
+                    # and regular user tokens.
+                    "verify_exp": False,
+                },
+            )
+        except Exception as e:
+            errors.append(e)
+            continue
+        if len(secrets) > 1:
+            digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
+            if isinstance(secret, str):
+                digest.update(secret.encode())
+            else:
+                digest.update(secret)
+            metrics.send("jwt_decode", "counter", 1, metric_tags={**dict(kid=index, fingerprint=digest.finalize().hex()), **payload})
+        return payload
+    if errors:
+        raise errors[0]
 
 
 def login_required(f):
@@ -100,29 +144,20 @@ def login_required(f):
             token = request.headers.get("Authorization").split()[1]
         except Exception as e:
             return dict(message="Token is invalid"), 403
-
+        token_secrets = current_app.config.get("LEMUR_TOKEN_SECRETS", [current_app.config["LEMUR_TOKEN_SECRET"]])
         try:
             header_data = fetch_token_header(token)
-            payload = jwt.decode(
-                token,
-                current_app.config["LEMUR_TOKEN_SECRET"],
-                algorithms=[header_data["alg"]],
-                options={
-                    # Disable strict 'sub' validation to support both old tokens (int sub)
-                    # and new tokens (string sub) during migration to PyJWT 2.10+
-                    "verify_sub": False,
-                    # Disable built-in exp verification: API keys with ttl=-1 have no exp
-                    # claim. Expiration is handled manually below for both API keys and
-                    # regular user tokens.
-                    "verify_exp": False,
-                },
-            )
+            payload = decode_with_multiple_secrets(token, token_secrets, algorithms=[header_data["alg"]])
         except jwt.DecodeError:
             return dict(message="Token is invalid"), 403
         except jwt.ExpiredSignatureError:
             return dict(message="Token has expired"), 403
         except jwt.InvalidTokenError:
             return dict(message="Token is invalid"), 403
+        except Exception:  # noqa
+            if current_app.config.get("DEBUG", False):
+                raise
+            return dict(message="Failed to decode token"), 403
 
         # Manual exp check for regular user tokens (since we disabled verify_exp
         # in jwt.decode to support API keys without exp claims).
@@ -145,10 +180,7 @@ def login_required(f):
             if access_key.application_name:
                 g.caller_application = access_key.application_name
 
-        user_id = payload["sub"]
-        if isinstance(user_id, str):
-            user_id = int(user_id)
-        user = user_service.get(user_id)
+        user = user_service.get(int(payload["sub"]))
 
         if not user.active:
             return dict(message="User is not currently active"), 403
@@ -157,6 +189,12 @@ def login_required(f):
 
         if not g.current_user:
             return dict(message="You are not logged in"), 403
+
+        metrics.send("user_authentication", "counter", 1,
+                     metric_tags={"application_name": getattr(g, "caller_application", "none"),
+                                  "user_id": g.current_user.id,
+                                  "endpoint": request.endpoint,
+                                  "aid": payload.get("aid", "none")})
 
         # Tell Flask-Principal the identity changed
         identity_changed.send(
@@ -228,4 +266,4 @@ class AuthenticatedResource(Resource):
     method_decorators = [login_required]
 
     def __init__(self):
-        super(AuthenticatedResource, self).__init__()
+        super().__init__()

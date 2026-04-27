@@ -37,7 +37,7 @@ class StatsdMetricPlugin(MetricPlugin):
                     "Invalid Metric Tags for Statsd: Tags must be in dict format"
                 )
             else:
-                tags = list(map(lambda e: "{0}:{1}".format(*e), metric_tags.items()))
+                tags = list(map(lambda e: "{}:{}".format(*e), metric_tags.items()))
 
         if metric_type.upper() == "COUNTER":
             self.statsd.increment(metric_name, metric_value, tags)

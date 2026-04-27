@@ -212,6 +212,22 @@ def test_send_rotation_notification(notification_plugin, certificate):
     assert send_rotation_notification(new_cert)
 
 
+def test_send_rotation_notification_with_endpoint(notification_plugin, certificate):
+    from unittest.mock import patch
+    from lemur.notifications.messaging import send_rotation_notification
+    verify_sender_email()
+
+    new_cert = CertificateFactory()
+    new_cert.replaces.append(certificate)
+    endpoint = EndpointFactory()
+
+    with patch("lemur.notifications.messaging.send_default_notification", return_value=True) as mock_send:
+        send_rotation_notification(new_cert, endpoint=endpoint)
+        mock_send.assert_called_once()
+        _, kwargs = mock_send.call_args
+        assert kwargs["endpoint"] is endpoint
+
+
 @mock_ses
 def test_send_reissue_no_endpoints_notification(
     notification_plugin, endpoint, certificate
