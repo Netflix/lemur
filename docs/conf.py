@@ -30,7 +30,7 @@ if on_rtd:
         def __getattr__(cls, name):
             return MagicMock()
 
-    MOCK_MODULES = ["ldap"]
+    MOCK_MODULES = ["ldap", "ldap.filter"]
     sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 autodoc_mock_imports = ["python-ldap", "acme", "certsrv", "dnspython3", "dyn", "factory-boy", "flask_replicated",
