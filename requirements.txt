@@ -37,7 +37,7 @@ blinker==1.9.0
     #   flask-principal
 boto3==1.42.91
     # via -r requirements.in
-botocore==1.42.91
+botocore==1.42.97
     # via
     #   -r requirements.in
     #   boto3
@@ -135,15 +135,28 @@ flask-sqlalchemy==2.5.1
 future==1.0.0
     # via -r requirements.in
 google-api-core[grpc]==2.30.0
-    # via google-cloud-private-ca
+    # via
+    #   google-cloud-core
+    #   google-cloud-private-ca
+    #   google-cloud-storage
 google-auth==2.49.1
     # via
     #   google-api-core
+    #   google-cloud-core
     #   google-cloud-private-ca
+    #   google-cloud-storage
+google-cloud-core==2.5.1
+    # via google-cloud-storage
 google-cloud-private-ca==1.18.0
     # via -r requirements.in
 google-cloud-storage==3.10.1
     # via -r requirements.in
+google-crc32c==1.8.0
+    # via
+    #   google-cloud-storage
+    #   google-resumable-media
+google-resumable-media==2.8.2
+    # via google-cloud-storage
 googleapis-common-protos[grpc]==1.73.0
     # via
     #   google-api-core
@@ -299,6 +312,7 @@ requests==2.33.1
     #   certsrv
     #   cloudflare
     #   google-api-core
+    #   google-cloud-storage
     #   hvac
     #   requests-ntlm
 requests-ntlm==1.3.0
