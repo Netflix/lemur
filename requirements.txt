@@ -275,7 +275,7 @@ pyjwt==2.12.1
     # via -r requirements.in
 pynacl==1.6.2
     # via paramiko
-pyopenssl==26.0.0
+pyopenssl==26.1.0
     # via
     #   -r requirements.in
     #   acme
