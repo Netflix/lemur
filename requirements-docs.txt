@@ -96,7 +96,7 @@ certbot==5.5.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
-certifi==2026.2.25
+certifi==2026.4.22
     # via
     #   -r requirements-tests.txt
     #   requests
