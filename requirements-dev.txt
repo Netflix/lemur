@@ -606,7 +606,7 @@ pynacl==1.6.2
     # via
     #   -r requirements-tests.txt
     #   paramiko
-pyopenssl==26.0.0
+pyopenssl==26.1.0
     # via
     #   -r requirements-tests.txt
     #   acme
