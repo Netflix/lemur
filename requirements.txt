@@ -321,7 +321,7 @@ retrying==1.4.2
     # via -r requirements.in
 s3transfer==0.16.0
     # via boto3
-sentry-sdk==2.58.0
+sentry-sdk==2.59.0
     # via -r requirements.in
 six==1.17.0
     # via

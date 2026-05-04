@@ -600,7 +600,7 @@ s3transfer==0.16.0
     # via
     #   -r requirements.txt
     #   boto3
-sentry-sdk==2.58.0
+sentry-sdk==2.59.0
     # via -r requirements.txt
 six==1.17.0
     # via
