@@ -257,7 +257,7 @@ class CertificatesNameQuery(AuthenticatedResource):
         result = service.query_name(certificate_name, args)
         resolver = current_app.config.get("CERT_NAME_RESOLVER")
         if resolver:
-            caller = getattr(g, "caller_application", None)
+            caller = getattr(g, "caller_application", None) or g.user.email
             result = resolver(certificate_name, result, caller)
         return result
 
