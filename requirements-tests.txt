@@ -273,7 +273,7 @@ grpcio-status==1.78.0
     # via
     #   -r requirements.txt
     #   google-api-core
-gunicorn==25.3.0
+gunicorn==26.0.0
     # via -r requirements.txt
 hvac==2.4.0
     # via -r requirements.txt
