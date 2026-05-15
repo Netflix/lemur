@@ -174,7 +174,7 @@ Static Media
 ------------
 
 Lemur uses a library that compiles its static media assets (LESS and JS files) automatically. If you're developing using
-runserver you'll see changes happen not only in the original files, but also the minified or processed versions of the file.
+the Flask dev server you'll see changes happen not only in the original files, but also the minified or processed versions of the file.
 
 If you've made changes and need to compile them by hand for any reason, you can do so by running:
 
@@ -200,12 +200,12 @@ Developing with Flask
 
 Because Lemur is just Flask, you can use all of the standard Flask functionality. The only difference is you'll be accessing commands that would normally go through manage.py using the ``lemur`` CLI helper instead.
 
-For example, you probably don't want to use ``lemur start`` for development, as it doesn't support anything like
-automatic reloading on code changes. For that you'd want to use Flask's built-in dev server:
+For example, you probably don't want to use ``lemur start`` for development, as it runs gunicorn and doesn't
+support automatic reloading on code changes. For that you'd want to use Flask's built-in dev server:
 
 ::
 
-    FLASK_DEBUG=1 lemur start
+    FLASK_APP=lemur flask --debug run
 
 
 DDL (Schema Changes)
