@@ -210,6 +210,19 @@ Basic Configuration
         LEMUR_TOKEN_SECRETS = [LEMUR_TOKEN_SECRET]
 
 
+.. data:: LEMUR_TOKEN_EXPIRATION
+    :noindex:
+
+        Controls how long a JWT issued by Lemur remains valid. Accepts an integer (number of days), or a string
+        suffixed with ``h`` (hours) or ``m`` (minutes). Defaults to ``1`` (one day) if not set.
+
+    ::
+
+        LEMUR_TOKEN_EXPIRATION = 1       # 1 day (default)
+        LEMUR_TOKEN_EXPIRATION = "12h"   # 12 hours
+        LEMUR_TOKEN_EXPIRATION = "30m"   # 30 minutes
+
+
 .. data:: LEMUR_ENCRYPTION_KEYS
     :noindex:
 
@@ -1954,21 +1967,53 @@ Vault Destination supports a regex filter to prevent certificates with SAN that 
 GCS Destination Plugin
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Lemur can upload certificates to Google Cloud Storage (GCS).
+Lemur can upload certificates and private keys to Google Cloud Storage (GCS).
 
-.. data:: GCS_BUCKET
-    :noindex:
+Authentication is handled via the ``GOOGLE_APPLICATION_CREDENTIALS`` environment variable, which must point to a valid GCP service account credentials JSON file:
 
-        The name of the GCS bucket to upload certificates to.
+.. code-block:: bash
 
-.. data:: GCS_PROJECT
-    :noindex:
+    export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
 
-        The GCP project ID associated with the GCS bucket.
+The service account must have ``storage.objects.create`` and ``storage.objects.delete`` permissions on the target bucket.
 
-.. note::
-    The Lemur service account must have ``storage.objects.create`` and ``storage.objects.delete``
-    permissions on the target bucket. Authentication uses Application Default Credentials (ADC).
+Each GCS destination is configured through the Lemur UI with the following per-destination options:
+
+* **Bucket Name** — the GCS bucket to upload certificates to (required)
+* **Certificate Object Name** — GCS object path for the certificate file; supports template variables ``{CN}``, ``{OU}``, ``{O}``, ``{L}``, ``{S}``, ``{C}`` (default: ``{CN}.crt``)
+* **Key Object Name** — GCS object path for the private key file; supports the same template variables (default: ``{CN}.key.pem``)
+
+
+Azure Destination Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Lemur can upload certificates and private keys to an Azure Key Vault instance. Certificates are uploaded in PKCS12 format, which is compatible with Azure Application Gateway.
+
+Each Azure destination is configured through the Lemur UI with the following per-destination options:
+
+* **Vault URL** — the full URL to the Azure Key Vault instance (e.g. ``https://mykeyvault.vault.azure.net``)
+* **Azure Tenant** — the Azure Active Directory tenant ID
+* **App ID** — the Application (client) ID used to authenticate to the Key Vault
+* **App Password** — the client secret for the application
+
+
+Google CA Issuer Plugin
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Lemur can issue certificates from a `Google Certificate Authority Service <https://cloud.google.com/certificate-authority-service>`_ (CAS) CA pool.
+
+Authentication requires the ``GOOGLE_APPLICATION_CREDENTIALS`` environment variable to point to a valid GCP service account credentials JSON file:
+
+.. code-block:: bash
+
+    export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
+
+Each Google CA authority is configured through the Lemur UI with the following per-authority options:
+
+* **Project** — the GCP project containing the CA pool
+* **Location** — the GCP region where the CA pool is located (e.g. ``us-east1``)
+* **CA Pool** — the name of the Certificate Authority pool
+* **CA Name** — the name of the specific CA within the pool (leave blank to let CAS choose)
 
 
 AWS Source/Destination Plugin
@@ -2611,6 +2656,28 @@ GCS
     Destination
 :Description:
     Destination plugin to upload certificates to Google Cloud Storage (GCS).
+
+
+Azure
+-----
+
+:Authors:
+    Sirferl
+:Type:
+    Destination
+:Description:
+    Destination plugin to upload certificates to an Azure Key Vault as PKCS12 secrets.
+
+
+Google CA
+---------
+
+:Authors:
+    The Lemur developers
+:Type:
+    Issuer
+:Description:
+    Issuer plugin to create certificates via Google Certificate Authority Service (CAS).
 
 
 3rd Party Plugins
