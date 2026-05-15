@@ -19,8 +19,9 @@ Once you've got all that, the rest is simple:
 
 ::
 
-    # If you have a fork, you'll want to clone it instead
-    git clone git://github.com/netflix/lemur.git
+    git clone https://github.com/netflix/lemur.git
+    # If you have a fork, clone your fork instead:
+    # git clone https://github.com/<your-username>/lemur.git
 
     # Create and activate python virtualenv from within the lemur repo
     python3 -m venv env
@@ -77,8 +78,9 @@ Once you've got all that, the rest is simple:
 
 ::
 
-    # If you have a fork, you'll want to clone it instead
-    git clone git://github.com/lemur/lemur.git
+    git clone https://github.com/netflix/lemur.git
+    # If you have a fork, clone your fork instead:
+    # git clone https://github.com/<your-username>/lemur.git
 
     # Create a python virtualenv
     python3 -m venv env
@@ -165,7 +167,7 @@ If you only need to run the Python tests, you can do so with ``make test-python`
 
 You'll notice that the test suite is structured based on where the code lives, and strongly encourages using the mock library to drive more accurate individual tests.
 
-.. note:: We use py.test for the Python test suite, and a combination of phantomjs and jasmine for the JavaScript tests.
+.. note:: We use py.test for the Python test suite and Jest for the JavaScript tests.
 
 
 Static Media
@@ -199,11 +201,11 @@ Developing with Flask
 Because Lemur is just Flask, you can use all of the standard Flask functionality. The only difference is you'll be accessing commands that would normally go through manage.py using the ``lemur`` CLI helper instead.
 
 For example, you probably don't want to use ``lemur start`` for development, as it doesn't support anything like
-automatic reloading on code changes. For that you'd want to use the standard builtin ``runserver`` command:
+automatic reloading on code changes. For that you'd want to use Flask's built-in dev server:
 
 ::
 
-	lemur runserver
+    FLASK_DEBUG=1 lemur start
 
 
 DDL (Schema Changes)
@@ -227,7 +229,7 @@ Uncertain about how to write tests? Take a look at some existing tests that are 
 
 You can see a list of open pull requests (pending changes) by visiting https://github.com/netflix/lemur/pulls
 
-Pull requests should be against **main** and pass all TravisCI checks
+Pull requests should be against **main** and pass all CI checks (GitHub Actions)
 
 
 Writing a Plugin
