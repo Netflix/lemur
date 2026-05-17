@@ -210,6 +210,19 @@ Basic Configuration
         LEMUR_TOKEN_SECRETS = [LEMUR_TOKEN_SECRET]
 
 
+.. data:: LEMUR_TOKEN_EXPIRATION
+    :noindex:
+
+        Controls how long a JWT issued by Lemur remains valid. Accepts an integer (number of days), or a string
+        suffixed with ``h`` (hours) or ``m`` (minutes). Defaults to ``1`` (one day) if not set.
+
+    ::
+
+        LEMUR_TOKEN_EXPIRATION = 1       # 1 day (default)
+        LEMUR_TOKEN_EXPIRATION = "12h"   # 12 hours
+        LEMUR_TOKEN_EXPIRATION = "30m"   # 30 minutes
+
+
 .. data:: LEMUR_ENCRYPTION_KEYS
     :noindex:
 
@@ -293,6 +306,98 @@ Basic Configuration
     ::
 
         LEMUR_AUTOROTATION_USE_DEFAULT_VALIDITY = False
+
+
+.. data:: ENABLE_AUTOROTATION_FILTER
+    :noindex:
+
+        An optional callable used to control whether autorotation can be enabled for a given certificate.
+        The callback receives the certificate object and should return ``True`` to allow enabling autorotation
+        or ``False`` to reject it. This is useful for enforcing business rules (e.g., disallowing autorotation
+        on certificates that have notifications disabled).
+
+    ::
+
+        def my_autorotation_filter(certificate):
+            return certificate.notify
+
+        ENABLE_AUTOROTATION_FILTER = my_autorotation_filter
+
+
+.. data:: DISABLE_AUTOROTATION_FILTER
+    :noindex:
+
+        An optional callable used by the ``disable_autorotate_without_endpoint`` Celery task to determine
+        when autorotation should be disabled for a certificate. The callback receives the certificate object
+        and should return ``True`` to disable autorotation or ``False`` to leave it unchanged.
+        By default (when not configured), the task makes no changes.
+
+    ::
+
+        def my_disable_filter(certificate):
+            return not certificate.endpoints
+
+        DISABLE_AUTOROTATION_FILTER = my_disable_filter
+
+
+.. data:: REISSUE_FILTER
+    :noindex:
+
+        An optional callable used to reject reissuance requests based on custom business logic.
+        The callback receives the certificate object and should return ``True`` to allow reissuance
+        or ``False`` to reject it.
+
+    ::
+
+        def my_reissue_filter(certificate):
+            return bool(certificate.destinations)
+
+        REISSUE_FILTER = my_reissue_filter
+
+
+.. data:: CERTIFICATE_CREATE_REQUEST_VALIDATION
+    :noindex:
+
+        An optional callable invoked on every certificate creation request. The callback receives the
+        request data and should raise an exception (or return a falsy value) to reject the request.
+        Useful for enforcing organization-wide issuance policies.
+
+    ::
+
+        CERTIFICATE_CREATE_REQUEST_VALIDATION = my_create_validator
+
+
+.. data:: CERTIFICATE_UPDATE_REQUEST_VALIDATION
+    :noindex:
+
+        An optional callable invoked on every certificate update request. Works the same way as
+        ``CERTIFICATE_CREATE_REQUEST_VALIDATION``.
+
+    ::
+
+        CERTIFICATE_UPDATE_REQUEST_VALIDATION = my_update_validator
+
+
+.. data:: CERTIFICATE_EXPORT_KEY_REQUEST_VALIDATION
+    :noindex:
+
+        An optional callable invoked when a private key export is requested. Useful for blocking
+        specific API keys or users from exporting private keys for migrated certificates.
+
+    ::
+
+        CERTIFICATE_EXPORT_KEY_REQUEST_VALIDATION = my_export_validator
+
+
+.. data:: ENABLE_AUTO_ROTATE_ALL_AUTHORITIES
+    :noindex:
+
+        When set to ``True``, all authorities are considered for destination autorotation regardless
+        of per-authority settings. Defaults to ``False``.
+
+    ::
+
+        ENABLE_AUTO_ROTATE_ALL_AUTHORITIES = False
 
 
 .. data:: DEBUG_DUMP
@@ -1459,11 +1564,9 @@ account. See :ref:`Using a pre-existing ACME account <AcmeAccountReuse>` for mor
     :noindex:
 
             This is an optional parameter to indicate the preferred chain to retrieve from ACME when finalizing the order.
-            This is applicable to Let's Encrypts recent `migration <https://letsencrypt.org/certificates/>`_ to their
-            own root, where they provide two distinct certificate chains (fullchain_pem vs. alternative_fullchains_pem);
-            the main chain will be the long chain that is rooted in the expiring DTS root, whereas the alternative chain
-            is rooted in X1 root CA.
-            Select "X1" to get the shorter chain (currently alternative), leave blank or "DST Root CA X3" for the longer chain.
+            Some ACME CAs provide multiple certificate chains; this parameter selects which chain to use by matching
+            against the issuer name. For Let's Encrypt, leaving this blank uses the default chain (rooted in ISRG Root X1).
+            Refer to `Let's Encrypt's certificates page <https://letsencrypt.org/certificates/>`_ for current chain options.
 
 
 Active Directory Certificate Services Plugin
@@ -1861,12 +1964,94 @@ A Vault destination can be one object in Vault or a directory where all certific
 Vault Destination supports a regex filter to prevent certificates with SAN that do not match the regex filter from being deployed. This is an optional feature per destination defined.
 
 
+GCS Destination Plugin
+~~~~~~~~~~~~~~~~~~~~~~
+
+Lemur can upload certificates and private keys to Google Cloud Storage (GCS).
+
+Authentication is handled via the ``GOOGLE_APPLICATION_CREDENTIALS`` environment variable, which must point to a valid GCP service account credentials JSON file:
+
+.. code-block:: bash
+
+    export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
+
+The service account must have ``storage.objects.create`` and ``storage.objects.delete`` permissions on the target bucket.
+
+Each GCS destination is configured through the Lemur UI with the following per-destination options:
+
+* **Bucket Name** — the GCS bucket to upload certificates to (required)
+* **Certificate Object Name** — GCS object path for the certificate file; supports template variables ``{CN}``, ``{OU}``, ``{O}``, ``{L}``, ``{S}``, ``{C}`` (default: ``{CN}.crt``)
+* **Key Object Name** — GCS object path for the private key file; supports the same template variables (default: ``{CN}.key.pem``)
+
+
+Azure Destination Plugin
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Lemur can upload certificates and private keys to an Azure Key Vault instance. Certificates are uploaded in PKCS12 format, which is compatible with Azure Application Gateway.
+
+Each Azure destination is configured through the Lemur UI with the following per-destination options:
+
+* **Vault URL** — the full URL to the Azure Key Vault instance (e.g. ``https://mykeyvault.vault.azure.net``)
+* **Azure Tenant** — the Azure Active Directory tenant ID
+* **App ID** — the Application (client) ID used to authenticate to the Key Vault
+* **App Password** — the client secret for the application
+
+
+Google CA Issuer Plugin
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Lemur can issue certificates from a `Google Certificate Authority Service <https://cloud.google.com/certificate-authority-service>`_ (CAS) CA pool.
+
+Authentication requires the ``GOOGLE_APPLICATION_CREDENTIALS`` environment variable to point to a valid GCP service account credentials JSON file:
+
+.. code-block:: bash
+
+    export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
+
+Each Google CA authority is configured through the Lemur UI with the following per-authority options:
+
+* **Project** — the GCP project containing the CA pool
+* **Location** — the GCP region where the CA pool is located (e.g. ``us-east1``)
+* **CA Pool** — the name of the Certificate Authority pool
+* **CA Name** — the name of the specific CA within the pool (leave blank to let CAS choose)
+
+
 AWS Source/Destination Plugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order for Lemur to manage its own account and other accounts we must ensure it has the correct AWS permissions.
 
 .. note:: AWS usage is completely optional. Lemur can upload, find and manage TLS certificates in AWS. But is not required to do so.
+
+.. data:: AWS_ELB_IGNORE_TAGS
+    :noindex:
+
+        A list of ELB tag key/value pairs that Lemur should ignore during endpoint discovery. ELBs matching
+        any of these tags will be skipped.
+
+    ::
+
+        AWS_ELB_IGNORE_TAGS = [{"Key": "lemur:ignore", "Value": "true"}]
+
+
+.. data:: AWS_CLOUDFRONT_IGNORE_TAGS
+    :noindex:
+
+        A list of CloudFront distribution tag key/value pairs that Lemur should ignore during source sync.
+
+    ::
+
+        AWS_CLOUDFRONT_IGNORE_TAGS = [{"Key": "lemur:ignore", "Value": "true"}]
+
+
+.. data:: AWS_IAM_IGNORE_TAGS
+    :noindex:
+
+        A list of IAM certificate tag key/value pairs that Lemur should ignore during source sync.
+
+    ::
+
+        AWS_IAM_IGNORE_TAGS = [{"Key": "lemur:ignore", "Value": "true"}]
 
 Setting up IAM roles
 """"""""""""""""""""
@@ -2122,7 +2307,7 @@ If you're using a non-standard configuration location, you'll need to prefix eve
 For a list of commands, you can also use ``lemur help``, or ``lemur [command] --help``
 for help on a specific command.
 
-.. note:: The script is powered by a library called `Flask-Script <https://github.com/smurfix/flask-script>`_
+.. note:: The CLI is powered by `Click <https://click.palletsprojects.com/>`_ via Flask's built-in CLI support.
 
 Builtin Commands
 ----------------
@@ -2246,7 +2431,7 @@ To get the latest code from github run
 
         cd <lemur-source-directory>
         git pull -t <version>
-        python setup.py develop
+        pip install -e .
 
 
 .. note::
@@ -2460,6 +2645,39 @@ Vault
     Destination
 :Description:
     Destination plugin to deploy certificates to Hashicorp Vault secret store.
+
+
+GCS
+---
+
+:Authors:
+    The Lemur developers
+:Type:
+    Destination
+:Description:
+    Destination plugin to upload certificates to Google Cloud Storage (GCS).
+
+
+Azure
+-----
+
+:Authors:
+    Sirferl
+:Type:
+    Destination
+:Description:
+    Destination plugin to upload certificates to an Azure Key Vault as PKCS12 secrets.
+
+
+Google CA
+---------
+
+:Authors:
+    The Lemur developers
+:Type:
+    Issuer
+:Description:
+    Issuer plugin to create certificates via Google Certificate Authority Service (CAS).
 
 
 3rd Party Plugins
