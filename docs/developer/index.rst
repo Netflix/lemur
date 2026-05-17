@@ -211,6 +211,15 @@ support automatic reloading on code changes. For that you'd want to use Flask's 
 DDL (Schema Changes)
 --------------------
 
+When you change a SQLAlchemy model, generate a new migration script and then apply it:
+
+::
+
+    lemur db migrate   # auto-generates a new migration script from your model changes
+    lemur db upgrade   # applies pending migrations to the database (shortcut to Alembic's upgrade via Flask-Migrate)
+
+Always review the generated migration script before committing it — auto-generation can miss things like index changes or column type nuances.
+
 Schema changes should always introduce the new schema in a commit, and then introduce code relying on that schema in a followup commit. This also means that new columns must be NULLable.
 
 Removing columns and tables requires a slightly more painful flow, and should resemble the follow multi-commit flow:
