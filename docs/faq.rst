@@ -50,7 +50,6 @@ How do I
 
      from lemur.users.service import create as create_user
      from lemur.roles.service import create as create_role
-     from lemur.accounts.service import create as create_account
 
      role = create_role('aRole', 'this is a new role')
-     create_user('admin', 'password', 'lemur@nobody', True, [role]
+     create_user('admin', 'password', 'lemur@nobody', True, [role])

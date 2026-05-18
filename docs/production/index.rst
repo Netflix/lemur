@@ -160,9 +160,9 @@ sensitive nature of Lemur and what it controls makes this essential. This is a s
        ssl_dhparam /path/to/dhparam.pem;
 
        # modern configuration. tweak to your needs.
-       ssl_protocols TLSv1.1 TLSv1.2;
-       ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK';
-       ssl_prefer_server_ciphers on;
+       ssl_protocols TLSv1.2 TLSv1.3;
+       ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384';
+       ssl_prefer_server_ciphers off;
 
        # HSTS (ngx_http_headers_module is required) (15768000 seconds = 6 months)
        add_header Strict-Transport-Security max-age=15768000;
@@ -278,7 +278,7 @@ Create a configuration file named supervisor.ini::
     minprocs=200
 
     [program:lemur]
-    command=python /path/to/lemur/manage.py manage.py start
+    command=/path/to/lemur/bin/lemur start
 
     directory=/path/to/lemur/
     environment=PYTHONPATH='/path/to/lemur/',LEMUR_CONF='/home/lemur/.lemur/lemur.conf.py'
@@ -293,7 +293,7 @@ The last one defines one (you can have many) process supervisor should manage.
 
 It means it will run the command::
 
-    python manage.py start
+    lemur start
 
 
 In the directory, with the environment and the user you defined.
@@ -433,7 +433,14 @@ Example Celery configuration (To be placed in your configuration file)::
                 'expires': 180
             },
             'schedule': crontab(hour=20, minute=0),
-        }
+        },
+        'disable_autorotate_without_endpoint': {
+            'task': 'lemur.common.celery.disable_autorotate_without_endpoint',
+            'options': {
+                'expires': 180
+            },
+            'schedule': crontab(hour=22, minute=0, day_of_week=2),
+        },
     }
 
 To enable celery support, you must also have configuration values that tell Celery which broker and backend to use.
@@ -453,7 +460,7 @@ In the `redis://` url, the database number can be added with a slash after the p
 
 Do not forget to import crontab module in your configuration file::
 
-    from celery.task.schedules import crontab
+    from celery.schedules import crontab
 
 You must start a single Celery scheduler instance and one or more worker instances in order to handle incoming tasks.
 The scheduler can be started with::
@@ -536,56 +543,6 @@ Currently only the SFTP and S3 Bucket destination support the ACME HTTP challeng
 
 Afterwards you can create a new certificate authority as described in the DNS challenge, but need to choose
 `Acme HTTP-01` as the plugin type, and then the destination you created beforehand.
-
-LetsEncrypt: pinning to cross-signed ICA
-----------------------------------------
-
-Let's Encrypt has been using a `cross-signed <https://letsencrypt.org/certificates/>`_ intermediate CA by DST Root CA X3,
-which is included in many older devices' TrustStore.
-
-
-Let's Encrypt is `transitioning <https://letsencrypt.org/2019/04/15/transitioning-to-isrg-root.html>`_ to use
-the intermediate CA issued by their own root (ISRG X1) starting from September 29th 2020.
-This is in preparation of concluding the initial bootstrapping of their CA, by having it cross-signed by an older CA.
-
-
-Lemur can temporarily pin to the cross-signed intermediate CA (same public/private key pair as the ICA signed by ISRG X1).
-This will prolong support for incompatible devices.
-
-The following must be added to the config file to activate the pinning (the pinning will be removed by September 2021)::
-
-    # remove or update after Mar 17 16:40:46 2021 GMT
-    IDENTRUST_CROSS_SIGNED_LE_ICA_EXPIRATION_DATE = "17/03/21"
-    IDENTRUST_CROSS_SIGNED_LE_ICA = """
-    -----BEGIN CERTIFICATE-----
-    MIIEkjCCA3qgAwIBAgIQCgFBQgAAAVOFc2oLheynCDANBgkqhkiG9w0BAQsFADA/
-    MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT
-    DkRTVCBSb290IENBIFgzMB4XDTE2MDMxNzE2NDA0NloXDTIxMDMxNzE2NDA0Nlow
-    SjELMAkGA1UEBhMCVVMxFjAUBgNVBAoTDUxldCdzIEVuY3J5cHQxIzAhBgNVBAMT
-    GkxldCdzIEVuY3J5cHQgQXV0aG9yaXR5IFgzMIIBIjANBgkqhkiG9w0BAQEFAAOC
-    AQ8AMIIBCgKCAQEAnNMM8FrlLke3cl03g7NoYzDq1zUmGSXhvb418XCSL7e4S0EF
-    q6meNQhY7LEqxGiHC6PjdeTm86dicbp5gWAf15Gan/PQeGdxyGkOlZHP/uaZ6WA8
-    SMx+yk13EiSdRxta67nsHjcAHJyse6cF6s5K671B5TaYucv9bTyWaN8jKkKQDIZ0
-    Z8h/pZq4UmEUEz9l6YKHy9v6Dlb2honzhT+Xhq+w3Brvaw2VFn3EK6BlspkENnWA
-    a6xK8xuQSXgvopZPKiAlKQTGdMDQMc2PMTiVFrqoM7hD8bEfwzB/onkxEz0tNvjj
-    /PIzark5McWvxI0NHWQWM6r6hCm21AvA2H3DkwIDAQABo4IBfTCCAXkwEgYDVR0T
-    AQH/BAgwBgEB/wIBADAOBgNVHQ8BAf8EBAMCAYYwfwYIKwYBBQUHAQEEczBxMDIG
-    CCsGAQUFBzABhiZodHRwOi8vaXNyZy50cnVzdGlkLm9jc3AuaWRlbnRydXN0LmNv
-    bTA7BggrBgEFBQcwAoYvaHR0cDovL2FwcHMuaWRlbnRydXN0LmNvbS9yb290cy9k
-    c3Ryb290Y2F4My5wN2MwHwYDVR0jBBgwFoAUxKexpHsscfrb4UuQdf/EFWCFiRAw
-    VAYDVR0gBE0wSzAIBgZngQwBAgEwPwYLKwYBBAGC3xMBAQEwMDAuBggrBgEFBQcC
-    ARYiaHR0cDovL2Nwcy5yb290LXgxLmxldHNlbmNyeXB0Lm9yZzA8BgNVHR8ENTAz
-    MDGgL6AthitodHRwOi8vY3JsLmlkZW50cnVzdC5jb20vRFNUUk9PVENBWDNDUkwu
-    Y3JsMB0GA1UdDgQWBBSoSmpjBH3duubRObemRWXv86jsoTANBgkqhkiG9w0BAQsF
-    AAOCAQEA3TPXEfNjWDjdGBX7CVW+dla5cEilaUcne8IkCJLxWh9KEik3JHRRHGJo
-    uM2VcGfl96S8TihRzZvoroed6ti6WqEBmtzw3Wodatg+VyOeph4EYpr/1wXKtx8/
-    wApIvJSwtmVi4MFU5aMqrSDE6ea73Mj2tcMyo5jMd6jmeWUHK8so/joWUoHOUgwu
-    X4Po1QYz+3dszkDqMp4fklxBwXRsW10KXzPMTZ+sOPAveyxindmjkW8lGy+QsRlG
-    PfZ+G6Z6h7mjem0Y+iWlkYcV4PIWL1iwBi8saCbGS5jN2p8M+X+Q7UNKEkROb3N6
-    KOqkqm57TH2H3eDJAkSnh6/DNFu0Qg==
-    -----END CERTIFICATE-----
-    """
-
 
 .. _AcmeAccountReuse:
 
