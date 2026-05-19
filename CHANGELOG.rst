@@ -1,8 +1,12 @@
 Changelog
 =========
 
-Unreleased
+1.9.1 - `2026-05-19`
 ~~~~~~~~~~~~~~~~~~~~
+- Fixed authorization bypass (GHSA-qcqw-jwxc-2hqg) where ``StrictRolePermission`` and ``AuthorityCreatorPermission``
+  granted access to any authenticated user on default Lemur installs. Both ``LEMUR_STRICT_ROLE_ENFORCEMENT`` and
+  ``ADMIN_ONLY_AUTHORITY_CREATION`` now default to ``True`` (fail-closed). Existing installs that explicitly set
+  either flag to ``False`` are unaffected.
 
 1.9.0 - `2026-04-20`
 ~~~~~~~~~~~~~~~~~~~~

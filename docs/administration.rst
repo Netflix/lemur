@@ -438,10 +438,14 @@ Basic Configuration
 .. data:: LEMUR_STRICT_ROLE_ENFORCEMENT
     :noindex:
 
-        When set to True, this property enforces the default Lemur role functionality. The default Lemur roles are
-        ``admin``, ``operator``, and ``read-only``. Users will be required to have a default role assigned
-        upon creation. The ``operator`` and ``read-only`` roles are strictly enforced. Users assigned the ``read-only``
-        role will not be able to create/update resources.
+        Controls role-based access enforcement for create/update operations. The default Lemur roles are
+        ``admin``, ``operator``, and ``read-only``.
+
+        By default (unset or ``True``), role enforcement is active: only ``admin`` and ``operator`` users
+        may create or update resources. Users assigned the ``read-only`` role will be denied.
+
+        Set to ``False`` to explicitly opt in to relaxed enforcement, allowing any authenticated user to
+        create or update resources regardless of role.
 
     ::
 
@@ -470,7 +474,9 @@ Basic Configuration
 .. data:: ADMIN_ONLY_AUTHORITY_CREATION
     :noindex:
 
-        Allows authority creation to be an admin-only operation. By default, any user can create new authorities.
+        Controls who may create new Certificate Authorities. By default (unset or ``True``), only ``admin``
+        users can create authorities. Set to ``False`` to explicitly opt in to allowing any authenticated
+        user to create authorities.
 
 
 Certificate Default Options
