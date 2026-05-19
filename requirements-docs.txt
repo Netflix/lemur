@@ -854,7 +854,7 @@ types-redis==4.6.0.20241004
     # via -r requirements-tests.txt
 types-requests==2.33.0.20260508
     # via -r requirements-tests.txt
-types-setuptools==82.0.0.20260408
+types-setuptools==82.0.0.20260518
     # via
     #   -r requirements-tests.txt
     #   types-cffi
