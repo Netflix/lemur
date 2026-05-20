@@ -19,7 +19,7 @@ from flask import current_app
 from sentry_sdk import capture_exception
 
 from lemur.authorizations import service as authorization_service
-from lemur.common.utils import check_validation, drop_last_cert_from_chain
+from lemur.common.utils import check_validation, drop_last_cert_from_chain, csr_to_string
 from lemur.constants import CRLReason, EMAIL_RE
 from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidConfiguration
@@ -113,7 +113,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(ACMEIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_ordered_certificate(self, pending_cert):
         self.acme = AcmeDnsHandler()
@@ -131,7 +131,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                 self.acme.autodetect_dns_providers(domain)
 
         try:
-            order = acme_client.new_order(pending_cert.csr)
+            order = acme_client.new_order(csr_to_string(pending_cert.csr))
         except WildcardUnsupportedError:
             metrics.send("get_ordered_certificate_wildcard_unsupported", "counter", 1)
             raise Exception(
@@ -195,7 +195,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
                         self.acme.autodetect_dns_providers(domain)
 
                 try:
-                    order = acme_client.new_order(pending_cert.csr)
+                    order = acme_client.new_order(csr_to_string(pending_cert.csr))
                 except WildcardUnsupportedError:
                     capture_exception()
                     metrics.send(
@@ -422,7 +422,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(ACMEHttpIssuerPlugin, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def create_certificate(self, csr, issuer_options):
         """

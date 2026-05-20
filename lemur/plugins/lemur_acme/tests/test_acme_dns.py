@@ -260,7 +260,7 @@ class TestAcmeDns(unittest.TestCase):
         mock_registration.uri = "http://test.com"
         mock_client.register = mock_registration
         mock_client.agree_to_tos = Mock(return_value=True)
-        mock_client.new_account_and_tos.return_value = mock_registration
+        mock_client.new_account.return_value = mock_registration
         mock_acme.return_value = mock_client
 
         mock_key_generation.return_value = {"n": "PwIOkViO"}

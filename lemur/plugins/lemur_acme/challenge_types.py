@@ -20,7 +20,7 @@ from sentry_sdk import capture_exception
 
 from lemur.authorizations import service as authorization_service
 from lemur.constants import ACME_ADDITIONAL_ATTEMPTS
-from lemur.common.utils import drop_last_cert_from_chain
+from lemur.common.utils import drop_last_cert_from_chain, csr_to_string
 from lemur.exceptions import LemurException, InvalidConfiguration
 from lemur.extensions import metrics
 from lemur.plugins.base import plugins
@@ -34,7 +34,7 @@ class AcmeChallengeMissmatchError(LemurException):
     pass
 
 
-class AcmeChallenge(object):
+class AcmeChallenge:
     """
     This is the base class, all ACME challenges will need to extend, allowing for future extendability
     """
@@ -87,7 +87,7 @@ class AcmeHttpChallenge(AcmeChallenge):
         authority = issuer_options.get("authority")
         acme_client, registration = self.acme.setup_acme_client(authority)
 
-        orderr = acme_client.new_order(csr)
+        orderr = acme_client.new_order(csr_to_string(csr))
 
         chall = []
         deployed_challenges = []
@@ -177,7 +177,7 @@ class AcmeHttpChallenge(AcmeChallenge):
                         pem_certificate_chain
                     )
 
-        acme_uri = acme_client.client.net.account.uri.replace("https://", "")
+        acme_uri = acme_client.net.account.uri.replace("https://", "")
         self.acme.log_remaining_validation(finalized_orderr.authorizations, acme_uri)
 
         if len(deployed_challenges) != 0:
@@ -302,7 +302,7 @@ class AcmeDnsChallenge(AcmeChallenge):
     @retry(stop_max_attempt_number=ACME_ADDITIONAL_ATTEMPTS, wait_fixed=5000)
     def create_certificate_immediately(self, acme_client, order_info, csr):
         try:
-            order = acme_client.new_order(csr)
+            order = acme_client.new_order(csr_to_string(csr))
         except WildcardUnsupportedError:
             metrics.send(
                 "create_certificte_immediately_wildcard_unsupported", "counter", 1

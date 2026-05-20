@@ -16,6 +16,7 @@ import ssl
 import string
 
 import OpenSSL
+import josepy as jose
 import pem
 import sqlalchemy
 from cryptography import x509
@@ -258,6 +259,27 @@ def generate_private_key(key_type):
         return ec.generate_private_key(
             _CURVE_TYPES[key_type], backend=default_backend()
         )
+
+
+def key_to_alg(key):
+    algorithm = jose.RS256
+    if key.typ == "EC":
+        crv = key.fields_to_partial_json().get("crv", None)
+        if crv == "P-256" or not crv:
+            algorithm = jose.ES256
+        elif crv == "P-384":
+            algorithm = jose.ES384
+        elif crv == "P-521":
+            algorithm = jose.ES512
+    elif key.typ == "oct":
+        algorithm = jose.HS256
+    return algorithm
+
+
+def csr_to_string(csr):
+    if isinstance(csr, str):
+        return csr.encode("ascii")
+    return csr
 
 
 def check_cert_signature(cert, issuer_public_key):
