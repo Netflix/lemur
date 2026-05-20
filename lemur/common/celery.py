@@ -9,6 +9,7 @@ command: celery -A lemur.common.celery worker --loglevel=info -l DEBUG -B
 """
 
 import copy
+import random
 import sys
 import time
 from celery import Celery
@@ -395,7 +396,8 @@ def fetch_all_pending_acme_certs():
                 log_data["cert_name"] = cert.name
                 log_data["cert_id"] = cert.id
                 current_app.logger.debug(log_data)
-                fetch_acme_cert.delay(cert.id)
+                jitter = random.randint(0, current_app.config.get("ACME_JITTER_MAX_SECONDS", 21600))
+                fetch_acme_cert.apply_async(args=[cert.id], countdown=jitter)
 
     metrics.send(f"{function}.success", "counter", 1)
     return log_data
