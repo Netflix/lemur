@@ -311,7 +311,7 @@ id==1.6.1
     # via twine
 identify==2.6.18
     # via pre-commit
-idna==3.11
+idna==3.15
     # via
     #   -r requirements-tests.txt
     #   requests
