@@ -531,7 +531,7 @@ python-jose[cryptography]==3.5.0
     # via moto
 python-json-logger==4.1.0
     # via -r requirements.txt
-python-ldap==3.4.5
+python-ldap==3.4.7
     # via -r requirements.txt
 pytokens==0.4.1
     # via black
