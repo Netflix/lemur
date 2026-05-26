@@ -4,8 +4,7 @@ set -euo pipefail
 # The user that clones the repository (root) is different from the user performing git commands
 git config --global --add safe.directory /go/src/github.com/DataDog/lemur
 
-# Campaigner should always re-build images for the latest release
-LATEST_RELEASE_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
-echo "lemur:${LATEST_RELEASE_TAG}"
-echo "lemur:${LATEST_RELEASE_TAG}-fips"
-echo "lemur:latest"
+# Campaigner refreshes mutable-latest-prod (rebuilds master HEAD against the
+# latest base image). Required for the once a month rebuild policy.
+echo "lemur:mutable-latest-prod"
+echo "lemur:mutable-latest-prod-fips"

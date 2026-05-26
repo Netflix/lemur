@@ -4,26 +4,16 @@ set -eo pipefail
 # The user that clones the repository (root) is different from the user performing git commands
 git config --global --add safe.directory /go/src/github.com/DataDog/lemur
 
-# Determine the specific commit or release to build an image for
+# Determine the specific commit to build an image for
 IMAGE_TAG=$(echo $GBILITE_IMAGE_TO_BUILD | cut -d ':' -f 2)
 BASE_IMAGE=registry.ddbuild.io/images/base/gbi-ubuntu_2204:release
 FIPS_ENABLED=false
-if [[ $GBILITE_IMAGE_TO_BUILD == "lemur:latest" ]]; then
-  LATEST_RELEASE_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
-  CHECKOUT_REF=$LATEST_RELEASE_TAG
-elif [[ $GBILITE_IMAGE_TO_BUILD == *"-fips" ]]; then
+if [[ $GBILITE_IMAGE_TO_BUILD == *"-fips" ]]; then
   BASE_IMAGE=registry.ddbuild.io/images/base/gbi-ubuntu_2204-fips:release
   FIPS_ENABLED=true
 fi
 
-if [[ -z "$CHECKOUT_REF" ]]; then
-  CHECKOUT_REF=$(git rev-parse HEAD)
-fi
-
-if [[ $FIPS_ENABLED == "true" ]]; then
-  # Release tags to build FIPS images for do not contain the -fips postfix.
-  CHECKOUT_REF=${CHECKOUT_REF%-fips}
-fi
+CHECKOUT_REF=${CHECKOUT_REF:-$(git rev-parse HEAD)}
 
 # Build and sign the image
 cd publish/
