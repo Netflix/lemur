@@ -748,7 +748,7 @@ s3transfer==0.17.0
     #   boto3
 secretstorage==3.5.0
     # via keyring
-sentry-sdk==2.59.0
+sentry-sdk==2.61.1
     # via -r requirements-tests.txt
 six==1.17.0
     # via
