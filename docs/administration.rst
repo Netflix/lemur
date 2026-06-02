@@ -210,6 +210,22 @@ Basic Configuration
         LEMUR_TOKEN_SECRETS = [LEMUR_TOKEN_SECRET]
 
 
+.. data:: LEMUR_TOKEN_ALGORITHMS
+    :noindex:
+
+        The list of JWT signing algorithms the server will accept when verifying session tokens. The server
+        always uses this list — it never trusts the algorithm name in the token header (GHSA-r9gp-7f88-9r54).
+        Defaults to ``["HS256"]``, which is the only algorithm Lemur has ever used to issue tokens, so
+        existing deployments require no config change.
+
+        If you are migrating to a different algorithm, add both the old and new values here during the
+        transition window (the length of ``LEMUR_TOKEN_EXPIRATION``), then remove the old value once all
+        tokens issued under it have expired::
+
+            LEMUR_TOKEN_ALGORITHMS = ["HS256"]         # default
+            LEMUR_TOKEN_ALGORITHMS = ["HS256", "RS256"] # during migration only
+
+
 .. data:: LEMUR_TOKEN_EXPIRATION
     :noindex:
 

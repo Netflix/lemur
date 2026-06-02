@@ -1,6 +1,14 @@
 Changelog
 =========
 
+1.9.2 - `2026-06-02`
+~~~~~~~~~~~~~~~~~~~~
+- Fixed JWT algorithm confusion vulnerability (GHSA-r9gp-7f88-9r54) where the JWT verifier accepted the
+  algorithm name from the unverified token header instead of pinning it server-side. The server now reads
+  the accepted algorithm list from ``LEMUR_TOKEN_ALGORITHMS`` (defaults to ``["HS256"]``, which is the only
+  algorithm Lemur has ever used to issue tokens). Deployments that have not changed the default are fully
+  backward-compatible with no config change required.
+
 1.9.1 - `2026-05-19`
 ~~~~~~~~~~~~~~~~~~~~
 - Fixed authorization bypass (GHSA-qcqw-jwxc-2hqg) where ``StrictRolePermission`` and ``AuthorityCreatorPermission``
