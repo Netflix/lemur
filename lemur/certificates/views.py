@@ -748,8 +748,12 @@ class CertificatePrivateKey(AuthenticatedResource):
         response.headers["cache-control"] = "private, max-age=0, no-cache, no-store"
         response.headers["pragma"] = "no-cache"
 
-        log_service.audit_log("export_private_key", cert.name,
-                              "Exported Private key for the certificate")
+        access_via = "creator" if g.current_user == cert.user else "rbac"
+        log_service.audit_log(
+            "export_private_key",
+            cert.name,
+            f"Exported private key. access_via={access_via} creator_id={cert.user_id} current_owner={cert.owner}",
+        )
         return response
 
 
