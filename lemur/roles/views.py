@@ -256,6 +256,7 @@ class Roles(AuthenticatedResource):
             403,
         )
 
+    @admin_permission.require(http_exception=403)
     @validate_schema(role_input_schema, role_output_schema)
     def put(self, role_id, data=None):
         """
@@ -295,12 +296,9 @@ class Roles(AuthenticatedResource):
            :statuscode 200: no error
            :statuscode 403: unauthenticated
         """
-        permission = RoleMemberPermission(role_id)
-        if permission.can():
-            return service.update(
-                role_id, data["name"], data.get("description"), data.get("users")
-            )
-        return dict(message="You are not authorized to modify this role."), 403
+        return service.update(
+            role_id, data["name"], data.get("description"), data.get("users")
+        )
 
     @admin_permission.require(http_exception=403)
     def delete(self, role_id):
