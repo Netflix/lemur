@@ -218,12 +218,17 @@ Basic Configuration
         Defaults to ``["HS256"]``, which is the only algorithm Lemur has ever used to issue tokens, so
         existing deployments require no config change.
 
+        The **first element** is also used as the signing algorithm for new tokens issued by ``create_token``.
+        This means the signing algorithm is always guaranteed to be in the accepted list — they share the
+        same config key and cannot drift out of sync.
+
         If you are migrating to a different algorithm, add both the old and new values here during the
         transition window (the length of ``LEMUR_TOKEN_EXPIRATION``), then remove the old value once all
         tokens issued under it have expired::
 
-            LEMUR_TOKEN_ALGORITHMS = ["HS256"]         # default
-            LEMUR_TOKEN_ALGORITHMS = ["HS256", "RS256"] # during migration only
+            LEMUR_TOKEN_ALGORITHMS = ["HS256"]          # default; signs and accepts HS256
+            LEMUR_TOKEN_ALGORITHMS = ["RS256", "HS256"]  # migration: sign new tokens with RS256, still accept old HS256 tokens
+            LEMUR_TOKEN_ALGORITHMS = ["RS256"]           # post-migration: HS256 tokens have all expired
 
 
 .. data:: LEMUR_TOKEN_EXPIRATION

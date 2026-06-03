@@ -86,7 +86,8 @@ def create_token(user, aid=None, ttl=None):
         else:
             payload["exp"] = datetime.utcnow() + timedelta(days=ttl)
     token_secrets = current_app.config.get("LEMUR_TOKEN_SECRETS", [current_app.config["LEMUR_TOKEN_SECRET"]])
-    token = jwt.encode(payload, token_secrets[0])
+    signing_alg = current_app.config.get("LEMUR_TOKEN_ALGORITHMS", ["HS256"])[0]
+    token = jwt.encode(payload, token_secrets[0], algorithm=signing_alg)
     return token
 
 
