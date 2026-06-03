@@ -15,7 +15,6 @@
 import json
 import time
 from datetime import datetime, timezone, timedelta
-from urllib.parse import urlparse
 
 import OpenSSL.crypto
 import dns.resolver
@@ -162,20 +161,6 @@ class AcmeHandler:
         directory_url = options.get(
             "acme_url", current_app.config.get("ACME_DIRECTORY_URL")
         )
-
-        _allowed_hosts = current_app.config.get(
-            "ACME_DIRECTORY_HOST_ALLOWLIST",
-            {
-                "acme-v02.api.letsencrypt.org",
-                "acme-staging-v02.api.letsencrypt.org",
-                "dv.acme-v02.api.pki.goog",
-            },
-        )
-        _parsed = urlparse(directory_url)
-        if _parsed.scheme != "https" or _parsed.hostname not in _allowed_hosts:
-            raise ValueError(
-                f"acme_url host not in ACME_DIRECTORY_HOST_ALLOWLIST: {_parsed.hostname}"
-            )
 
         existing_key = options.get(
             "acme_private_key", current_app.config.get("ACME_PRIVATE_KEY")
