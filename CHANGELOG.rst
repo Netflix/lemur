@@ -1,15 +1,6 @@
 Changelog
 =========
 
-1.9.2 - `2026-06-03`
-~~~~~~~~~~~~~~~~~~~~
-- Fixed plaintext password storage on admin-driven password reset (`GHSA-q437-g7fv-2jvv`_). ``hash_password()`` was
-  only wired to the ``before_insert`` SQLAlchemy event; a ``before_update`` listener is now registered so bcrypt
-  hashing is applied on every write to ``users.password``. A guard against double-hashing pre-existing bcrypt values
-  was added to ``User.hash_password()``.
-
-.. _GHSA-q437-g7fv-2jvv: https://github.com/Netflix/lemur/security/advisories/GHSA-q437-g7fv-2jvv
-
 1.9.1 - `2026-05-19`
 ~~~~~~~~~~~~~~~~~~~~
 - Fixed authorization bypass (GHSA-qcqw-jwxc-2hqg) where ``StrictRolePermission`` and ``AuthorityCreatorPermission``
