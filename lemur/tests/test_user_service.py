@@ -1,4 +1,4 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from lemur.users import service as user_service
 
@@ -11,6 +11,7 @@ def _role(name):
 
 def _patch_config(overrides=None):
     mock_app = MagicMock()
+
     def config_get(key, default=None):
         return (overrides or {}).get(key, default)
     mock_app.config.get.side_effect = config_get
