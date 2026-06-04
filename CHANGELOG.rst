@@ -1,6 +1,18 @@
 Changelog
 =========
 
+Unreleased
+~~~~~~~~~~
+- Corrected the GHSA-qcqw-jwxc-2hqg fix from 1.9.1. The original fix changed ``LEMUR_STRICT_ROLE_ENFORCEMENT`` to
+  default ``True``, which broke normal user operations (certificate issuance, notification management, etc.) for
+  any deployment where users are assigned custom group roles rather than the built-in ``admin`` or ``operator``
+  roles. By design, Lemur allows any authenticated user to perform write operations; the ``read-only`` role is an
+  explicit opt-in restriction for users who should only have read access. The correct fix targets only that case:
+  ``StrictRolePermission`` now explicitly denies identities carrying the ``read-only`` role, regardless of the flag
+  value, while permitting all other authenticated users. ``LEMUR_STRICT_ROLE_ENFORCEMENT`` is reverted to default
+  ``False``; setting it to ``True`` restricts write access to ``admin`` and ``operator`` only, as before.
+  ``ADMIN_ONLY_AUTHORITY_CREATION`` remains ``True`` (authority creation is an admin action).
+
 1.9.1 - `2026-05-19`
 ~~~~~~~~~~~~~~~~~~~~
 - Fixed authorization bypass (GHSA-qcqw-jwxc-2hqg) where ``StrictRolePermission`` and ``AuthorityCreatorPermission``

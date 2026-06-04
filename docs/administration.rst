@@ -980,6 +980,35 @@ Since the celery module, relies on the RedisHandler, the following options also 
 
         Which redis database to be used, by default redis offers databases 0-15 (default: 0)
 
+Roles and Authorization
+-----------------------
+
+Lemur has three built-in roles:
+
+``admin``
+    Full access to all resources and configuration. Admins can create and manage Certificate Authorities,
+    manage users and roles, and perform all operations available to other roles.
+
+``operator``
+    Elevated access for day-to-day certificate operations. Operators can perform all write operations
+    (issuing certificates, managing notifications, etc.) and are subject to per-resource role membership
+    checks, but cannot manage users or global configuration.
+
+``read-only``
+    Explicitly restricts a user to read access only. Users with this role cannot issue certificates,
+    create or modify notifications, upload certificates, or perform any other write operation. This role
+    is an **opt-in restriction** — it is not assigned automatically and must be explicitly given to users
+    who should only be able to view resources.
+
+In addition to these built-in roles, Lemur creates and assigns **custom roles** based on group memberships
+provided by your identity provider (see `IDP Configuration Options`_ and `LDAP Options`_). These custom
+roles govern per-resource access — for example, which Certificate Authorities a user may issue from.
+
+By default, any authenticated user who is not assigned the ``read-only`` role may perform write operations.
+This is intentional: authorization for specific resources is handled by per-resource role membership, not by
+a global write restriction. See ``LEMUR_STRICT_ROLE_ENFORCEMENT`` if you need to restrict write access to
+``admin`` and ``operator`` users only.
+
 Authentication Options
 ----------------------
 Lemur currently supports Basic Authentication, LDAP Authentication, Ping OAuth2, and Google out of the box. Additional flows can be added relatively easily.
