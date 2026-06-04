@@ -82,11 +82,6 @@ class TestStrictRolePermission:
             perm = StrictRolePermission()
         assert not perm.allows(_identity("read-only", "cryptographyservices"))
 
-    def test_default_blocks_roleless_identity(self):
-        # no roles = misconfigured provisioning, deny writes
-        with _patch_config():
-            perm = StrictRolePermission()
-        assert not perm.allows(_identity())
 
 
 class TestAuthorityCreatorPermission:

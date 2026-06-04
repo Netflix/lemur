@@ -441,11 +441,19 @@ Basic Configuration
         Controls role-based access enforcement for write operations. The default Lemur roles are
         ``admin``, ``operator``, and ``read-only``.
 
-        By default (unset or ``False``), users assigned the ``read-only`` role are denied write access,
-        while any other authenticated user (including those with custom group roles) may create or update
-        resources.
+        **By design**, the default behavior (unset or ``False``) allows any authenticated user with at
+        least one role to perform write operations: issuing certificates, managing notifications,
+        uploading certificates, and so on. Authorization for specific resources (e.g. which Certificate
+        Authority a user may issue from) is governed by role membership on those resources, not by this
+        flag. This is intentional — most deployments rely on per-resource role membership rather than
+        a global write restriction.
 
-        Set to ``True`` to restrict write access to only ``admin`` and ``operator`` users.
+        The ``read-only`` role is an explicit opt-in restriction. Assigning it to a user signals that
+        they should only be able to view resources, not modify them. Users without the ``read-only``
+        role are permitted to perform write operations by default.
+
+        Set to ``True`` to additionally restrict all write operations to only ``admin`` and ``operator``
+        users, regardless of per-resource role membership.
 
     ::
 

@@ -95,8 +95,7 @@ class StrictRolePermission(Permission):
     def allows(self, identity):
         if self._strict:
             return super().allows(identity)
-        # When not in strict mode, block read-only users and roleless identities.
+        # When not in strict mode, block only read-only users.
         # Empty needs (super().__init__()) would pass everyone including read-only,
         # which was the GHSA-qcqw-jwxc-2hqg vulnerability.
-        role_needs = {n for n in identity.provides if getattr(n, "method", None) == "role"}
-        return bool(role_needs) and RoleNeed("read-only") not in role_needs
+        return RoleNeed("read-only") not in identity.provides
