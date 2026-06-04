@@ -15,6 +15,9 @@ Changelog
   Passwords are now hashed before update. Any reset password should be treated
   as compromised and rotated. Run ``lemur rehash_passwords`` after upgrading to
   detect and re-hash any cleartext passwords already in the database.
+- Fixed privilege escalation (`GHSA-x3vf-mgxj-7785`_) where any member of a role could rewrite that role's membership
+  list, rename the role, or add arbitrary users via ``PUT /api/1/roles/<id>``. The endpoint now requires admin
+  permission, consistent with the existing ``DELETE /api/1/roles/<id>`` handler.
 - Corrected the GHSA-qcqw-jwxc-2hqg fix from 1.9.1. The original fix changed ``LEMUR_STRICT_ROLE_ENFORCEMENT`` to
   default ``True``, which broke normal user operations (certificate issuance, notification management, etc.) for
   any deployment where users are assigned custom group roles rather than the built-in ``admin`` or ``operator``
@@ -30,6 +33,7 @@ Changelog
   and ``operator`` users. See the ``LEMUR_STRICT_ROLE_ENFORCEMENT`` documentation for details.
 
 .. _GHSA-54vg-pfh7-jq95: https://github.com/Netflix/lemur/security/advisories/GHSA-54vg-pfh7-jq95
+.. _GHSA-x3vf-mgxj-7785: https://github.com/Netflix/lemur/security/advisories/GHSA-x3vf-mgxj-7785
 
 1.9.1 - `2026-05-19`
 ~~~~~~~~~~~~~~~~~~~~
