@@ -441,9 +441,9 @@ Basic Configuration
         Controls role-based access enforcement for write operations. The default Lemur roles are
         ``admin``, ``operator``, and ``read-only``.
 
-        **By design**, the default behavior (unset or ``False``) allows any authenticated user with at
-        least one role to perform write operations: issuing certificates, managing notifications,
-        uploading certificates, and so on. Authorization for specific resources (e.g. which Certificate
+        **By design**, the default behavior (unset or ``False``) allows any authenticated user to
+        perform write operations: issuing certificates, managing notifications, uploading certificates,
+        and so on. Authorization for specific resources (e.g. which Certificate
         Authority a user may issue from) is governed by role membership on those resources, not by this
         flag. This is intentional — most deployments rely on per-resource role membership rather than
         a global write restriction.
@@ -1004,9 +1004,9 @@ In addition to these built-in roles, Lemur creates and assigns **custom roles** 
 provided by your identity provider (see `IDP Configuration Options`_ and `LDAP Options`_). These custom
 roles govern per-resource access — for example, which Certificate Authorities a user may issue from.
 
-By default, any authenticated user who is not assigned the ``read-only`` role may perform write operations.
-This is intentional: authorization for specific resources is handled by per-resource role membership, not by
-a global write restriction. See ``LEMUR_STRICT_ROLE_ENFORCEMENT`` if you need to restrict write access to
+By default, any authenticated user may perform write operations unless they have been explicitly assigned the
+``read-only`` role. This is intentional: authorization for specific resources is handled by per-resource role
+membership, not by a global write restriction. See ``LEMUR_STRICT_ROLE_ENFORCEMENT`` if you need to restrict write access to
 ``admin`` and ``operator`` users only.
 
 Authentication Options
