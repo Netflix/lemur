@@ -438,18 +438,18 @@ Basic Configuration
 .. data:: LEMUR_STRICT_ROLE_ENFORCEMENT
     :noindex:
 
-        Controls role-based access enforcement for create/update operations. The default Lemur roles are
+        Controls role-based access enforcement for write operations. The default Lemur roles are
         ``admin``, ``operator``, and ``read-only``.
 
-        By default (unset or ``True``), role enforcement is active: only ``admin`` and ``operator`` users
-        may create or update resources. Users assigned the ``read-only`` role will be denied.
+        By default (unset or ``False``), users assigned the ``read-only`` role are denied write access,
+        while any other authenticated user (including those with custom group roles) may create or update
+        resources.
 
-        Set to ``False`` to explicitly opt in to relaxed enforcement, allowing any authenticated user to
-        create or update resources regardless of role.
+        Set to ``True`` to restrict write access to only ``admin`` and ``operator`` users.
 
     ::
 
-        LEMUR_STRICT_ROLE_ENFORCEMENT = False
+        LEMUR_STRICT_ROLE_ENFORCEMENT = True
 
 
 .. data:: SENTRY_DSN
