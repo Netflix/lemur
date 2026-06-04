@@ -1,14 +1,20 @@
 Changelog
 =========
 
-Unreleased
+1.9.2 - `2026-06-10`
+~~~~~~~~~~~~~~~~~~~~
+- Fixed post-authentication SSRF (`GHSA-54vg-pfh7-jq95`_) where CRL Distribution Point and OCSP responder URLs
+  extracted from uploaded certificate extensions were used as network destinations without validation. Both
+  ``crl_verify`` and ``ocsp_verify`` now reject RFC1918, loopback, and link-local destinations before issuing
+  outbound requests. Operators may optionally configure ``LEMUR_TRUSTED_CRL_HOSTS`` and ``LEMUR_TRUSTED_OCSP_HOSTS``
+  allowlists. The module-level ``crl_cache`` is now bounded to 1000 entries to prevent unbounded cache growth.
 - Fixed plaintext password storage vulnerability (`GHSA-q437-g7fv-2jvv`_) where
-``users.service.update()`` wrote new passwords to the database without hashing. The
-``before_update`` SQLAlchemy event listener was missing, so the bcrypt hash applied
-on insert was bypassed on every admin-driven password reset via ``PUT /api/1/users/<id>``.
-Passwords are now hashed before update. Any reset password should be treated
-as compromised and rotated. Run ``lemur rehash_passwords`` after upgrading to
-detect and re-hash any cleartext passwords already in the database.
+  ``users.service.update()`` wrote new passwords to the database without hashing. The
+  ``before_update`` SQLAlchemy event listener was missing, so the bcrypt hash applied
+  on insert was bypassed on every admin-driven password reset via ``PUT /api/1/users/<id>``.
+  Passwords are now hashed before update. Any reset password should be treated
+  as compromised and rotated. Run ``lemur rehash_passwords`` after upgrading to
+  detect and re-hash any cleartext passwords already in the database.
 - Corrected the GHSA-qcqw-jwxc-2hqg fix from 1.9.1. The original fix changed ``LEMUR_STRICT_ROLE_ENFORCEMENT`` to
   default ``True``, which broke normal user operations (certificate issuance, notification management, etc.) for
   any deployment where users are assigned custom group roles rather than the built-in ``admin`` or ``operator``
@@ -22,6 +28,8 @@ detect and re-hash any cleartext passwords already in the database.
   to notifications, certificate upload, and domain management. Operators in higher-risk environments
   should evaluate ``LEMUR_STRICT_ROLE_ENFORCEMENT = True`` to restrict these operations to ``admin``
   and ``operator`` users. See the ``LEMUR_STRICT_ROLE_ENFORCEMENT`` documentation for details.
+
+.. _GHSA-54vg-pfh7-jq95: https://github.com/Netflix/lemur/security/advisories/GHSA-54vg-pfh7-jq95
 
 1.9.1 - `2026-05-19`
 ~~~~~~~~~~~~~~~~~~~~
