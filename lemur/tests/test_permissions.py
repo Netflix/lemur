@@ -83,7 +83,6 @@ class TestStrictRolePermission:
         assert not perm.allows(_identity("read-only", "cryptographyservices"))
 
 
-
 class TestAuthorityCreatorPermission:
     def test_default_blocks_read_only(self):
         with _patch_config():
