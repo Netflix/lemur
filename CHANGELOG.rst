@@ -1,6 +1,18 @@
 Changelog
 =========
 
+Unreleased
+~~~~~~~~~~
+- Fixed ACME ``acme_url`` SSRF (`GHSA-v2wp-frmc-5q3v`_) where a user-supplied directory URL was fetched
+  server-side with no validation, allowing IMDS and internal network access. ``acme_url`` is now validated
+  against ``ACME_DIRECTORY_HOST_ALLOWLIST`` at authority creation time. Default allowlist covers Let's Encrypt
+  prod/staging and GTS; operators extend it via config for internal or additional ACME CAs.
+- Enhanced private key export audit log (`GHSA-v2wp-frmc-5q3v`_) to record ``access_via`` (creator vs. rbac),
+  ``creator_id``, and ``current_owner`` on every ``/certificates/<id>/key`` fetch, making post-ownership-transfer
+  creator access visible in the audit trail.
+
+.. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v
+
 1.9.1 - `2026-05-19`
 ~~~~~~~~~~~~~~~~~~~~
 - Fixed authorization bypass (GHSA-qcqw-jwxc-2hqg) where ``StrictRolePermission`` and ``AuthorityCreatorPermission``
