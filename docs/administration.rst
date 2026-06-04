@@ -986,13 +986,13 @@ Roles and Authorization
 Lemur has three built-in roles:
 
 ``admin``
-    Full access to all resources and configuration. Admins can create and manage Certificate Authorities,
-    manage users and roles, and perform all operations available to other roles.
+    Required for managing Lemur's own infrastructure: creating and updating users, roles, sources,
+    destinations, and DNS providers. Admins also pass all other permission checks that normal users pass.
 
 ``operator``
-    Elevated access for day-to-day certificate operations. Operators can perform all write operations
-    (issuing certificates, managing notifications, etc.) and are subject to per-resource role membership
-    checks, but cannot manage users or global configuration.
+    Has no dedicated enforcement beyond what a normal authenticated user has, except when
+    ``LEMUR_STRICT_ROLE_ENFORCEMENT = True``, in which case ``operator`` (alongside ``admin``) is
+    required for write operations such as issuing certificates and managing notifications.
 
 ``read-only``
     Explicitly restricts a user to read access only. Users with this role cannot issue certificates,
