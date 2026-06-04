@@ -1,6 +1,15 @@
 Changelog
 =========
 
+1.9.2 - `2026-06-04`
+~~~~~~~~~~~~~~~~~~~~
+- Fixed plaintext password storage vulnerability (`GHSA-q437-g7fv-2jvv`_) where
+``users.service.update()`` wrote new passwords to the database without hashing. The
+``before_update`` SQLAlchemy event listener was missing, so the bcrypt hash applied
+on insert was bypassed on every admin-driven password reset via ``PUT /api/1/users/<id>``.
+Passwords are now hashed before update. Any password reset since 1.9.1 should be treated
+as compromised and rotated.
+
 1.9.1 - `2026-05-19`
 ~~~~~~~~~~~~~~~~~~~~
 - Fixed authorization bypass (GHSA-qcqw-jwxc-2hqg) where ``StrictRolePermission`` and ``AuthorityCreatorPermission``
