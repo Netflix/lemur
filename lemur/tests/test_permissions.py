@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 from flask_principal import Identity, RoleNeed
 
-from lemur.auth.permissions import StrictRolePermission, AuthorityCreatorPermission
+from lemur.auth.permissions import AuthorityCreatorPermission, StrictRolePermission
 
 
 def _config_get(overrides):
@@ -75,6 +75,12 @@ class TestStrictRolePermission:
         with _patch_config({"LEMUR_STRICT_ROLE_ENFORCEMENT": False}):
             perm = StrictRolePermission()
         assert perm.allows(_identity("cryptographyservices"))
+
+    def test_default_blocks_identity_with_read_only_and_custom_role(self):
+        # read-only wins even when combined with other roles
+        with _patch_config():
+            perm = StrictRolePermission()
+        assert not perm.allows(_identity("read-only", "cryptographyservices"))
 
 
 class TestAuthorityCreatorPermission:
