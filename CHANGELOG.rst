@@ -12,6 +12,10 @@ Unreleased
   value, while permitting all other authenticated users. ``LEMUR_STRICT_ROLE_ENFORCEMENT`` is reverted to default
   ``False``; setting it to ``True`` restricts write access to ``admin`` and ``operator`` only, as before.
   ``ADMIN_ONLY_AUTHORITY_CREATION`` remains ``True`` (authority creation is an admin action).
+  Note that by design, any authenticated user (not assigned ``read-only``) retains write access
+  to notifications, certificate upload, and domain management. Operators in higher-risk environments
+  should evaluate ``LEMUR_STRICT_ROLE_ENFORCEMENT = True`` to restrict these operations to ``admin``
+  and ``operator`` users. See the ``LEMUR_STRICT_ROLE_ENFORCEMENT`` documentation for details.
 
 1.9.1 - `2026-05-19`
 ~~~~~~~~~~~~~~~~~~~~

@@ -455,6 +455,20 @@ Basic Configuration
         Set to ``True`` to additionally restrict all write operations to only ``admin`` and ``operator``
         users, regardless of per-resource role membership.
 
+        .. note::
+            **Security considerations for the default (open) model.** By default, any authenticated
+            user may create or modify notifications (including webhook URLs, which can reach arbitrary
+            internal hosts), upload certificates with attacker-supplied keys to configured destinations
+            (e.g. AWS), create Certificate Authorities (if ``ADMIN_ONLY_AUTHORITY_CREATION`` is
+            ``False``), and manipulate the domain registry. These are intentional defaults that support
+            normal workflows in environments where all authenticated users are trusted.
+
+            In deployments where credential compromise is a realistic threat (phished employee, leaked
+            SSO token, insider access), any authenticated identity has meaningful access to the PKI
+            issuance plane. Setting ``LEMUR_STRICT_ROLE_ENFORCEMENT = True`` restricts all write
+            operations to ``admin`` and ``operator`` users, significantly reducing blast radius at
+            the cost of requiring explicit role provisioning for all users who need write access.
+
     ::
 
         LEMUR_STRICT_ROLE_ENFORCEMENT = True
