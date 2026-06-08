@@ -198,7 +198,7 @@ flask==2.3.3
     #   pytest-flask
 flask-bcrypt==1.0.1
     # via -r requirements.txt
-flask-cors==6.0.2
+flask-cors==6.0.4
     # via -r requirements.txt
 flask-limiter==4.1.1
     # via -r requirements.txt
@@ -676,6 +676,7 @@ typing-extensions==4.15.0
     #   cryptography
     #   exceptiongroup
     #   fakeredis
+    #   flask-cors
     #   flask-limiter
     #   grpcio
     #   limits
