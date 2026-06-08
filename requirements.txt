@@ -114,7 +114,7 @@ flask==2.3.3
     #   flask-sqlalchemy
 flask-bcrypt==1.0.1
     # via -r requirements.in
-flask-cors==6.0.2
+flask-cors==6.0.4
     # via -r requirements.in
 flask-limiter==4.1.1
     # via -r requirements.in
@@ -348,6 +348,7 @@ typing-extensions==4.15.0
     #   alembic
     #   cryptography
     #   exceptiongroup
+    #   flask-cors
     #   flask-limiter
     #   grpcio
     #   limits
