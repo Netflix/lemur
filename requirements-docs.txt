@@ -44,6 +44,7 @@ attrs==26.1.0
     #   -r requirements-tests.txt
     #   jsonlines
     #   jsonschema
+    #   jsonschema-path
     #   referencing
 aws-sam-translator==1.108.0
     # via
@@ -397,13 +398,13 @@ jsonpointer==3.1.1
     # via
     #   -r requirements-tests.txt
     #   jsonpatch
-jsonschema==4.24.1
+jsonschema==4.26.0
     # via
     #   -r requirements-tests.txt
     #   aws-sam-translator
     #   openapi-schema-validator
     #   openapi-spec-validator
-jsonschema-path==0.4.5
+jsonschema-path==0.5.0
     # via
     #   -r requirements-tests.txt
     #   openapi-spec-validator
@@ -484,11 +485,11 @@ networkx==3.4.2
     #   cfn-lint
 nose==1.3.7
     # via -r requirements-tests.txt
-openapi-schema-validator==0.8.1
+openapi-schema-validator==0.9.0
     # via
     #   -r requirements-tests.txt
     #   openapi-spec-validator
-openapi-spec-validator==0.8.5
+openapi-spec-validator==0.9.0
     # via
     #   -r requirements-tests.txt
     #   moto
@@ -513,7 +514,7 @@ parsedatetime==2.6
     # via
     #   -r requirements-tests.txt
     #   certbot
-pathable==0.5.0
+pathable==0.6.0
     # via
     #   -r requirements-tests.txt
     #   jsonschema-path
