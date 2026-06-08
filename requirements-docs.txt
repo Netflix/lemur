@@ -753,7 +753,7 @@ s3transfer==0.18.0
     # via
     #   -r requirements-tests.txt
     #   boto3
-sentry-sdk==2.59.0
+sentry-sdk==2.62.0
     # via
     #   -r requirements-docs.in
     #   -r requirements-tests.txt
