@@ -7,8 +7,9 @@ Changelog
 ``users.service.update()`` wrote new passwords to the database without hashing. The
 ``before_update`` SQLAlchemy event listener was missing, so the bcrypt hash applied
 on insert was bypassed on every admin-driven password reset via ``PUT /api/1/users/<id>``.
-Passwords are now hashed before update. Any password reset since 1.9.1 should be treated
-as compromised and rotated.
+Passwords are now hashed before update. Any reset password should be treated
+as compromised and rotated. Run ``lemur rehash_passwords`` after upgrading to
+detect and re-hash any cleartext passwords already in the database.
 
 1.9.1 - `2026-05-19`
 ~~~~~~~~~~~~~~~~~~~~
