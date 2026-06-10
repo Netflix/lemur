@@ -23,7 +23,7 @@ from lemur.common.utils import parse_certificate
 from lemur.extensions import metrics
 
 _CRL_CACHE_MAX_SIZE = 1000
-crl_cache = OrderedDict()
+crl_cache: OrderedDict = OrderedDict()
 
 
 def _validate_revocation_url(url, config_key):
