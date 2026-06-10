@@ -3,6 +3,11 @@ Changelog
 
 1.9.2 - `2026-06-10`
 ~~~~~~~~~~~~~~~~~~~~
+- Fixed JWT algorithm confusion vulnerability (`GHSA-r9gp-7f88-9r54`_) where the JWT verifier accepted the
+  algorithm name from the unverified token header instead of pinning it server-side. The server now reads
+  the accepted algorithm list from ``LEMUR_TOKEN_ALGORITHMS`` (defaults to ``["HS256"]``, which is the only
+  algorithm Lemur has ever used to issue tokens). Deployments that have not changed the default are fully
+  backward-compatible with no config change required.
 - Fixed post-authentication SSRF (`GHSA-54vg-pfh7-jq95`_) where CRL Distribution Point and OCSP responder URLs
   extracted from uploaded certificate extensions were used as network destinations without validation. Both
   ``crl_verify`` and ``ocsp_verify`` now reject RFC1918, loopback, and link-local destinations before issuing
@@ -33,6 +38,8 @@ Changelog
   and ``operator`` users. See the ``LEMUR_STRICT_ROLE_ENFORCEMENT`` documentation for details.
 
 .. _GHSA-54vg-pfh7-jq95: https://github.com/Netflix/lemur/security/advisories/GHSA-54vg-pfh7-jq95
+.. _GHSA-r9gp-7f88-9r54: https://github.com/Netflix/lemur/security/advisories/GHSA-r9gp-7f88-9r54
+.. _GHSA-q437-g7fv-2jvv: https://github.com/Netflix/lemur/security/advisories/GHSA-q437-g7fv-2jvv
 .. _GHSA-x3vf-mgxj-7785: https://github.com/Netflix/lemur/security/advisories/GHSA-x3vf-mgxj-7785
 
 1.9.1 - `2026-05-19`
