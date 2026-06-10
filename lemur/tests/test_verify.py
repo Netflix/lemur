@@ -1,6 +1,7 @@
 import pytest
 import requests
 import requests_mock
+from unittest.mock import patch
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
@@ -58,5 +59,7 @@ def test_verify_crl_unreachable(cert_builder, private_key):
             with open(cert_tmp, "wb") as f:
                 f.write(cert.public_bytes(serialization.Encoding.PEM))
 
-            with pytest.raises(Exception, match="Unable to retrieve CRL:"):
-                crl_verify(cert, cert_tmp)
+            # Patch DNS resolution so the SSRF check passes, letting the mocked Timeout fire.
+            with patch("lemur.certificates.verify.socket.gethostbyname", return_value="93.184.216.34"):
+                with pytest.raises(Exception, match="Unable to retrieve CRL:"):
+                    crl_verify(cert, cert_tmp)
