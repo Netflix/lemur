@@ -438,18 +438,40 @@ Basic Configuration
 .. data:: LEMUR_STRICT_ROLE_ENFORCEMENT
     :noindex:
 
-        Controls role-based access enforcement for create/update operations. The default Lemur roles are
+        Controls role-based access enforcement for write operations. The default Lemur roles are
         ``admin``, ``operator``, and ``read-only``.
 
-        By default (unset or ``True``), role enforcement is active: only ``admin`` and ``operator`` users
-        may create or update resources. Users assigned the ``read-only`` role will be denied.
+        **By design**, the default behavior (unset or ``False``) allows any authenticated user to
+        perform write operations: issuing certificates, managing notifications, uploading certificates,
+        and so on. Authorization for specific resources (e.g. which Certificate
+        Authority a user may issue from) is governed by role membership on those resources, not by this
+        flag. This is intentional — most deployments rely on per-resource role membership rather than
+        a global write restriction.
 
-        Set to ``False`` to explicitly opt in to relaxed enforcement, allowing any authenticated user to
-        create or update resources regardless of role.
+        The ``read-only`` role is an explicit opt-in restriction. Assigning it to a user signals that
+        they should only be able to view resources, not modify them. Users without the ``read-only``
+        role are permitted to perform write operations by default.
+
+        Set to ``True`` to additionally restrict all write operations to only ``admin`` and ``operator``
+        users, regardless of per-resource role membership.
+
+        .. note::
+            **Security considerations for the default (open) model.** By default, any authenticated
+            user may create or modify notifications (including webhook URLs, which can reach arbitrary
+            internal hosts), upload certificates with attacker-supplied keys to configured destinations
+            (e.g. AWS), create Certificate Authorities (if ``ADMIN_ONLY_AUTHORITY_CREATION`` is
+            ``False``), and manipulate the domain registry. These are intentional defaults that support
+            normal workflows in environments where all authenticated users are trusted.
+
+            In deployments where credential compromise is a realistic threat (phished employee, leaked
+            SSO token, insider access), any authenticated identity has meaningful access to the PKI
+            issuance plane. Setting ``LEMUR_STRICT_ROLE_ENFORCEMENT = True`` restricts all write
+            operations to ``admin`` and ``operator`` users, significantly reducing blast radius at
+            the cost of requiring explicit role provisioning for all users who need write access.
 
     ::
 
-        LEMUR_STRICT_ROLE_ENFORCEMENT = False
+        LEMUR_STRICT_ROLE_ENFORCEMENT = True
 
 
 .. data:: SENTRY_DSN
@@ -971,6 +993,35 @@ Since the celery module, relies on the RedisHandler, the following options also 
     :noindex:
 
         Which redis database to be used, by default redis offers databases 0-15 (default: 0)
+
+Roles and Authorization
+-----------------------
+
+Lemur has three built-in roles:
+
+``admin``
+    Required for managing Lemur's own infrastructure: creating and updating users, roles, sources,
+    destinations, and DNS providers. Admins also pass all other permission checks that normal users pass.
+
+``operator``
+    Has no dedicated enforcement beyond what a normal authenticated user has, except when
+    ``LEMUR_STRICT_ROLE_ENFORCEMENT = True``, in which case ``operator`` (alongside ``admin``) is
+    required for write operations such as issuing certificates and managing notifications.
+
+``read-only``
+    Explicitly restricts a user to read access only. Users with this role cannot issue certificates,
+    create or modify notifications, upload certificates, or perform any other write operation. This role
+    is an **opt-in restriction** — it is not assigned automatically and must be explicitly given to users
+    who should only be able to view resources.
+
+In addition to these built-in roles, Lemur creates and assigns **custom roles** based on group memberships
+provided by your identity provider (see `IDP Configuration Options`_ and `LDAP Options`_). These custom
+roles govern per-resource access — for example, which Certificate Authorities a user may issue from.
+
+By default, any authenticated user may perform write operations unless they have been explicitly assigned the
+``read-only`` role. This is intentional: authorization for specific resources is handled by per-resource role
+membership, not by a global write restriction. See ``LEMUR_STRICT_ROLE_ENFORCEMENT`` if you need to restrict write access to
+``admin`` and ``operator`` users only.
 
 Authentication Options
 ----------------------
