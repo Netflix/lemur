@@ -12,6 +12,8 @@
 .. moduleauthor:: Curtis Castrapel <ccastrapel@netflix.com>
 """
 
+from urllib.parse import urlparse
+
 from acme.errors import PollError, WildcardUnsupportedError
 from acme.messages import Error as AcmeError
 from botocore.exceptions import ClientError
@@ -28,6 +30,27 @@ from lemur.plugins import lemur_acme as acme
 from lemur.plugins.bases import IssuerPlugin
 from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
 from lemur.plugins.lemur_acme.challenge_types import AcmeHttpChallenge, AcmeDnsChallenge
+
+
+def _validate_acme_url(url):
+    """Reject acme_url values that are not in the configured allowlist.
+
+    Called at authority creation time only — existing authorities in the DB
+    were already trusted when they were created and are not re-validated.
+    """
+    allowed_hosts = current_app.config.get(
+        "ACME_DIRECTORY_HOST_ALLOWLIST",
+        {
+            "acme-v02.api.letsencrypt.org",
+            "acme-staging-v02.api.letsencrypt.org",
+            "dv.acme-v02.api.pki.goog",
+        },
+    )
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or parsed.hostname not in allowed_hosts:
+        raise InvalidConfiguration(
+            f"acme_url host not in ACME_DIRECTORY_HOST_ALLOWLIST: {parsed.hostname}"
+        )
 
 
 class ACMEIssuerPlugin(IssuerPlugin):
@@ -310,6 +333,8 @@ class ACMEIssuerPlugin(IssuerPlugin):
         for option in plugin_options:
             if option.get("name") == "certificate":
                 acme_root = option.get("value")
+            if option.get("name") == "acme_url":
+                _validate_acme_url(option.get("value", ""))
         return acme_root, "", [role]
 
     def cancel_ordered_certificate(self, pending_cert, **kwargs):
@@ -452,6 +477,8 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
         for option in plugin_options:
             if option.get("name") == "certificate":
                 acme_root = option.get("value")
+            if option.get("name") == "acme_url":
+                _validate_acme_url(option.get("value", ""))
         return acme_root, "", [role]
 
     def cancel_ordered_certificate(self, pending_cert, **kwargs):

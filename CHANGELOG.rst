@@ -3,6 +3,13 @@ Changelog
 
 1.9.2 - `2026-06-10`
 ~~~~~~~~~~~~~~~~~~~~
+- Fixed ACME ``acme_url`` SSRF (`GHSA-v2wp-frmc-5q3v`_) where a user-supplied directory URL was fetched
+  server-side with no validation, allowing IMDS and internal network access. ``acme_url`` is now validated
+  against ``ACME_DIRECTORY_HOST_ALLOWLIST`` at authority creation time. Default allowlist covers Let's Encrypt
+  prod/staging and GTS; operators extend it via config for internal or additional ACME CAs.
+- Enhanced private key export audit log (`GHSA-v2wp-frmc-5q3v`_) to record ``access_via`` (creator vs. rbac),
+  ``creator_id``, and ``current_owner`` on every ``/certificates/<id>/key`` fetch, making post-ownership-transfer
+  creator access visible in the audit trail.
 - Fixed JWT algorithm confusion vulnerability (`GHSA-r9gp-7f88-9r54`_) where the JWT verifier accepted the
   algorithm name from the unverified token header instead of pinning it server-side. The server now reads
   the accepted algorithm list from ``LEMUR_TOKEN_ALGORITHMS`` (defaults to ``["HS256"]``, which is the only
@@ -37,6 +44,7 @@ Changelog
   should evaluate ``LEMUR_STRICT_ROLE_ENFORCEMENT = True`` to restrict these operations to ``admin``
   and ``operator`` users. See the ``LEMUR_STRICT_ROLE_ENFORCEMENT`` documentation for details.
 
+.. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v
 .. _GHSA-54vg-pfh7-jq95: https://github.com/Netflix/lemur/security/advisories/GHSA-54vg-pfh7-jq95
 .. _GHSA-r9gp-7f88-9r54: https://github.com/Netflix/lemur/security/advisories/GHSA-r9gp-7f88-9r54
 .. _GHSA-q437-g7fv-2jvv: https://github.com/Netflix/lemur/security/advisories/GHSA-q437-g7fv-2jvv
