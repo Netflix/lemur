@@ -77,7 +77,7 @@ class User(BaseModel):
 
         :return:
         """
-        if self.password:
+        if self.password and not self.password.startswith("$2"):
             self.password = bcrypt.generate_password_hash(self.password).decode("utf-8")
 
     @property
@@ -109,3 +109,4 @@ class User(BaseModel):
 
 
 listen(User, "before_insert", hash_password)
+listen(User, "before_update", hash_password)

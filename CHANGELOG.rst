@@ -2,7 +2,13 @@ Changelog
 =========
 
 Unreleased
-~~~~~~~~~~
+- Fixed plaintext password storage vulnerability (`GHSA-q437-g7fv-2jvv`_) where
+``users.service.update()`` wrote new passwords to the database without hashing. The
+``before_update`` SQLAlchemy event listener was missing, so the bcrypt hash applied
+on insert was bypassed on every admin-driven password reset via ``PUT /api/1/users/<id>``.
+Passwords are now hashed before update. Any reset password should be treated
+as compromised and rotated. Run ``lemur rehash_passwords`` after upgrading to
+detect and re-hash any cleartext passwords already in the database.
 - Corrected the GHSA-qcqw-jwxc-2hqg fix from 1.9.1. The original fix changed ``LEMUR_STRICT_ROLE_ENFORCEMENT`` to
   default ``True``, which broke normal user operations (certificate issuance, notification management, etc.) for
   any deployment where users are assigned custom group roles rather than the built-in ``admin`` or ``operator``
