@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-~~~~~~~~~~
+1.9.2 - `2026-06-10`
+~~~~~~~~~~~~~~~~~~~~
 - Fixed ACME ``acme_url`` SSRF (`GHSA-v2wp-frmc-5q3v`_) where a user-supplied directory URL was fetched
   server-side with no validation, allowing IMDS and internal network access. ``acme_url`` is now validated
   against ``ACME_DIRECTORY_HOST_ALLOWLIST`` at authority creation time. Default allowlist covers Let's Encrypt
@@ -10,11 +10,6 @@ Unreleased
 - Enhanced private key export audit log (`GHSA-v2wp-frmc-5q3v`_) to record ``access_via`` (creator vs. rbac),
   ``creator_id``, and ``current_owner`` on every ``/certificates/<id>/key`` fetch, making post-ownership-transfer
   creator access visible in the audit trail.
-
-.. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v
-
-1.9.2 - `2026-06-10`
-~~~~~~~~~~~~~~~~~~~~
 - Fixed post-authentication SSRF (`GHSA-54vg-pfh7-jq95`_) where CRL Distribution Point and OCSP responder URLs
   extracted from uploaded certificate extensions were used as network destinations without validation. Both
   ``crl_verify`` and ``ocsp_verify`` now reject RFC1918, loopback, and link-local destinations before issuing
@@ -44,6 +39,7 @@ Unreleased
   should evaluate ``LEMUR_STRICT_ROLE_ENFORCEMENT = True`` to restrict these operations to ``admin``
   and ``operator`` users. See the ``LEMUR_STRICT_ROLE_ENFORCEMENT`` documentation for details.
 
+.. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v
 .. _GHSA-54vg-pfh7-jq95: https://github.com/Netflix/lemur/security/advisories/GHSA-54vg-pfh7-jq95
 .. _GHSA-x3vf-mgxj-7785: https://github.com/Netflix/lemur/security/advisories/GHSA-x3vf-mgxj-7785
 
