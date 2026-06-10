@@ -374,6 +374,40 @@ def reset_password(username):
     database.commit()
 
 
+@cli.command("rehash_passwords")
+def rehash_passwords():
+    """
+    One-time migration to detect and re-hash any passwords stored in cleartext
+    due to the missing before_update listener fixed in 1.9.2 (GHSA-q437-g7fv-2jvv).
+
+    Finds all users whose password column does not begin with a bcrypt prefix ($2)
+    and hashes them in place. These accounts should also have their passwords rotated
+    out-of-band, as the plaintext was previously readable from the database.
+    """
+    users = user_service.get_all()
+    affected = [u for u in users if u.password and not u.password.startswith("$2")]
+
+    if not affected:
+        click.echo("[+] No cleartext passwords found.")
+        return
+
+    click.echo(f"[!] Found {len(affected)} user(s) with cleartext passwords:")
+    for u in affected:
+        click.echo(f"    - {u.username}")
+
+    click.confirm(
+        "[!] These passwords were exposed in the database. Proceed to re-hash them?",
+        abort=True,
+    )
+
+    for u in affected:
+        u.hash_password()
+    database.commit()
+
+    click.echo(f"[+] Re-hashed passwords for {len(affected)} user(s).")
+    click.echo("[!] Treat all affected accounts as compromised and require password rotation.")
+
+
 @cli.command("create_role")
 @click.option("-n", "--name", "name", required=True)
 @click.option("-u", "--users", "users", multiple=True, required=True)
