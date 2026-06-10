@@ -20,6 +20,12 @@ VALID_ADMIN_API_TOKEN = {
     "Content-Type": "application/json",
 }
 
+VALID_READ_ONLY_HEADER_TOKEN = {
+    "Authorization": "Basic "
+    + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MjE2NTIwMjIsImV4cCI6MjM4NTY1MjAyMiwic3ViIjoiMyJ9.pMWHVtnlir4MFEwvYbqmLmqyIBld_PQc8_DiahtTDxs",
+    "Content-Type": "application/json",
+}
+
 
 #: CN=LemurTrust Unittests Root CA 2018
 ROOTCA_CERT_STR = """\

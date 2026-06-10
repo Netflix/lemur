@@ -86,6 +86,8 @@ def db(app, request):
     UserFactory()
     r = RoleFactory(name="admin")
     u = UserFactory(roles=[r])
+    ro = RoleFactory(name="read-only")
+    UserFactory(roles=[ro])
     rp = RotationPolicyFactory(name="default")
     ApiKeyFactory(user=u)
 

@@ -37,6 +37,7 @@ attrs==26.1.0
     #   -r requirements.txt
     #   jsonlines
     #   jsonschema
+    #   jsonschema-path
     #   referencing
 aws-sam-translator==1.108.0
     # via cfn-lint
@@ -53,7 +54,7 @@ billiard==4.2.4
     # via
     #   -r requirements.txt
     #   celery
-black==26.3.1
+black==26.5.1
     # via -r requirements-tests.in
 blinker==1.9.0
     # via
@@ -61,12 +62,12 @@ blinker==1.9.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.43.14
+boto3==1.43.24
     # via
     #   -r requirements.txt
     #   aws-sam-translator
     #   moto
-botocore==1.43.14
+botocore==1.43.24
     # via
     #   -r requirements.txt
     #   aws-xray-sdk
@@ -128,7 +129,7 @@ configobj==5.0.9
     # via
     #   -r requirements.txt
     #   certbot
-coverage==7.13.5
+coverage==7.14.1
     # via -r requirements-tests.in
 cryptography==46.0.7
     # via
@@ -177,11 +178,11 @@ exceptiongroup==1.3.1
     #   pytest
 factory-boy==3.3.3
     # via -r requirements-tests.in
-faker==40.19.1
+faker==40.21.0
     # via
     #   -r requirements-tests.in
     #   factory-boy
-fakeredis==2.35.1
+fakeredis==2.36.1
     # via -r requirements-tests.in
 flask==2.3.3
     # via
@@ -197,7 +198,7 @@ flask==2.3.3
     #   pytest-flask
 flask-bcrypt==1.0.1
     # via -r requirements.txt
-flask-cors==6.0.2
+flask-cors==6.0.4
     # via -r requirements.txt
 flask-limiter==4.1.1
     # via -r requirements.txt
@@ -322,12 +323,12 @@ jsonpatch==1.33
     # via cfn-lint
 jsonpointer==3.1.1
     # via jsonpatch
-jsonschema==4.24.1
+jsonschema==4.26.0
     # via
     #   aws-sam-translator
     #   openapi-schema-validator
     #   openapi-spec-validator
-jsonschema-path==0.4.5
+jsonschema-path==0.5.0
     # via openapi-spec-validator
 jsonschema-specifications==2025.9.1
     # via
@@ -385,9 +386,9 @@ networkx==3.4.2
     # via cfn-lint
 nose==1.3.7
     # via -r requirements-tests.in
-openapi-schema-validator==0.8.1
+openapi-schema-validator==0.9.0
     # via openapi-spec-validator
-openapi-spec-validator==0.8.5
+openapi-spec-validator==0.9.0
     # via
     #   -r requirements-tests.in
     #   moto
@@ -409,7 +410,7 @@ parsedatetime==2.6
     # via
     #   -r requirements.txt
     #   certbot
-pathable==0.5.0
+pathable==0.6.0
     # via jsonschema-path
 pathspec==1.0.4
     # via
@@ -562,7 +563,7 @@ referencing==0.37.0
     #   openapi-schema-validator
 regex==2026.2.28
     # via cfn-lint
-requests==2.33.1
+requests==2.34.2
     # via
     #   -r requirements.txt
     #   acme
@@ -596,11 +597,11 @@ rpds-py==0.30.0
     #   referencing
 rsa==4.9.1
     # via python-jose
-s3transfer==0.17.0
+s3transfer==0.18.0
     # via
     #   -r requirements.txt
     #   boto3
-sentry-sdk==2.59.0
+sentry-sdk==2.62.0
     # via -r requirements.txt
 six==1.17.0
     # via
@@ -641,7 +642,7 @@ types-cffi==2.0.0.20260316
     # via types-pyopenssl
 types-deprecated==1.3.1.20260520
     # via -r requirements-tests.in
-types-paramiko==4.0.0.20260408
+types-paramiko==4.0.0.20260518
     # via -r requirements-tests.in
 types-protobuf==7.34.1.20260518
     # via -r requirements.txt
@@ -651,11 +652,11 @@ types-pyopenssl==24.1.0.20240722
     #   types-redis
 types-pyrfc3339==2.0.1.20250825
     # via -r requirements-tests.in
-types-pytz==2026.2.0.20260506
+types-pytz==2026.2.0.20260518
     # via -r requirements-tests.in
 types-redis==4.6.0.20241004
     # via -r requirements-tests.in
-types-requests==2.33.0.20260508
+types-requests==2.33.0.20260518
     # via -r requirements-tests.in
 types-setuptools==82.0.0.20260518
     # via
@@ -675,6 +676,7 @@ typing-extensions==4.15.0
     #   cryptography
     #   exceptiongroup
     #   fakeredis
+    #   flask-cors
     #   flask-limiter
     #   grpcio
     #   limits

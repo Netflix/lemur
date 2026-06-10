@@ -1,13 +1,45 @@
 Changelog
 =========
 
-1.9.2 - `2026-06-02`
+1.9.2 - `2026-06-10`
 ~~~~~~~~~~~~~~~~~~~~
 - Fixed JWT algorithm confusion vulnerability (GHSA-r9gp-7f88-9r54) where the JWT verifier accepted the
   algorithm name from the unverified token header instead of pinning it server-side. The server now reads
   the accepted algorithm list from ``LEMUR_TOKEN_ALGORITHMS`` (defaults to ``["HS256"]``, which is the only
   algorithm Lemur has ever used to issue tokens). Deployments that have not changed the default are fully
   backward-compatible with no config change required.
+- Fixed post-authentication SSRF (`GHSA-54vg-pfh7-jq95`_) where CRL Distribution Point and OCSP responder URLs
+  extracted from uploaded certificate extensions were used as network destinations without validation. Both
+  ``crl_verify`` and ``ocsp_verify`` now reject RFC1918, loopback, and link-local destinations before issuing
+  outbound requests. Operators may optionally configure ``LEMUR_TRUSTED_CRL_HOSTS`` and ``LEMUR_TRUSTED_OCSP_HOSTS``
+  allowlists. The module-level ``crl_cache`` is now bounded to 1000 entries to prevent unbounded cache growth.
+- Fixed plaintext password storage vulnerability (`GHSA-q437-g7fv-2jvv`_) where
+  ``users.service.update()`` wrote new passwords to the database without hashing. The
+  ``before_update`` SQLAlchemy event listener was missing, so the bcrypt hash applied
+  on insert was bypassed on every admin-driven password reset via ``PUT /api/1/users/<id>``.
+  Passwords are now hashed before update. Any reset password should be treated
+  as compromised and rotated. Run ``lemur rehash_passwords`` after upgrading to
+  detect and re-hash any cleartext passwords already in the database.
+- Fixed privilege escalation (`GHSA-x3vf-mgxj-7785`_) where any member of a role could rewrite that role's membership
+  list, rename the role, or add arbitrary users via ``PUT /api/1/roles/<id>``. The endpoint now requires admin
+  permission, consistent with the existing ``DELETE /api/1/roles/<id>`` handler.
+- Corrected the GHSA-qcqw-jwxc-2hqg fix from 1.9.1. The original fix changed ``LEMUR_STRICT_ROLE_ENFORCEMENT`` to
+  default ``True``, which broke normal user operations (certificate issuance, notification management, etc.) for
+  any deployment where users are assigned custom group roles rather than the built-in ``admin`` or ``operator``
+  roles. By design, Lemur allows any authenticated user to perform write operations; the ``read-only`` role is an
+  explicit opt-in restriction for users who should only have read access. The correct fix targets only that case:
+  ``StrictRolePermission`` now explicitly denies identities carrying the ``read-only`` role, regardless of the flag
+  value, while permitting all other authenticated users. ``LEMUR_STRICT_ROLE_ENFORCEMENT`` is reverted to default
+  ``False``; setting it to ``True`` restricts write access to ``admin`` and ``operator`` only, as before.
+  ``ADMIN_ONLY_AUTHORITY_CREATION`` remains ``True`` (authority creation is an admin action).
+  Note that by design, any authenticated user (not assigned ``read-only``) retains write access
+  to notifications, certificate upload, and domain management. Operators in higher-risk environments
+  should evaluate ``LEMUR_STRICT_ROLE_ENFORCEMENT = True`` to restrict these operations to ``admin``
+  and ``operator`` users. See the ``LEMUR_STRICT_ROLE_ENFORCEMENT`` documentation for details.
+
+.. _GHSA-54vg-pfh7-jq95: https://github.com/Netflix/lemur/security/advisories/GHSA-54vg-pfh7-jq95
+.. _GHSA-q437-g7fv-2jvv: https://github.com/Netflix/lemur/security/advisories/GHSA-q437-g7fv-2jvv
+.. _GHSA-x3vf-mgxj-7785: https://github.com/Netflix/lemur/security/advisories/GHSA-x3vf-mgxj-7785
 
 1.9.1 - `2026-05-19`
 ~~~~~~~~~~~~~~~~~~~~
