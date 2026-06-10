@@ -1,8 +1,7 @@
 Changelog
 =========
 
-1.9.2 - `2026-06-04`
-~~~~~~~~~~~~~~~~~~~~
+Unreleased
 - Fixed plaintext password storage vulnerability (`GHSA-q437-g7fv-2jvv`_) where
 ``users.service.update()`` wrote new passwords to the database without hashing. The
 ``before_update`` SQLAlchemy event listener was missing, so the bcrypt hash applied
@@ -10,6 +9,19 @@ on insert was bypassed on every admin-driven password reset via ``PUT /api/1/use
 Passwords are now hashed before update. Any reset password should be treated
 as compromised and rotated. Run ``lemur rehash_passwords`` after upgrading to
 detect and re-hash any cleartext passwords already in the database.
+- Corrected the GHSA-qcqw-jwxc-2hqg fix from 1.9.1. The original fix changed ``LEMUR_STRICT_ROLE_ENFORCEMENT`` to
+  default ``True``, which broke normal user operations (certificate issuance, notification management, etc.) for
+  any deployment where users are assigned custom group roles rather than the built-in ``admin`` or ``operator``
+  roles. By design, Lemur allows any authenticated user to perform write operations; the ``read-only`` role is an
+  explicit opt-in restriction for users who should only have read access. The correct fix targets only that case:
+  ``StrictRolePermission`` now explicitly denies identities carrying the ``read-only`` role, regardless of the flag
+  value, while permitting all other authenticated users. ``LEMUR_STRICT_ROLE_ENFORCEMENT`` is reverted to default
+  ``False``; setting it to ``True`` restricts write access to ``admin`` and ``operator`` only, as before.
+  ``ADMIN_ONLY_AUTHORITY_CREATION`` remains ``True`` (authority creation is an admin action).
+  Note that by design, any authenticated user (not assigned ``read-only``) retains write access
+  to notifications, certificate upload, and domain management. Operators in higher-risk environments
+  should evaluate ``LEMUR_STRICT_ROLE_ENFORCEMENT = True`` to restrict these operations to ``admin``
+  and ``operator`` users. See the ``LEMUR_STRICT_ROLE_ENFORCEMENT`` documentation for details.
 
 1.9.1 - `2026-05-19`
 ~~~~~~~~~~~~~~~~~~~~
