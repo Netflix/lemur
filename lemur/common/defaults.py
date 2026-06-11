@@ -105,7 +105,7 @@ def organization(cert):
         if not o:
             return None
 
-        return o[0].value.strip()
+        return o[0].value.strip().replace("'", "")
     except Exception as e:
         capture_exception()
         current_app.logger.error("Unable to get organization! {0}".format(e))

@@ -10,6 +10,8 @@
 .. moduleauthor:: sirferl
 """
 
+import re
+
 from flask import current_app
 from sentry_sdk import capture_exception
 from azure.keyvault.certificates import CertificateClient, CertificatePolicy
@@ -121,7 +123,7 @@ def parse_ca_vendor(chain):
         return "DigiCert"
     elif "Sectigo" in org_name:
         return "Sectigo"
-    return org_name.replace(" ", "").strip()
+    return re.sub(r"[^A-Za-z0-9]", "", org_name)
 
 
 def policy_from_appgw(network_client, appgw):
