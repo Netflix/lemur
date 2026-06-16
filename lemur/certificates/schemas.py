@@ -33,6 +33,7 @@ from lemur.notifications.schemas import NotificationNestedOutputSchema
 from lemur.policies.schemas import RotationPolicyNestedOutputSchema
 from lemur.roles import service as roles_service
 from lemur.roles.schemas import RoleNestedOutputSchema
+from lemur.sources.schemas import SourceNestedOutputSchema
 from lemur.schemas import (
     AssociatedAuthoritySchema,
     AssociatedDestinationSchema,
@@ -382,6 +383,7 @@ class CertificateOutputSchema(LemurOutputSchema):
     # associated objects
     domains = fields.Nested(DomainNestedOutputSchema, many=True)
     destinations = fields.Nested(DestinationNestedOutputSchema, many=True)
+    sources = fields.Nested(SourceNestedOutputSchema, many=True)
     notifications = fields.Nested(NotificationNestedOutputSchema, many=True)
     replaces = fields.Nested(CertificateNestedOutputSchema, many=True)
     authority = fields.Nested(AuthorityNestedOutputSchema)

@@ -35,6 +35,10 @@ class SourceOutputSchema(LemurOutputSchema):
         return data
 
 
+class SourceNestedOutputSchema(SourceOutputSchema):
+    __envelope__ = False
+
+
 source_input_schema = SourceInputSchema()
 sources_output_schema = SourceOutputSchema(many=True)
 source_output_schema = SourceOutputSchema()
