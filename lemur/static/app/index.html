@@ -44,7 +44,16 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/#/">Lemur</a>
+                <a class="navbar-brand" href="/#/" id="lemur-brand">Lemur</a>
+                <script>
+                  (function () {
+                    var h = location.hostname, l = '';
+                    if (h.endsWith('.us1.staging.dog')) l = ' - development';
+                    else if (h.endsWith('.us1.ddbuild.io')) l = ' - commercial';
+                    else if (h.endsWith('.us1-build.fed.dog')) l = ' - government';
+                    if (l) { document.getElementById('lemur-brand').textContent = 'Lemur' + l; document.title = 'Lemur' + l; }
+                  })();
+                </script>
             </div>
             <div class="navbar-collapse collapse" ng-controller="LoginController">
                 <ul class="nav navbar-nav navbar-left">
