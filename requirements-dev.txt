@@ -588,7 +588,7 @@ pydantic-core==2.41.5
     # via
     #   -r requirements-tests.txt
     #   pydantic
-pydantic-settings==2.13.1
+pydantic-settings==2.14.2
     # via
     #   -r requirements-tests.txt
     #   openapi-schema-validator
