@@ -145,7 +145,7 @@ configobj==5.0.9
     #   certbot
 coverage==7.14.2
     # via -r requirements-tests.txt
-cryptography==46.0.7
+cryptography==48.0.1
     # via
     #   -r requirements-tests.txt
     #   acme
