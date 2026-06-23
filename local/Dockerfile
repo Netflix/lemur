@@ -96,6 +96,9 @@ RUN apt-get purge -y --auto-remove \
 # Install development and test dependencies
 RUN pip install --no-cache-dir -e ."[dev]" -e ."[tests]"
 
+# The image needs Datadog internal wheels
+RUN pip3 install --no-cache-dir -r requirements-dd-source.in
+
 COPY local/src/lemur.conf.py /home/lemur/.lemur/lemur.conf.py
 COPY local/create_defaults.py /home/lemur/.lemur/create_defaults.py
 COPY local/testing/ /opt/lemur/local/testing/
