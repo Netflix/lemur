@@ -90,11 +90,25 @@ def parse_private_key(private_key):
     """
     Parses a PEM-format private key (RSA, DSA, ECDSA or any other supported algorithm).
 
+    Strips any EC PARAMETERS block that may precede EC private keys (e.g. from
+    ``openssl ecparam -genkey``), since some cryptography versions cannot parse
+    a PEM bundle containing both sections.
+
     Raises ValueError for an invalid string. Raises AssertionError when passed value is not str-type.
 
     :param private_key: String containing PEM private key
     """
     assert isinstance(private_key, str)
+
+    # Strip EC PARAMETERS block if present (produced by openssl ecparam -genkey)
+    if "-----BEGIN EC PARAMETERS-----" in private_key:
+        import re
+        private_key = re.sub(
+            r"-----BEGIN EC PARAMETERS-----.*?-----END EC PARAMETERS-----\s*",
+            "",
+            private_key,
+            flags=re.DOTALL,
+        )
 
     return load_pem_private_key(
         private_key.encode("utf8"), password=None, backend=default_backend()
