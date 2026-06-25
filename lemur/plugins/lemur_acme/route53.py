@@ -26,6 +26,10 @@ def find_zone_id(domain, client=None):
 
     if not zones:
         raise ValueError("Unable to find a Route53 hosted zone for {}".format(domain))
+    # Pick the most specific (longest) matching zone so that delegated sub-zones
+    # like acme-certs.staging.dog are preferred over their parent (staging.dog)
+    # when both exist in the same account.
+    zones.sort(key=lambda z: len(z[0]), reverse=True)
     return zones[0][1]
 
 
