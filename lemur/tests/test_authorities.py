@@ -3,6 +3,7 @@ import json
 import pytest
 
 from lemur.authorities.views import *  # noqa
+from lemur.exceptions import InvalidConfiguration
 from lemur.tests.factories import AuthorityFactory, RoleFactory
 from lemur.tests.vectors import (
     VALID_ADMIN_API_TOKEN,
@@ -440,3 +441,67 @@ def test_authorities_put_update_options(client, authority_number, token, status)
     )
     for field in ['owner', 'description', 'options']:
         assert 'updated' in json.dumps(response[field])
+
+
+# --- GHSA-xpmj-wjcp-6pww: acme_url re-validation on authority update ---
+
+def test_update_rejects_disallowed_acme_url(app, session):
+    """Defect A: authority update must reject an acme_url not on the allowlist."""
+    from lemur.authorities.service import update
+
+    auth = AuthorityFactory()
+    session.flush()
+
+    evil_options = json.dumps([{"name": "acme_url", "value": "https://evil.attacker.tld/dir"}])
+    with pytest.raises(InvalidConfiguration):
+        update(
+            auth.id,
+            owner=auth.owner,
+            description=auth.description,
+            active=True,
+            roles=[],
+            options=evil_options,
+        )
+
+
+def test_update_accepts_allowlisted_acme_url(app, session):
+    """Defect A: authority update must accept an acme_url that is on the allowlist."""
+    from lemur.authorities.service import update
+
+    auth = AuthorityFactory()
+    session.flush()
+
+    good_options = json.dumps([{"name": "acme_url", "value": "https://acme-v02.api.letsencrypt.org/directory"}])
+    result = update(
+        auth.id,
+        owner=auth.owner,
+        description=auth.description,
+        active=True,
+        roles=[],
+        options=good_options,
+    )
+    assert result is not None
+
+
+def test_update_options_rejects_disallowed_acme_url(app, session):
+    """Defect A: update_options must also reject a disallowed acme_url."""
+    from lemur.authorities.service import update_options
+
+    auth = AuthorityFactory()
+    session.flush()
+
+    evil_options = json.dumps([{"name": "acme_url", "value": "https://evil.attacker.tld/dir"}])
+    with pytest.raises(InvalidConfiguration):
+        update_options(auth.id, evil_options)
+
+
+def test_update_options_without_acme_url_is_unaffected(app, session):
+    """Defect A: update_options for non-ACME authorities (no acme_url) must succeed."""
+    from lemur.authorities.service import update_options
+
+    auth = AuthorityFactory()
+    session.flush()
+
+    options = json.dumps([{"name": "some_other_option", "value": "foo"}])
+    result = update_options(auth.id, options)
+    assert result is not None

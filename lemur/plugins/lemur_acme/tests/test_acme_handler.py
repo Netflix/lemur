@@ -131,3 +131,43 @@ class TestAcmeHandler(unittest.TestCase):
                                                                "(STAGING) Doctored Durian Root CA X3")
         self.assertEqual(leaf_pem, SAN_CERT_STR)
         self.assertEqual(chain_pem, ACME_CHAIN_LONG_STR[len(leaf_pem):].lstrip())
+
+
+# --- GHSA-xpmj-wjcp-6pww: Defect B — _PinnedClientNetwork hostname enforcement ---
+
+class TestPinnedClientNetwork(unittest.TestCase):
+    def setUp(self):
+        import josepy as jose
+        from lemur.common.utils import generate_private_key, key_to_alg
+        key = jose.JWKRSA(key=generate_private_key("RSA2048"))
+        self.net = acme_handlers._PinnedClientNetwork(
+            key,
+            account=None,
+            pinned_hostname="acme-v02.api.letsencrypt.org",
+        )
+
+    def test_allows_request_to_pinned_host(self):
+        """Requests to the configured ACME host must be forwarded to the parent."""
+        with patch.object(
+            acme_handlers.ClientNetwork, "_send_request", return_value=Mock()
+        ) as mock_send:
+            self.net._send_request("GET", "https://acme-v02.api.letsencrypt.org/directory")
+            mock_send.assert_called_once()
+
+    def test_rejects_request_to_different_host(self):
+        """Requests to any host other than the pinned host must raise InvalidConfiguration."""
+        from lemur.exceptions import InvalidConfiguration
+        with self.assertRaises(InvalidConfiguration):
+            self.net._send_request("POST", "https://evil.attacker.tld/steal")
+
+    def test_rejects_internal_metadata_url(self):
+        """Cloud metadata endpoint must be rejected even if it slips through via ACME response."""
+        from lemur.exceptions import InvalidConfiguration
+        with self.assertRaises(InvalidConfiguration):
+            self.net._send_request("POST", "http://169.254.169.254/latest/meta-data/")
+
+    def test_rejects_internal_kubernetes_api(self):
+        """Internal Kubernetes API endpoint must be rejected."""
+        from lemur.exceptions import InvalidConfiguration
+        with self.assertRaises(InvalidConfiguration):
+            self.net._send_request("POST", "https://kubernetes.default.svc/api/v1/secrets")
