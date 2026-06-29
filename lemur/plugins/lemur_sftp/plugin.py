@@ -10,7 +10,7 @@
     NGINX and Apache export formats are supported.
 
     Password and RSA private key are supported.
-    Passwords are not encrypted and stored as a plain text.
+    Passwords are stored as plain text and are redacted from API read responses.
 
     Detailed logging when Lemur debug mode is enabled.
 
@@ -65,6 +65,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
             "required": False,
             "helpMessage": "The SFTP password (optional when the private key is used).",
             "default": None,
+            "sensitive": True,
         },
         {
             "name": "privateKeyPath",
@@ -79,6 +80,7 @@ class SFTPDestinationPlugin(DestinationPlugin):
             "required": False,
             "helpMessage": "The password for the encrypted RSA private key (optional).",
             "default": None,
+            "sensitive": True,
         },
         {
             "name": "destinationPath",

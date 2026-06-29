@@ -34,6 +34,7 @@ class DestinationsList(AuthenticatedResource):
         super().__init__()
 
     @validate_schema(None, destinations_output_schema)
+    @admin_permission.require(http_exception=403)
     def get(self):
         """
         .. http:get:: /destinations
@@ -196,6 +197,7 @@ class Destinations(AuthenticatedResource):
         super().__init__()
 
     @validate_schema(None, destination_output_schema)
+    @admin_permission.require(http_exception=403)
     def get(self, destination_id):
         """
         .. http:get:: /destinations/1
@@ -358,6 +360,7 @@ class CertificateDestinations(AuthenticatedResource):
         super().__init__()
 
     @validate_schema(None, destination_output_schema)
+    @admin_permission.require(http_exception=403)
     def get(self, certificate_id):
         """
         .. http:get:: /certificates/1/destinations

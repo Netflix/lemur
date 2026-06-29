@@ -30,6 +30,9 @@ class DestinationOutputSchema(LemurOutputSchema):
     @post_dump
     def fill_object(self, data):
         if data:
+            for option in data.get("options", []):
+                if option.get("sensitive"):
+                    option["value"] = None
             data["plugin"]["pluginOptions"] = data["options"]
             for option in data["plugin"]["pluginOptions"]:
                 if "export-plugin" in option["type"]:
