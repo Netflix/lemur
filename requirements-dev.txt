@@ -204,7 +204,7 @@ faker==40.23.0
     # via
     #   -r requirements-tests.txt
     #   factory-boy
-fakeredis==2.36.1
+fakeredis==2.36.2
     # via -r requirements-tests.txt
 filelock==3.25.2
     # via
