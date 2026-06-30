@@ -133,7 +133,7 @@ configobj==5.0.9
     #   certbot
 coverage==7.14.3
     # via -r requirements-tests.in
-cryptography==46.0.7
+cryptography==49.0.0
     # via
     #   -r requirements.txt
     #   acme
@@ -495,7 +495,7 @@ pynacl==1.6.2
     # via
     #   -r requirements.txt
     #   paramiko
-pyopenssl==26.2.0
+pyopenssl==26.3.0
     # via
     #   -r requirements.txt
     #   acme
