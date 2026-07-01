@@ -20,6 +20,7 @@ from sqlalchemy import and_, func, or_, not_, cast, Integer
 from sqlalchemy.sql.expression import false, true
 
 from lemur import database
+from lemur.auth.permissions import CertificatePermission
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate, CertificateAssociation
 from lemur.certificates.schemas import CertificateOutputSchema, CertificateInputSchema
@@ -34,6 +35,7 @@ from lemur.notifications.messaging import send_revocation_notification
 from lemur.notifications.models import Notification
 from lemur.pending_certificates.models import PendingCertificate
 from lemur.plugins.base import plugins
+from lemur.plugins.bases.authorization import UnauthorizedError
 from lemur.plugins.utils import get_plugin_option
 from lemur.roles import service as role_service
 from lemur.roles.models import Role
@@ -1380,6 +1382,26 @@ def allowed_issuance_for_domain(common_name, extensions):
     # lemur UI copies CN as SAN (x509.DNSName). Permission check for CN might already be covered above.
     if check_permission_for_cn:
         is_authorized_for_domain(common_name)
+
+
+def authorize_certificate_replacement(certificates, current_user):
+    """
+    Ensures the current user owns, holds a role on, or is the creator of every certificate
+    being marked as replaced. Marking a certificate as replaced silences its expiration
+    notifications and retargets its rotation, so it requires the same authorization as
+    revoking or editing that certificate directly.
+    """
+    for cert in certificates:
+        if current_user == cert.user:
+            continue
+
+        owner_role = role_service.get_by_name(cert.owner)
+        permission = CertificatePermission(owner_role, [r.name for r in cert.roles])
+
+        if not permission.can():
+            raise UnauthorizedError(
+                f"You are not authorized to replace certificate: {cert.name}"
+            )
 
 
 def send_certificate_expiration_metrics(expiry_window=None):
