@@ -32,7 +32,7 @@ from lemur.plugins.lemur_acme.acme_handlers import AcmeHandler, AcmeDnsHandler
 from lemur.plugins.lemur_acme.challenge_types import AcmeHttpChallenge, AcmeDnsChallenge
 
 
-def _validate_acme_url(url):
+def validate_acme_url(url):
     """Reject acme_url values that are not in the configured allowlist.
 
     Called at authority creation time only — existing authorities in the DB
@@ -334,7 +334,7 @@ class ACMEIssuerPlugin(IssuerPlugin):
             if option.get("name") == "certificate":
                 acme_root = option.get("value")
             if option.get("name") == "acme_url":
-                _validate_acme_url(option.get("value", ""))
+                validate_acme_url(option.get("value", ""))
         return acme_root, "", [role]
 
     def cancel_ordered_certificate(self, pending_cert, **kwargs):
@@ -478,7 +478,7 @@ class ACMEHttpIssuerPlugin(IssuerPlugin):
             if option.get("name") == "certificate":
                 acme_root = option.get("value")
             if option.get("name") == "acme_url":
-                _validate_acme_url(option.get("value", ""))
+                validate_acme_url(option.get("value", ""))
         return acme_root, "", [role]
 
     def cancel_ordered_certificate(self, pending_cert, **kwargs):

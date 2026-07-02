@@ -1,6 +1,19 @@
 Changelog
 =========
 
+1.9.3 - `unreleased`
+~~~~~~~~~~~~~~~~~~~~
+- Fixed incomplete fix for ACME ``acme_url`` SSRF (`GHSA-v5rc-cpwc-cfpr`_). The 1.9.2 fix for
+  `GHSA-v2wp-frmc-5q3v`_ validated ``acme_url`` against ``ACME_DIRECTORY_HOST_ALLOWLIST`` only at
+  authority creation time. Any user with a role on an existing ACME authority could still overwrite
+  its stored ``acme_url`` with an internal/IMDS address via ``PUT /api/1/authorities/<id>``, since the
+  update path stored ``options`` verbatim with no re-validation. The next certificate issuance via that
+  authority would then cause Lemur's backend to fetch the attacker-controlled URL. ``acme_url`` is now
+  also validated against the allowlist on authority update.
+
+.. _GHSA-v5rc-cpwc-cfpr: https://github.com/Netflix/lemur/security/advisories/GHSA-v5rc-cpwc-cfpr
+.. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v
+
 1.9.2 - `2026-06-10`
 ~~~~~~~~~~~~~~~~~~~~
 - Fixed ACME ``acme_url`` SSRF (`GHSA-v2wp-frmc-5q3v`_) where a user-supplied directory URL was fetched

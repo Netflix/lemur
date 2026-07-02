@@ -40,6 +40,13 @@ def update(authority_id, description, owner, active, roles, options: Optional[st
     authority.description = description
     authority.owner = owner
     if options:
+        # acme_url can be changed here too, so it must be re-validated against the
+        # allowlist the same way it is at authority creation time (GHSA-v5rc-cpwc-cfpr)
+        from lemur.plugins.lemur_acme.plugin import validate_acme_url
+
+        for option in json.loads(options):
+            if option.get("name") == "acme_url":
+                validate_acme_url(option.get("value", ""))
         authority.options = options
 
     log_service.audit_log("update_authority", authority.name, "Updating authority")  # check ui what can be updated
