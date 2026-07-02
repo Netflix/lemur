@@ -1,13 +1,16 @@
 Changelog
 =========
 
-1.9.2 - `2026-06-10`
+1.9.3 - `2026-07-01`
 ~~~~~~~~~~~~~~~~~~~~
 - Fixed missing authorization check (`GHSA-4h97-p9wq-chqj`_) on ``POST /certificates/<id>/export`` for plugins
   with ``requires_key = False`` (e.g. ``java-truststore-jks``). The ownership check was previously skipped
   entirely for these plugins with no compensating control. Since such plugins never receive the real private
   key, any authenticated user may still use them regardless of ownership; plugins with ``requires_key = True``
   continue to require ownership and log a ``key_view`` audit event, and only they are passed ``cert.private_key``.
+
+1.9.2 - `2026-06-10`
+~~~~~~~~~~~~~~~~~~~~
 - Fixed ACME ``acme_url`` SSRF (`GHSA-v2wp-frmc-5q3v`_) where a user-supplied directory URL was fetched
   server-side with no validation, allowing IMDS and internal network access. ``acme_url`` is now validated
   against ``ACME_DIRECTORY_HOST_ALLOWLIST`` at authority creation time. Default allowlist covers Let's Encrypt
