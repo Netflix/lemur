@@ -1093,6 +1093,12 @@ def is_attached_to_endpoint(certificate_name, endpoint_name):
     :return: True if certificate is attached to the given endpoint, False otherwise
     """
     endpoint = endpoint_service.get_by_name(endpoint_name)
+    if not hasattr(endpoint.source.plugin, "get_endpoint_certificate_names"):
+        current_app.logger.warning(
+            f"Source plugin {endpoint.source.plugin_name} does not implement "
+            "get_endpoint_certificate_names — assuming certificate is not attached"
+        )
+        return False
     attached_certificates = endpoint.source.plugin.get_endpoint_certificate_names(endpoint)
     return certificate_name in attached_certificates
 
