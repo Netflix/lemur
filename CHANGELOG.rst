@@ -3,6 +3,11 @@ Changelog
 
 1.9.2 - `2026-06-10`
 ~~~~~~~~~~~~~~~~~~~~
+- Fixed missing authorization check (`GHSA-4h97-p9wq-chqj`_) on ``POST /certificates/<id>/export`` for plugins
+  with ``requires_key = False`` (e.g. ``java-truststore-jks``). The ownership check was previously skipped
+  entirely for these plugins with no compensating control. Since such plugins never receive the real private
+  key, any authenticated user may still use them regardless of ownership; plugins with ``requires_key = True``
+  continue to require ownership and log a ``key_view`` audit event, and only they are passed ``cert.private_key``.
 - Fixed ACME ``acme_url`` SSRF (`GHSA-v2wp-frmc-5q3v`_) where a user-supplied directory URL was fetched
   server-side with no validation, allowing IMDS and internal network access. ``acme_url`` is now validated
   against ``ACME_DIRECTORY_HOST_ALLOWLIST`` at authority creation time. Default allowlist covers Let's Encrypt
@@ -44,6 +49,7 @@ Changelog
   should evaluate ``LEMUR_STRICT_ROLE_ENFORCEMENT = True`` to restrict these operations to ``admin``
   and ``operator`` users. See the ``LEMUR_STRICT_ROLE_ENFORCEMENT`` documentation for details.
 
+.. _GHSA-4h97-p9wq-chqj: https://github.com/Netflix/lemur/security/advisories/GHSA-4h97-p9wq-chqj
 .. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v
 .. _GHSA-54vg-pfh7-jq95: https://github.com/Netflix/lemur/security/advisories/GHSA-54vg-pfh7-jq95
 .. _GHSA-r9gp-7f88-9r54: https://github.com/Netflix/lemur/security/advisories/GHSA-r9gp-7f88-9r54
