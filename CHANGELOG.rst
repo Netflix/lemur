@@ -1,6 +1,21 @@
 Changelog
 =========
 
+1.9.3 - `unreleased`
+~~~~~~~~~~~~~~~~~~~~
+- Fixed arbitrary certificate revocation at the CA (`GHSA-pxmc-2ffp-8j67`_). Certificate identity was tracked
+  only by Lemur's internal database row, not by the actual CA-side certificate. Any authenticated user could
+  upload a duplicate record for a certificate they didn't own (matching an existing ``authority_id`` and
+  ``serial``) and then revoke it via ``PUT /api/1/certificates/<id>/revoke``, causing the CA to revoke the
+  real certificate belonging to another user. ``POST /api/1/certificates/upload`` now requires
+  ``AuthorityPermission`` on the specified authority, and rejects uploads whose ``(authority_id, serial)``
+  pair already matches an existing certificate with a ``409`` response. ``PUT /api/1/certificates/<id>/revoke``
+  now also checks authorization and endpoint attachment against every certificate row sharing
+  ``(authority_id, serial)`` with the one being revoked, not just the row named in the request, closing the
+  gap for any duplicate rows that already exist.
+
+.. _GHSA-pxmc-2ffp-8j67: https://github.com/Netflix/lemur/security/advisories/GHSA-pxmc-2ffp-8j67
+
 1.9.2 - `2026-06-10`
 ~~~~~~~~~~~~~~~~~~~~
 - Fixed ACME ``acme_url`` SSRF (`GHSA-v2wp-frmc-5q3v`_) where a user-supplied directory URL was fetched
