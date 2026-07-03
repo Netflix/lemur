@@ -3,6 +3,14 @@ Changelog
 
 1.9.2 - `2026-06-10`
 ~~~~~~~~~~~~~~~~~~~~
+- Fixed missing authorization check on sub-CA creation (`GHSA-g7p5-89mh-248h`_). When
+  ``ADMIN_ONLY_AUTHORITY_CREATION`` is disabled, ``POST /api/1/authorities`` with
+  ``type=subca`` never verified that the caller holds ``AuthorityPermission`` on the
+  supplied parent authority, letting any authenticated non-read-only user mint a sub-CA
+  chained off any internal root Lemur holds the private key for and issue trusted leaf
+  certs under it. ``AuthoritiesList.post`` now enforces ``AuthorityPermission`` on the
+  parent authority before delegating to the issuer plugin, matching the check already
+  used when updating an existing authority.
 - Fixed ACME ``acme_url`` SSRF (`GHSA-v2wp-frmc-5q3v`_) where a user-supplied directory URL was fetched
   server-side with no validation, allowing IMDS and internal network access. ``acme_url`` is now validated
   against ``ACME_DIRECTORY_HOST_ALLOWLIST`` at authority creation time. Default allowlist covers Let's Encrypt
@@ -44,6 +52,7 @@ Changelog
   should evaluate ``LEMUR_STRICT_ROLE_ENFORCEMENT = True`` to restrict these operations to ``admin``
   and ``operator`` users. See the ``LEMUR_STRICT_ROLE_ENFORCEMENT`` documentation for details.
 
+.. _GHSA-g7p5-89mh-248h: https://github.com/Netflix/lemur/security/advisories/GHSA-g7p5-89mh-248h
 .. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v
 .. _GHSA-54vg-pfh7-jq95: https://github.com/Netflix/lemur/security/advisories/GHSA-54vg-pfh7-jq95
 .. _GHSA-r9gp-7f88-9r54: https://github.com/Netflix/lemur/security/advisories/GHSA-r9gp-7f88-9r54
