@@ -1915,6 +1915,50 @@ def test_allowed_issuance_for_domain(common_name, extensions, expected_error, au
         assert wrapper.call_count == authz_check_count
 
 
+def test_authorize_certificate_replacement_allows_creator(certificate):
+    from lemur.certificates.service import authorize_certificate_replacement
+
+    with patch("lemur.certificates.service.CertificatePermission") as wrapper:
+        authorize_certificate_replacement([certificate], certificate.user)
+
+    wrapper.assert_not_called()
+
+
+@pytest.mark.parametrize("permission_can_result", [True, False])
+def test_authorize_certificate_replacement_checks_permission(certificate, user, permission_can_result):
+    from lemur.certificates.service import authorize_certificate_replacement
+
+    other_user = user["user"]
+
+    with patch("lemur.certificates.service.CertificatePermission") as wrapper:
+        wrapper.return_value.can.return_value = permission_can_result
+
+        if permission_can_result:
+            authorize_certificate_replacement([certificate], other_user)
+        else:
+            with pytest.raises(UnauthorizedError):
+                authorize_certificate_replacement([certificate], other_user)
+
+    wrapper.assert_called_once()
+
+
+def test_authorize_certificate_replacement_respects_enforce_flag(certificate, user):
+    from lemur.certificates.service import authorize_certificate_replacement
+
+    other_user = user["user"]
+    original = current_app.config.get("ENFORCE_REPLACES_AUTHORIZATION", True)
+    current_app.config["ENFORCE_REPLACES_AUTHORIZATION"] = False
+
+    try:
+        with patch("lemur.certificates.service.CertificatePermission") as wrapper:
+            wrapper.return_value.can.return_value = False
+            authorize_certificate_replacement([certificate], other_user)
+
+        wrapper.assert_not_called()
+    finally:
+        current_app.config["ENFORCE_REPLACES_AUTHORIZATION"] = original
+
+
 def test_send_certificate_expiration_metrics(certificate):
     from lemur.certificates.service import send_certificate_expiration_metrics
 
