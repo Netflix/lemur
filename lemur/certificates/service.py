@@ -1400,7 +1400,10 @@ def authorize_certificate_replacement(certificates, current_user):
 
         if not permission.can():
             raise UnauthorizedError(
-                f"You are not authorized to replace certificate: {cert.name}"
+                user=current_user,
+                resource=cert.name,
+                action="replace_certificate",
+                details="caller does not own or hold a role on this certificate",
             )
 
 
