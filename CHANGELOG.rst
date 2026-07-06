@@ -10,9 +10,15 @@ Changelog
   update path stored ``options`` verbatim with no re-validation. The next certificate issuance via that
   authority would then cause Lemur's backend to fetch the attacker-controlled URL. ``acme_url`` is now
   also validated against the allowlist on authority update.
+- Fixed SSRF via ACME client following server-controlled URLs (`GHSA-xpmj-wjcp-6pww`_). In addition to
+  the ``acme_url`` allowlist check above, the ACME client itself no longer trusts hostnames supplied by
+  the directory/order/authorization/finalize responses returned by the ACME server; outbound requests are
+  now pinned to the configured, allowlisted directory host, closing a second SSRF vector where a malicious
+  or compromised ACME server could redirect Lemur's backend to arbitrary internal URLs mid-issuance.
 
 .. _GHSA-v5rc-cpwc-cfpr: https://github.com/Netflix/lemur/security/advisories/GHSA-v5rc-cpwc-cfpr
 .. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v
+.. _GHSA-xpmj-wjcp-6pww: https://github.com/Netflix/lemur/security/advisories/GHSA-xpmj-wjcp-6pww
 
 1.9.2 - `2026-06-10`
 ~~~~~~~~~~~~~~~~~~~~

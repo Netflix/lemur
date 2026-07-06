@@ -33,11 +33,7 @@ from lemur.plugins.lemur_acme.challenge_types import AcmeHttpChallenge, AcmeDnsC
 
 
 def validate_acme_url(url):
-    """Reject acme_url values that are not in the configured allowlist.
-
-    Called at authority creation time only — existing authorities in the DB
-    were already trusted when they were created and are not re-validated.
-    """
+    """Reject acme_url values that are not in the configured allowlist."""
     allowed_hosts = current_app.config.get(
         "ACME_DIRECTORY_HOST_ALLOWLIST",
         {

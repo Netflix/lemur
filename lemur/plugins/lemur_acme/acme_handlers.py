@@ -15,10 +15,12 @@
 import json
 import time
 from datetime import datetime, timezone, timedelta
+from urllib.parse import urlparse
 
 import OpenSSL.crypto
 import dns.resolver
 import josepy as jose
+import requests
 from acme import challenges, errors, messages
 from acme.client import ClientV2, ClientNetwork
 from acme.errors import TimeoutError
@@ -35,6 +37,27 @@ from lemur.dns_providers import service as dns_provider_service
 from lemur.exceptions import InvalidAuthority, UnknownProvider, InvalidConfiguration
 from lemur.extensions import metrics
 from lemur.plugins.lemur_acme import cloudflare, dyn, route53, ultradns, powerdns, nsone
+
+
+class _PinnedClientNetwork(ClientNetwork):
+    """ClientNetwork that rejects outbound requests to any host other than the ACME directory host.
+
+    Prevents a malicious ACME server from redirecting the client to internal URLs via its
+    directory/order/authorization/finalize responses (SSRF via server-supplied URLs).
+    """
+
+    def __init__(self, *args, pinned_hostname: str, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._pinned_hostname = pinned_hostname
+
+    def _send_request(self, method: str, url: str, *args, **kwargs) -> requests.Response:
+        parsed = urlparse(url)
+        if parsed.hostname != self._pinned_hostname:
+            raise InvalidConfiguration(
+                f"ACME client attempted request to disallowed host {parsed.hostname!r}; "
+                f"expected {self._pinned_hostname!r}"
+            )
+        return super()._send_request(method, url, *args, **kwargs)
 
 
 class AuthorizationRecord:
@@ -170,6 +193,8 @@ class AcmeHandler:
         eab_kid = options.get("eab_kid", None)
         eab_hmac_key = options.get("eab_hmac_key", None)
 
+        pinned_hostname = urlparse(directory_url).hostname
+
         if existing_key and existing_regr:
             current_app.logger.debug("Reusing existing ACME account")
             # Reuse the same account for each certificate issuance
@@ -184,7 +209,7 @@ class AcmeHandler:
             current_app.logger.debug(
                 f"Connecting with directory at {directory_url}"
             )
-            net = ClientNetwork(key, account=regr, alg=key_to_alg(key))
+            net = _PinnedClientNetwork(key, account=regr, alg=key_to_alg(key), pinned_hostname=pinned_hostname)
             directory = ClientV2.get_directory(directory_url, net)
             client = ClientV2(directory, net=net)
             return client, {}
@@ -197,7 +222,7 @@ class AcmeHandler:
                 f"Connecting with directory at {directory_url}"
             )
 
-            net = ClientNetwork(key, account=None, timeout=3600, alg=key_to_alg(key))
+            net = _PinnedClientNetwork(key, account=None, timeout=3600, alg=key_to_alg(key), pinned_hostname=pinned_hostname)
             directory = ClientV2.get_directory(directory_url, net)
             client = ClientV2(directory, net=net)
             if eab_kid and eab_hmac_key:
