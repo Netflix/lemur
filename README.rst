@@ -1,6 +1,14 @@
 Lemur
 =====
 
+.. warning::
+
+   This repository is now archived and read-only as of July 6, 2026.
+
+   No new pull requests, issues, or contributions will be accepted. Existing content will remain available and publicly accessible, but this repository is no longer actively maintained. If you need to continue making changes, please fork this repository.
+
+   Thank you to everyone who has contributed over the years.
+
 .. image:: https://badges.gitter.im/Join%20Chat.svg
    :alt: Join the chat at https://gitter.im/Netflix/lemur
    :target: https://gitter.im/Netflix/lemur?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
