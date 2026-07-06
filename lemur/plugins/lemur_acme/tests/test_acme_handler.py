@@ -136,7 +136,7 @@ class TestAcmeHandler(unittest.TestCase):
 class TestPinnedClientNetwork(unittest.TestCase):
     def setUp(self):
         import josepy as jose
-        from lemur.common.utils import generate_private_key, key_to_alg
+        from lemur.common.utils import generate_private_key
         key = jose.JWKRSA(key=generate_private_key("RSA2048"))
         self.net = acme_handlers._PinnedClientNetwork(
             key,

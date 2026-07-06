@@ -194,7 +194,7 @@ class FakePlugin:
     slug = "sftp-destination"
     title = "SFTP"
     description = "SFTP destination"
-    options = []
+    options: list = []
     id = 1
     label = None
     active = None

@@ -43,8 +43,11 @@ def test_verify_crl_unknown_scheme(cert_builder, private_key):
 def test_verify_crl_unreachable(cert_builder, private_key):
     """Unreachable CRL distribution point results in error."""
     ldap_uri = "http://invalid.example.org/crl/foobar.crl"
+    # crl_verify pins the request to the resolved IP (DNS-rebinding protection),
+    # so the mock must match the pinned URL rather than the original hostname.
+    pinned_uri = "http://93.184.216.34/crl/foobar.crl"
     with requests_mock.Mocker() as m:
-        m.get(ldap_uri, exc=requests.exceptions.Timeout)
+        m.get(pinned_uri, exc=requests.exceptions.Timeout)
         crl_dp = x509.DistributionPoint(
             [UniformResourceIdentifier(ldap_uri)],
             relative_name=None,
