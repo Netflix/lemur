@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from lemur.destinations.views import *  # noqa
@@ -184,3 +186,88 @@ def test_destination_list_patch(client, token, status):
         client.patch(api.url_for(DestinationsList), data={}, headers=token).status_code
         == status
     )
+
+
+# --- GHSA-6c8m-q6g9-vrw3: sensitive option redaction ---
+
+class FakePlugin:
+    slug = "sftp-destination"
+    title = "SFTP"
+    description = "SFTP destination"
+    options = []
+    id = 1
+    label = None
+    active = None
+
+
+def make_fake_destination():
+    """Build a fresh destination each call; fill_object mutates option dicts in place."""
+
+    class FakeDestination:
+        id = 1
+        label = "prod-sftp"
+        description = "test"
+        active = True
+        options = [
+            {"name": "host", "type": "str", "value": "10.0.5.20"},
+            {"name": "user", "type": "str", "value": "deploy"},
+            {"name": "password", "type": "str", "value": "S3cr3t!", "sensitive": True},
+            {"name": "privateKeyPass", "type": "str", "value": "key-pass", "sensitive": True},
+        ]
+        plugin = FakePlugin()
+
+    return FakeDestination()
+
+
+def test_destination_output_schema_redacts_sensitive_options_for_non_admin(logged_in_user):
+    """Non-admins must not see sensitive option values in serialized output."""
+    from lemur.destinations.schemas import DestinationOutputSchema
+
+    result = DestinationOutputSchema().dump(make_fake_destination()).data
+    serialized = json.dumps(result)
+
+    assert "S3cr3t!" not in serialized
+    assert "key-pass" not in serialized
+
+    options_by_name = {o["name"]: o for o in result["options"]}
+    assert options_by_name["password"]["value"] is None
+    assert options_by_name["privateKeyPass"]["value"] is None
+    assert options_by_name["host"]["value"] == "10.0.5.20"
+
+
+def test_destination_output_schema_preserves_sensitive_options_for_admin(logged_in_admin):
+    """Admins must still be able to retrieve sensitive option values."""
+    from lemur.destinations.schemas import DestinationOutputSchema
+
+    result = DestinationOutputSchema().dump(make_fake_destination()).data
+    options_by_name = {o["name"]: o for o in result["options"]}
+    assert options_by_name["password"]["value"] == "S3cr3t!"
+    assert options_by_name["privateKeyPass"]["value"] == "key-pass"
+
+
+def test_destination_output_schema_preserves_non_sensitive_options(logged_in_user):
+    """Non-sensitive option values must be preserved in serialized output."""
+    from lemur.destinations.schemas import DestinationOutputSchema
+
+    class FakePlugin:
+        slug = "aws-destination"
+        title = "AWS"
+        description = "AWS destination"
+        options = []
+        id = 1
+        label = None
+        active = None
+
+    class FakeDestination:
+        id = 2
+        label = "prod-aws"
+        description = "test"
+        active = True
+        options = [
+            {"name": "accountNumber", "type": "str", "value": "123456789012"},
+        ]
+        plugin = FakePlugin()
+
+    result = DestinationOutputSchema().dump(FakeDestination()).data
+    options_by_name = {o["name"]: o for o in result["options"]}
+    assert options_by_name["accountNumber"]["value"] == "123456789012"

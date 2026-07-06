@@ -3,6 +3,11 @@ Changelog
 
 1.9.3 - `unreleased`
 ~~~~~~~~~~~~~~~~~~~~
+- Fixed plaintext credential exposure via the destinations API (`GHSA-6c8m-q6g9-vrw3`_). Sensitive
+  destination plugin options (e.g. SFTP password and private key passphrase) were returned in plaintext
+  to any authenticated caller via ``GET /destinations``, ``GET /destinations/<id>``, and
+  ``GET /certificates/<id>/destinations``. Sensitive option values are now redacted for non-admin
+  callers; admins retain the ability to view and edit them.
 - Fixed incomplete fix for ACME ``acme_url`` SSRF (`GHSA-v5rc-cpwc-cfpr`_). The 1.9.2 fix for
   `GHSA-v2wp-frmc-5q3v`_ validated ``acme_url`` against ``ACME_DIRECTORY_HOST_ALLOWLIST`` only at
   authority creation time. Any user with a role on an existing ACME authority could still overwrite
@@ -16,6 +21,7 @@ Changelog
   now pinned to the configured, allowlisted directory host, closing a second SSRF vector where a malicious
   or compromised ACME server could redirect Lemur's backend to arbitrary internal URLs mid-issuance.
 
+.. _GHSA-6c8m-q6g9-vrw3: https://github.com/Netflix/lemur/security/advisories/GHSA-6c8m-q6g9-vrw3
 .. _GHSA-v5rc-cpwc-cfpr: https://github.com/Netflix/lemur/security/advisories/GHSA-v5rc-cpwc-cfpr
 .. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v
 .. _GHSA-xpmj-wjcp-6pww: https://github.com/Netflix/lemur/security/advisories/GHSA-xpmj-wjcp-6pww
