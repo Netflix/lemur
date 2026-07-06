@@ -3,6 +3,11 @@ Changelog
 
 1.9.3 - `unreleased`
 ~~~~~~~~~~~~~~~~~~~~
+- Fixed missing authorization check (`GHSA-4h97-p9wq-chqj`_) on ``POST /certificates/<id>/export`` for plugins
+  with ``requires_key = False`` (e.g. ``java-truststore-jks``). The ownership check was previously skipped
+  entirely for these plugins with no compensating control. Since such plugins never receive the real private
+  key, any authenticated user may still use them regardless of ownership; plugins with ``requires_key = True``
+  continue to require ownership and log a ``key_view`` audit event, and only they are passed ``cert.private_key``.
 - Fixed missing authorization on the ``replaces`` field (`GHSA-cfh6-pv5c-38jv`_), where any authenticated
   caller could reference an arbitrary certificate by ID on certificate create, upload, and edit requests,
   silencing its expiration notifications and retargeting its rotation without the owning team's knowledge.
@@ -46,6 +51,7 @@ Changelog
   ``(authority_id, serial)`` with the one being revoked, not just the row named in the request, closing the
   gap for any duplicate rows that already exist.
 
+.. _GHSA-4h97-p9wq-chqj: https://github.com/Netflix/lemur/security/advisories/GHSA-4h97-p9wq-chqj
 .. _GHSA-cfh6-pv5c-38jv: https://github.com/Netflix/lemur/security/advisories/GHSA-cfh6-pv5c-38jv
 .. _GHSA-6c8m-q6g9-vrw3: https://github.com/Netflix/lemur/security/advisories/GHSA-6c8m-q6g9-vrw3
 .. _GHSA-v5rc-cpwc-cfpr: https://github.com/Netflix/lemur/security/advisories/GHSA-v5rc-cpwc-cfpr
@@ -97,6 +103,7 @@ Changelog
   should evaluate ``LEMUR_STRICT_ROLE_ENFORCEMENT = True`` to restrict these operations to ``admin``
   and ``operator`` users. See the ``LEMUR_STRICT_ROLE_ENFORCEMENT`` documentation for details.
 
+.. _GHSA-4h97-p9wq-chqj: https://github.com/Netflix/lemur/security/advisories/GHSA-4h97-p9wq-chqj
 .. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v
 .. _GHSA-54vg-pfh7-jq95: https://github.com/Netflix/lemur/security/advisories/GHSA-54vg-pfh7-jq95
 .. _GHSA-r9gp-7f88-9r54: https://github.com/Netflix/lemur/security/advisories/GHSA-r9gp-7f88-9r54

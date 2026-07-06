@@ -9,18 +9,10 @@ import base64
 
 from flask import Blueprint, make_response, jsonify, g, current_app
 from flask_restful import reqparse, Api, inputs
-
-from lemur.certificates.service import validate_no_duplicate_destinations
-from lemur.common import defaults, utils, validators
-from lemur.plugins.bases.authorization import UnauthorizedError
 from sentry_sdk import capture_exception
 
-from lemur.common.schema import validate_schema
-from lemur.common.utils import paginated_parser
-
-from lemur.auth.service import AuthenticatedResource
 from lemur.auth.permissions import AuthorityPermission, CertificatePermission, StrictRolePermission
-
+from lemur.auth.service import AuthenticatedResource
 from lemur.certificates import service
 from lemur.certificates.models import Certificate
 from lemur.certificates.schemas import (
@@ -33,10 +25,13 @@ from lemur.certificates.schemas import (
     certificates_list_output_schema_factory,
     certificate_revoke_schema,
 )
-
-from lemur.roles import service as role_service
+from lemur.certificates.service import validate_no_duplicate_destinations
+from lemur.common import defaults, utils, validators
+from lemur.common.schema import validate_schema
+from lemur.common.utils import paginated_parser
 from lemur.logs import service as log_service
-
+from lemur.plugins.bases.authorization import UnauthorizedError
+from lemur.roles import service as role_service
 
 mod = Blueprint("certificates", __name__)
 api = Api(mod)
@@ -1614,6 +1609,7 @@ class CertificateExport(AuthenticatedResource):
 
         plugin = data["plugin"]["plugin_object"]
 
+        private_key = None
         if plugin.requires_key:
             if not cert.private_key:
                 return (
@@ -1625,27 +1621,33 @@ class CertificateExport(AuthenticatedResource):
                     400,
                 )
 
-            else:
-                # allow creators
-                if g.current_user != cert.user:
-                    owner_role = role_service.get_by_name(cert.owner)
-                    permission = CertificatePermission(
-                        owner_role, [x.name for x in cert.roles]
+            # allow creators
+            if g.current_user != cert.user:
+                owner_role = role_service.get_by_name(cert.owner)
+                permission = CertificatePermission(
+                    owner_role, [x.name for x in cert.roles]
+                )
+
+                if not permission.can():
+                    return (
+                        dict(
+                            message="You are not authorized to export this certificate's private key. "
+                            "Plugin: {} requires a private key, and you are not the certificate's creator "
+                            "or owner. Exporting with a plugin that does not require a private key "
+                            "(e.g. a truststore-only plugin) does not require ownership.".format(
+                                plugin.slug
+                            )
+                        ),
+                        403,
                     )
 
-                    if not permission.can():
-                        return (
-                            dict(
-                                message="You are not authorized to export this certificate."
-                            ),
-                            403,
-                        )
+            log_service.create(g.current_user, "key_view", certificate=cert)
+            private_key = cert.private_key
 
         options = data["plugin"]["plugin_options"]
 
-        log_service.create(g.current_user, "key_view", certificate=cert)
         extension, passphrase, data = plugin.export(
-            cert.body, cert.chain, cert.private_key, options
+            cert.body, cert.chain, private_key, options
         )
 
         # Clear memory for last passphrase if it's in plugin.options

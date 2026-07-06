@@ -1521,6 +1521,68 @@ def test_certificates_update_owner(client, token, status, issuer_plugin, certifi
 @pytest.mark.parametrize(
     "token,status",
     [
+        (VALID_USER_HEADER_TOKEN, 200),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+        ("", 401),
+    ],
+)
+def test_certificate_export_requires_key_false_allows_any_authenticated_user(client, certificate, token, status):
+    # GHSA-4h97-p9wq-chqj: plugins with requires_key = False (e.g. java-truststore-jks)
+    # never touch the private key, so any authenticated user may export them regardless
+    # of certificate ownership.
+    from lemur.logs.models import Log
+
+    response = client.post(
+        api.url_for(CertificateExport, certificate_id=certificate.id),
+        data=json.dumps({"plugin": {"slug": "java-truststore-jks", "plugin_options": []}}),
+        headers=token,
+    )
+
+    assert response.status_code == status
+    if status == 200:
+        assert response.json.get("extension") == "jks"
+        # no private key was requested, so no key_view audit event should be recorded
+        logs = Log.query.filter_by(certificate_id=certificate.id).all()
+        assert not any(log.log_type == "key_view" for log in logs)
+
+
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+        ("", 401),
+    ],
+)
+def test_certificate_export_requires_key_true_enforces_ownership(client, certificate, token, status):
+    # GHSA-4h97-p9wq-chqj: plugins with requires_key = True (e.g. java-keystore-jks) must
+    # still enforce the CertificatePermission ownership check, since they receive the
+    # real private key.
+    from lemur.logs.models import Log
+
+    response = client.post(
+        api.url_for(CertificateExport, certificate_id=certificate.id),
+        data=json.dumps({"plugin": {"slug": "java-keystore-jks", "plugin_options": []}}),
+        headers=token,
+    )
+
+    assert response.status_code == status
+    if status == 200:
+        assert response.json.get("extension") == "jks"
+        logs = Log.query.filter_by(certificate_id=certificate.id).all()
+        assert any(log.log_type == "key_view" for log in logs)
+    elif status == 403:
+        # the message should explain that the failure is due to the plugin
+        # requiring a private key, not a blanket export restriction
+        assert "java-keystore-jks" in response.json.get("message")
+        assert "does not require a private key" in response.json.get("message")
+
+
+@pytest.mark.parametrize(
+    "token,status",
+    [
         (VALID_USER_HEADER_TOKEN, 400),
         (VALID_ADMIN_HEADER_TOKEN, 400),
         (VALID_ADMIN_API_TOKEN, 400),
