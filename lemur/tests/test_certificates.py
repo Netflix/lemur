@@ -1268,6 +1268,119 @@ def test_upload_private_key_str(user):
 @pytest.mark.parametrize(
     "token,status",
     [
+        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+    ],
+)
+def test_certificate_upload_requires_authority_permission(client, authority, issuer_plugin, token, status):
+    """
+    GHSA-pxmc-2ffp-8j67 regression test: uploading a certificate against an authority
+    the caller has no AuthorityPermission on must be rejected, since it lets a caller
+    manufacture a Lemur row aliasing an existing CA-side certificate under that authority.
+    """
+    from lemur.roles import service as role_service
+
+    role_service.get_or_create(authority.owner, description="test")
+    response = client.post(
+        api.url_for(CertificatesUpload),
+        data=json.dumps({
+            "name": f"testuploadauthority{authority.id}",
+            "owner": "test@example.com",
+            "body": SAN_CERT_STR,
+            "chain": INTERMEDIATE_CERT_STR,
+            "authority": {"id": authority.id},
+            "externalId": "duplicate-external-id",
+        }),
+        headers=token,
+    )
+    assert response.status_code == status, f"expected code {status}, but actual code was {response.status_code}; error: {response.json}"
+
+
+def test_certificate_upload_rejects_duplicate_authority_serial(client, session, authority, issuer_plugin):
+    """
+    GHSA-pxmc-2ffp-8j67 regression test: uploading a certificate that shares an
+    (authority, serial) pair with an existing row must be rejected, since that
+    duplicate row is exactly what lets a caller manufacture an alias for a
+    CA-side certificate they don't own.
+    """
+    from lemur.common.utils import parse_certificate
+    from lemur.roles import service as role_service
+    from lemur.tests.factories import CertificateFactory
+
+    role_service.get_or_create(authority.owner, description="test")
+    existing_serial = str(parse_certificate(SAN_CERT_STR).serial_number)
+    existing = CertificateFactory(authority=authority, serial=existing_serial)
+    session.commit()
+
+    response = client.post(
+        api.url_for(CertificatesUpload),
+        data=json.dumps({
+            "name": f"testuploadduplicateserial{authority.id}",
+            "owner": "test@example.com",
+            "body": SAN_CERT_STR,
+            "chain": INTERMEDIATE_CERT_STR,
+            "authority": {"id": authority.id},
+        }),
+        headers=VALID_ADMIN_HEADER_TOKEN,
+    )
+    assert response.status_code == 409, f"expected code 409, but actual code was {response.status_code}; error: {response.json}"
+    assert str(existing.id) in response.json["message"]
+
+
+def test_certificate_upload_external_id_requires_authority(client):
+    """
+    GHSA-pxmc-2ffp-8j67 regression test: externalId is meaningless (and dangerous) without
+    an authority the caller is authorized for, since it is only consumed by CA revoke plugins.
+    """
+    response = client.post(
+        api.url_for(CertificatesUpload),
+        data=json.dumps({
+            "name": "testuploadnoauthority",
+            "owner": "test@example.com",
+            "body": SAN_CERT_STR,
+            "chain": INTERMEDIATE_CERT_STR,
+            "externalId": "duplicate-external-id",
+        }),
+        headers=VALID_USER_HEADER_TOKEN,
+    )
+    assert response.status_code == 403
+
+
+def test_certificate_revoke_checks_all_certs_sharing_authority_and_serial(client, session, authority):
+    """
+    GHSA-pxmc-2ffp-8j67 regression test: revoking a certificate row must be authorized
+    against every row that aliases the same CA-side certificate (same authority + serial),
+    not just the row named in the request. Otherwise a caller who owns a duplicate row can
+    revoke a certificate they were never authorized to touch.
+    """
+    from lemur.auth.service import create_token
+    from lemur.tests.factories import CertificateFactory, UserFactory
+
+    shared_serial = "DEADBEEF12345"
+    victim = UserFactory()
+    attacker = UserFactory()
+
+    CertificateFactory(authority=authority, user=victim, owner=victim.email, serial=shared_serial)
+    dup_cert = CertificateFactory(authority=authority, user=attacker, owner=attacker.email, serial=shared_serial)
+    session.commit()
+
+    attacker_token = {
+        "Authorization": "Basic " + create_token(attacker),
+        "Content-Type": "application/json",
+    }
+
+    response = client.put(
+        api.url_for(CertificateRevoke, certificate_id=dup_cert.id),
+        data=json.dumps({"comments": "test"}),
+        headers=attacker_token,
+    )
+    assert response.status_code == 403
+
+
+@pytest.mark.parametrize(
+    "token,status",
+    [
         (VALID_USER_HEADER_TOKEN, 200),
         (VALID_ADMIN_HEADER_TOKEN, 200),
         (VALID_ADMIN_API_TOKEN, 200),

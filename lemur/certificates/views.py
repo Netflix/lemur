@@ -26,7 +26,7 @@ from lemur.certificates.schemas import (
     certificate_revoke_schema,
 )
 from lemur.certificates.service import validate_no_duplicate_destinations
-from lemur.common import validators
+from lemur.common import defaults, utils, validators
 from lemur.common.schema import validate_schema
 from lemur.common.utils import paginated_parser
 from lemur.logs import service as log_service
@@ -653,6 +653,32 @@ class CertificatesUpload(AuthenticatedResource):
                 service.authorize_certificate_replacement(data["replaces"], g.current_user)
             except UnauthorizedError as e:
                 return dict(message=str(e)), 403
+
+        authority = data.get("authority")
+        if authority:
+            authority_roles = [x.name for x in authority.roles]
+            if not AuthorityPermission(authority.id, authority_roles).can():
+                return (
+                    dict(message="You are not authorized to upload a certificate for the specified authority."),
+                    403,
+                )
+
+            parsed_cert = utils.parse_certificate(data["body"])
+            serial = defaults.serial(parsed_cert)
+            existing = Certificate.query.filter(
+                Certificate.authority_id == authority.id,
+                Certificate.serial == str(serial),
+            ).first()
+            if existing:
+                return (
+                    dict(
+                        message=f"A certificate with serial={serial} already exists for this authority "
+                                f"(Certificate id={existing.id})."
+                    ),
+                    409,
+                )
+        elif data.get("external_id"):
+            return dict(message="An authority you are authorized for must be specified to set an external id."), 403
 
         data["creator"] = g.user
         if data.get("destinations"):
@@ -1689,26 +1715,46 @@ class CertificateRevoke(AuthenticatedResource):
         if not cert:
             return dict(message="Cannot find specified certificate"), 404
 
-        # allow creators
-        if g.current_user != cert.user:
-            owner_role = role_service.get_by_name(cert.owner)
-            permission = CertificatePermission(owner_role, [x.name for x in cert.roles])
+        # A duplicate row can be uploaded that aliases the same CA-side certificate
+        # (same authority + serial). Require authorization against every such row,
+        # not just the one named in the request, so a caller can't bypass the owner
+        # check by revoking through a row they happen to own.
+        related_certs = [cert]
+        if cert.authority_id and cert.serial:
+            related_certs = Certificate.query.filter(
+                Certificate.authority_id == cert.authority_id,
+                Certificate.serial == cert.serial,
+            ).all()
 
-            if not permission.can():
-                return (
-                    dict(message="You are not authorized to revoke this certificate."),
-                    403,
-                )
+        for related in related_certs:
+            # allow creators
+            if g.current_user != related.user:
+                owner_role = role_service.get_by_name(related.owner)
+                permission = CertificatePermission(owner_role, [x.name for x in related.roles])
 
-        if cert.endpoints:
-            for endpoint in cert.endpoints:
-                if service.is_attached_to_endpoint(cert.name, endpoint.name):
-                    return (
-                        dict(
-                            message="Cannot revoke certificate. Endpoints are deployed with the given certificate."
-                        ),
-                        403,
-                    )
+                if not permission.can():
+                    if related.id == cert.id:
+                        message = "You are not authorized to revoke this certificate."
+                    else:
+                        message = (
+                            f"You are not authorized to revoke this certificate. Blocked by Certificate "
+                            f"id={related.id} that shares (serial={related.serial}) and authority with "
+                            f"requested certificate id={cert.id}."
+                        )
+                    return dict(message=message), 403
+
+            if related.endpoints:
+                for endpoint in related.endpoints:
+                    if service.is_attached_to_endpoint(related.name, endpoint.name):
+                        if related.id == cert.id:
+                            message = "Cannot revoke certificate. Endpoints are deployed with the given certificate."
+                        else:
+                            message = (
+                                f"Cannot revoke certificate. Blocked by Certificate id={related.id} "
+                                f"that shares (serial={related.serial}) and authority with requested "
+                                f"certificate id={cert.id}, and has deployed endpoints."
+                            )
+                        return dict(message=message), 403
 
         try:
             error_message = service.revoke(cert, data)
