@@ -1,8 +1,8 @@
 Changelog
 =========
 
-1.9.3 - `unreleased`
-~~~~~~~~~~~~~~~~~~~~
+1.9.3
+~~~~~
 - Fixed missing authorization check (`GHSA-4h97-p9wq-chqj`_) on ``POST /certificates/<id>/export`` for plugins
   with ``requires_key = False`` (e.g. ``java-truststore-jks``). The ownership check was previously skipped
   entirely for these plugins with no compensating control. Since such plugins never receive the real private
