@@ -78,7 +78,7 @@ configargparse==1.7.5
     # via certbot
 configobj==5.0.9
     # via certbot
-cryptography==46.0.7
+cryptography==49.0.0
     # via
     #   -r requirements.in
     #   acme
@@ -275,7 +275,7 @@ pyjwt==2.12.1
     # via -r requirements.in
 pynacl==1.6.2
     # via paramiko
-pyopenssl==26.2.0
+pyopenssl==26.3.0
     # via
     #   -r requirements.in
     #   acme
