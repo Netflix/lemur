@@ -11,13 +11,11 @@
 
 import json
 from typing import Optional
-from urllib.parse import urlparse
 
 from flask import current_app
 
 from lemur import database
 from lemur.common.utils import truthiness, data_encrypt
-from lemur.exceptions import InvalidConfiguration
 from lemur.extensions import metrics
 from lemur.authorities.models import Authority
 from lemur.certificates.models import Certificate
@@ -27,30 +25,18 @@ from lemur.logs import service as log_service
 from lemur.certificates.service import upload
 
 
-def _validate_acme_url(url: str) -> None:
-    allowed_hosts = current_app.config.get(
-        "ACME_DIRECTORY_HOST_ALLOWLIST",
-        {
-            "acme-v02.api.letsencrypt.org",
-            "acme-staging-v02.api.letsencrypt.org",
-            "dv.acme-v02.api.pki.goog",
-        },
-    )
-    parsed = urlparse(url)
-    if parsed.scheme != "https" or parsed.hostname not in allowed_hosts:
-        raise InvalidConfiguration(
-            f"acme_url host not in ACME_DIRECTORY_HOST_ALLOWLIST: {parsed.hostname}"
-        )
-
-
 def _validate_acme_url_in_options(options_json: str) -> None:
+    # Imported here, rather than at module scope, to avoid a circular import:
+    # lemur.plugins.lemur_acme.acme_handlers imports lemur.authorities.service.
+    from lemur.plugins.lemur_acme.plugin import validate_acme_url
+
     try:
         options = json.loads(options_json)
     except (json.JSONDecodeError, TypeError):
         return
     for option in options:
         if isinstance(option, dict) and option.get("name") == "acme_url":
-            _validate_acme_url(option.get("value", ""))
+            validate_acme_url(option.get("value", ""))
 
 
 def update(authority_id, description, owner, active, roles, options: Optional[str] = None):

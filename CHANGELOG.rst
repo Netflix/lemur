@@ -1,6 +1,18 @@
 Changelog
 =========
 
+1.9.3 - `unreleased`
+~~~~~~~~~~~~~~~~~~~~
+- Fixed SSRF via ACME client following server-controlled URLs (`GHSA-xpmj-wjcp-6pww`_). The 1.9.2 fix for
+  `GHSA-v2wp-frmc-5q3v`_ validated ``acme_url`` against ``ACME_DIRECTORY_HOST_ALLOWLIST`` only at authority
+  creation time, so an existing authority's ``acme_url`` could still be repointed at an internal/IMDS address
+  via ``PUT /api/1/authorities/<id>``. ``acme_url`` is now also re-validated on authority update. Additionally,
+  the ACME client itself no longer trusts hostnames supplied by the directory/order/authorization/finalize
+  responses returned by the ACME server; outbound requests are now pinned to the configured, allowlisted
+  directory host, closing a second SSRF vector where a malicious or compromised ACME server could redirect
+  Lemur's backend to arbitrary internal URLs mid-issuance.
+.. _GHSA-xpmj-wjcp-6pww: https://github.com/Netflix/lemur/security/advisories/GHSA-xpmj-wjcp-6pww
+
 1.9.2 - `2026-06-10`
 ~~~~~~~~~~~~~~~~~~~~
 - Fixed ACME ``acme_url`` SSRF (`GHSA-v2wp-frmc-5q3v`_) where a user-supplied directory URL was fetched
