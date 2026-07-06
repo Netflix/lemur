@@ -74,7 +74,7 @@ blinker==1.9.0
     #   flask
     #   flask-mail
     #   flask-principal
-boto3==1.43.37
+boto3==1.43.41
     # via
     #   -r requirements-tests.txt
     #   aws-sam-translator
