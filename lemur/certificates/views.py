@@ -527,11 +527,13 @@ class CertificatesList(AuthenticatedResource):
             return dict(message=f"You are not authorized to use the authority: {data['authority'].name}"), 403
 
         data["creator"] = g.user
-        # allowed_issuance_for_domain throws UnauthorizedError if caller is not authorized
+        # allowed_issuance_for_domain / authorize_certificate_replacement throw UnauthorizedError if caller is not authorized
         try:
             # unless admin or global_cert_issuer, perform fine grained authorization
             if not g.user.is_admin_or_global_cert_issuer and not data["authority"].is_private_authority:
                 service.allowed_issuance_for_domain(data["common_name"], data["extensions"])
+            if data.get("replaces"):
+                service.authorize_certificate_replacement(data["replaces"], g.current_user)
         except UnauthorizedError as e:
             return dict(message=str(e)), 403
         else:
@@ -645,6 +647,12 @@ class CertificatesUpload(AuthenticatedResource):
         """
         if not StrictRolePermission().can():
             return dict(message="You are not authorized to upload a certificate."), 403
+
+        if data.get("replaces"):
+            try:
+                service.authorize_certificate_replacement(data["replaces"], g.current_user)
+            except UnauthorizedError as e:
+                return dict(message=str(e)), 403
 
         data["creator"] = g.user
         if data.get("destinations"):
@@ -943,6 +951,12 @@ class Certificates(AuthenticatedResource):
                     dict(message="You are not authorized to update this certificate"),
                     403,
                 )
+
+        if data.get("replaces"):
+            try:
+                service.authorize_certificate_replacement(data["replaces"], g.current_user)
+            except UnauthorizedError as e:
+                return dict(message=str(e)), 403
 
         if current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION"):
             message, code = current_app.config.get("CERTIFICATE_UPDATE_REQUEST_VALIDATION")(data, cert)

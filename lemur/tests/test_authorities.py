@@ -3,6 +3,7 @@ import json
 import pytest
 
 from lemur.authorities.views import *  # noqa
+from lemur.exceptions import InvalidConfiguration
 from lemur.tests.factories import AuthorityFactory, RoleFactory
 from lemur.tests.vectors import (
     VALID_ADMIN_API_TOKEN,
@@ -159,6 +160,45 @@ def test_authority_put(client, token, status):
         ).status_code
         == status
     )
+
+
+@pytest.mark.parametrize(
+    "token,status",
+    [
+        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+    ],
+)
+def test_authorities_post_subca_requires_parent_permission(client, authority, token, status):
+    """
+    GHSA-g7p5-89mh-248h regression test: even with ADMIN_ONLY_AUTHORITY_CREATION disabled
+    (self-service authority creation), a caller must hold AuthorityPermission on the
+    requested parent authority to mint a subca chained off of it.
+    """
+    from flask import current_app
+
+    original = current_app.config.get("ADMIN_ONLY_AUTHORITY_CREATION")
+    current_app.config["ADMIN_ONLY_AUTHORITY_CREATION"] = False
+    try:
+        response = client.post(
+            api.url_for(AuthoritiesList),
+            data=json.dumps({
+                'name': f'testsubcaauthority{authority.id}',
+                'owner': 'test@example.com',
+                'common_name': 'testsubcaauthority.example.com',
+                'type': 'subca',
+                'parent': {'id': authority.id},
+                'plugin': {'slug': 'cryptography-issuer'},
+                "validityStart": "2023-07-12T07:00:00.000Z",
+                "validityEnd": "2050-07-13T07:00:00.000Z",
+            }),
+            headers=token
+        )
+    finally:
+        current_app.config["ADMIN_ONLY_AUTHORITY_CREATION"] = original
+
+    assert response.status_code == status, f"expected code {status}, but actual code was {response.status_code}; error: {response.json}"
 
 
 @pytest.mark.parametrize(
@@ -440,3 +480,124 @@ def test_authorities_put_update_options(client, authority_number, token, status)
     )
     for field in ['owner', 'description', 'options']:
         assert 'updated' in json.dumps(response[field])
+
+
+def test_update_rejects_disallowed_acme_url(app, session):
+    """Defect A: authority update must reject an acme_url not on the allowlist."""
+    from lemur.authorities.service import update
+
+    auth = AuthorityFactory()
+    session.flush()
+
+    evil_options = json.dumps([{"name": "acme_url", "value": "https://evil.attacker.tld/dir"}])
+    with pytest.raises(InvalidConfiguration):
+        update(
+            auth.id,
+            owner=auth.owner,
+            description=auth.description,
+            active=True,
+            roles=[],
+            options=evil_options,
+        )
+
+
+def test_update_accepts_allowlisted_acme_url(app, session):
+    """Defect A: authority update must accept an acme_url that is on the allowlist."""
+    from lemur.authorities.service import update
+
+    auth = AuthorityFactory()
+    session.flush()
+
+    good_options = json.dumps([{"name": "acme_url", "value": "https://acme-v02.api.letsencrypt.org/directory"}])
+    result = update(
+        auth.id,
+        owner=auth.owner,
+        description=auth.description,
+        active=True,
+        roles=[],
+        options=good_options,
+    )
+    assert result is not None
+
+
+def test_update_options_rejects_disallowed_acme_url(app, session):
+    """Defect A: update_options must also reject a disallowed acme_url."""
+    from lemur.authorities.service import update_options
+
+    auth = AuthorityFactory()
+    session.flush()
+
+    evil_options = json.dumps([{"name": "acme_url", "value": "https://evil.attacker.tld/dir"}])
+    with pytest.raises(InvalidConfiguration):
+        update_options(auth.id, evil_options)
+
+
+def test_update_options_without_acme_url_is_unaffected(app, session):
+    """Defect A: update_options for non-ACME authorities (no acme_url) must succeed."""
+    from lemur.authorities.service import update_options
+
+    auth = AuthorityFactory()
+    session.flush()
+
+    options = json.dumps([{"name": "some_other_option", "value": "foo"}])
+    result = update_options(auth.id, options)
+    assert result is not None
+
+
+def test_authority_service_update_rejects_disallowed_acme_url(authority, session):
+    from lemur.authorities import service
+
+    options = json.dumps(
+        [{"name": "acme_url", "value": "http://169.254.169.254/latest/meta-data/"}]
+    )
+
+    with pytest.raises(InvalidConfiguration):
+        service.update(
+            authority.id,
+            description=authority.description,
+            owner=authority.owner,
+            active=authority.active,
+            roles=[],
+            options=options,
+        )
+
+    session.refresh(authority)
+    assert authority.options != options
+
+
+def test_authority_service_update_allows_allowlisted_acme_url(authority, session):
+    from lemur.authorities import service
+
+    options = json.dumps(
+        [{"name": "acme_url", "value": "https://acme-v02.api.letsencrypt.org/directory"}]
+    )
+
+    service.update(
+        authority.id,
+        description=authority.description,
+        owner=authority.owner,
+        active=authority.active,
+        roles=[],
+        options=options,
+    )
+
+    session.refresh(authority)
+    assert authority.options == options
+
+
+def test_authority_service_update_without_acme_url_unaffected(authority, session):
+    from lemur.authorities import service
+
+    options = json.dumps([{"name": "updated", "value": "bar"}])
+
+    service.update(
+        authority.id,
+        description=authority.description,
+        owner=authority.owner,
+        active=authority.active,
+        roles=[],
+        options=options,
+    )
+
+    session.refresh(authority)
+    assert authority.options == options
