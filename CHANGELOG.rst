@@ -3,6 +3,13 @@ Changelog
 
 1.9.3 - `unreleased`
 ~~~~~~~~~~~~~~~~~~~~
+- Fixed missing authorization on the ``replaces`` field (`GHSA-cfh6-pv5c-38jv`_), where any authenticated
+  caller could reference an arbitrary certificate by ID on certificate create, upload, and edit requests,
+  silencing its expiration notifications and retargeting its rotation without the owning team's knowledge.
+  ``authorize_certificate_replacement`` now requires the caller to own or hold a role on every certificate
+  named in ``replaces``, consistent with the existing check for direct revoke/edit. Enforcement can be
+  disabled via ``ENFORCE_REPLACES_AUTHORIZATION`` (defaults to ``True``) for deployments that need to
+  temporarily preserve the old behavior while they grant the appropriate role to affected workflows.
 - Fixed plaintext credential exposure via the destinations API (`GHSA-6c8m-q6g9-vrw3`_). Sensitive
   destination plugin options (e.g. SFTP password and private key passphrase) were returned in plaintext
   to any authenticated caller via ``GET /destinations``, ``GET /destinations/<id>``, and
@@ -29,6 +36,7 @@ Changelog
   parent authority before delegating to the issuer plugin, matching the check already
   used when updating an existing authority.
 
+.. _GHSA-cfh6-pv5c-38jv: https://github.com/Netflix/lemur/security/advisories/GHSA-cfh6-pv5c-38jv
 .. _GHSA-6c8m-q6g9-vrw3: https://github.com/Netflix/lemur/security/advisories/GHSA-6c8m-q6g9-vrw3
 .. _GHSA-v5rc-cpwc-cfpr: https://github.com/Netflix/lemur/security/advisories/GHSA-v5rc-cpwc-cfpr
 .. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v

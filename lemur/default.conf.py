@@ -29,3 +29,7 @@ IDP_CREATE_ROLES_FROM_USER_GROUPS = True  # Creates a Lemur role for each group 
 # Lemur admin. Use IDP_ROLES_MAPPING to create a mapping to assign these groups if desired. eg {"admin": "admin"}
 IDP_PROTECT_BUILTINS = True
 IDP_CREATE_PER_USER_ROLE = True  # Generates Lemur role for each user (allows cert assignment to a single user)
+
+# Requires the caller to own or hold a role on every certificate they mark as replaced.
+# Disabling this restores the historical, unauthenticated behavior; not recommended.
+ENFORCE_REPLACES_AUTHORIZATION = True

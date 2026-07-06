@@ -410,6 +410,29 @@ Basic Configuration
         CERTIFICATE_EXPORT_KEY_REQUEST_VALIDATION = my_export_validator
 
 
+.. data:: ENFORCE_REPLACES_AUTHORIZATION
+    :noindex:
+
+        Defaults to `True`.
+
+        Requires the caller to own or hold a role on every certificate they mark as replaced
+        via the `replaces` field on certificate create, upload, and edit requests. Without this,
+        any authenticated caller could reference an arbitrary certificate by ID, silencing its
+        expiration notifications and retargeting its rotation without the owning team's knowledge.
+
+        .. note::
+            Historically Lemur did not authorize `replaces` targets. If this restriction breaks
+            an existing automated workflow, grant the workflow's account the appropriate role on
+            the certificates it replaces rather than disabling this setting.
+
+        .. warning::
+            Disabling this protection is not recommended.
+
+        ::
+
+            ENFORCE_REPLACES_AUTHORIZATION = True
+
+
 .. data:: ENABLE_AUTO_ROTATE_ALL_AUTHORITIES
     :noindex:
 
