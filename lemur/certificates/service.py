@@ -1390,7 +1390,14 @@ def authorize_certificate_replacement(certificates, current_user):
     being marked as replaced. Marking a certificate as replaced silences its expiration
     notifications and retargets its rotation, so it requires the same authorization as
     revoking or editing that certificate directly.
+
+    Enforcement can be disabled via ENFORCE_REPLACES_AUTHORIZATION for deployments that
+    need to temporarily preserve the old, unauthenticated behavior while they migrate
+    affected workflows. See docs/administration.rst.
     """
+    if not current_app.config.get("ENFORCE_REPLACES_AUTHORIZATION", True):
+        return
+
     for cert in certificates:
         if current_user == cert.user:
             continue
