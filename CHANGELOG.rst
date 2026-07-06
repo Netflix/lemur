@@ -20,11 +20,20 @@ Changelog
   the directory/order/authorization/finalize responses returned by the ACME server; outbound requests are
   now pinned to the configured, allowlisted directory host, closing a second SSRF vector where a malicious
   or compromised ACME server could redirect Lemur's backend to arbitrary internal URLs mid-issuance.
+- Fixed missing authorization check on sub-CA creation (`GHSA-g7p5-89mh-248h`_). When
+  ``ADMIN_ONLY_AUTHORITY_CREATION`` is disabled, ``POST /api/1/authorities`` with
+  ``type=subca`` never verified that the caller holds ``AuthorityPermission`` on the
+  supplied parent authority, letting any authenticated non-read-only user mint a sub-CA
+  chained off any internal root Lemur holds the private key for and issue trusted leaf
+  certs under it. ``AuthoritiesList.post`` now enforces ``AuthorityPermission`` on the
+  parent authority before delegating to the issuer plugin, matching the check already
+  used when updating an existing authority.
 
 .. _GHSA-6c8m-q6g9-vrw3: https://github.com/Netflix/lemur/security/advisories/GHSA-6c8m-q6g9-vrw3
 .. _GHSA-v5rc-cpwc-cfpr: https://github.com/Netflix/lemur/security/advisories/GHSA-v5rc-cpwc-cfpr
 .. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v
 .. _GHSA-xpmj-wjcp-6pww: https://github.com/Netflix/lemur/security/advisories/GHSA-xpmj-wjcp-6pww
+.. _GHSA-g7p5-89mh-248h: https://github.com/Netflix/lemur/security/advisories/GHSA-g7p5-89mh-248h
 
 1.9.2 - `2026-06-10`
 ~~~~~~~~~~~~~~~~~~~~

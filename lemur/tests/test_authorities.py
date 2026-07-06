@@ -165,6 +165,45 @@ def test_authority_put(client, token, status):
 @pytest.mark.parametrize(
     "token,status",
     [
+        (VALID_USER_HEADER_TOKEN, 403),
+        (VALID_ADMIN_HEADER_TOKEN, 200),
+        (VALID_ADMIN_API_TOKEN, 200),
+    ],
+)
+def test_authorities_post_subca_requires_parent_permission(client, authority, token, status):
+    """
+    GHSA-g7p5-89mh-248h regression test: even with ADMIN_ONLY_AUTHORITY_CREATION disabled
+    (self-service authority creation), a caller must hold AuthorityPermission on the
+    requested parent authority to mint a subca chained off of it.
+    """
+    from flask import current_app
+
+    original = current_app.config.get("ADMIN_ONLY_AUTHORITY_CREATION")
+    current_app.config["ADMIN_ONLY_AUTHORITY_CREATION"] = False
+    try:
+        response = client.post(
+            api.url_for(AuthoritiesList),
+            data=json.dumps({
+                'name': f'testsubcaauthority{authority.id}',
+                'owner': 'test@example.com',
+                'common_name': 'testsubcaauthority.example.com',
+                'type': 'subca',
+                'parent': {'id': authority.id},
+                'plugin': {'slug': 'cryptography-issuer'},
+                "validityStart": "2023-07-12T07:00:00.000Z",
+                "validityEnd": "2050-07-13T07:00:00.000Z",
+            }),
+            headers=token
+        )
+    finally:
+        current_app.config["ADMIN_ONLY_AUTHORITY_CREATION"] = original
+
+    assert response.status_code == status, f"expected code {status}, but actual code was {response.status_code}; error: {response.json}"
+
+
+@pytest.mark.parametrize(
+    "token,status",
+    [
         (VALID_USER_HEADER_TOKEN, 405),
         (VALID_ADMIN_HEADER_TOKEN, 405),
         (VALID_ADMIN_API_TOKEN, 405),
