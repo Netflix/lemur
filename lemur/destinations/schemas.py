@@ -7,6 +7,7 @@
 """
 
 from marshmallow import fields, post_dump
+from lemur.auth.permissions import admin_permission
 from lemur.common.schema import LemurInputSchema, LemurOutputSchema
 from lemur.schemas import PluginInputSchema, PluginOutputSchema
 
@@ -30,9 +31,10 @@ class DestinationOutputSchema(LemurOutputSchema):
     @post_dump
     def fill_object(self, data):
         if data:
-            for option in data.get("options", []):
-                if option.get("sensitive"):
-                    option["value"] = None
+            if not admin_permission.can():
+                for option in data.get("options", []):
+                    if option.get("sensitive"):
+                        option["value"] = None
             data["plugin"]["pluginOptions"] = data["options"]
             for option in data["plugin"]["pluginOptions"]:
                 if "export-plugin" in option["type"]:
