@@ -1591,7 +1591,12 @@ class CertificateExport(AuthenticatedResource):
                 if not permission.can():
                     return (
                         dict(
-                            message="You are not authorized to export this certificate."
+                            message="You are not authorized to export this certificate's private key. "
+                            "Plugin: {} requires a private key, and you are not the certificate's creator "
+                            "or owner. Exporting with a plugin that does not require a private key "
+                            "(e.g. a truststore-only plugin) does not require ownership.".format(
+                                plugin.slug
+                            )
                         ),
                         403,
                     )

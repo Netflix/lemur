@@ -1460,6 +1460,11 @@ def test_certificate_export_requires_key_true_enforces_ownership(client, certifi
         assert response.json.get("extension") == "jks"
         logs = Log.query.filter_by(certificate_id=certificate.id).all()
         assert any(log.log_type == "key_view" for log in logs)
+    elif status == 403:
+        # the message should explain that the failure is due to the plugin
+        # requiring a private key, not a blanket export restriction
+        assert "java-keystore-jks" in response.json.get("message")
+        assert "does not require a private key" in response.json.get("message")
 
 
 @pytest.mark.parametrize(
