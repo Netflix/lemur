@@ -1,6 +1,18 @@
 Changelog
 =========
 
+Unreleased
+~~~~~~~~~~
+- Fixed missing authorization on the ``replaces`` field (`GHSA-cfh6-pv5c-38jv`_), where any authenticated
+  caller could reference an arbitrary certificate by ID on certificate create, upload, and edit requests,
+  silencing its expiration notifications and retargeting its rotation without the owning team's knowledge.
+  ``authorize_certificate_replacement`` now requires the caller to own or hold a role on every certificate
+  named in ``replaces``, consistent with the existing check for direct revoke/edit. Enforcement can be
+  disabled via ``ENFORCE_REPLACES_AUTHORIZATION`` (defaults to ``True``) for deployments that need to
+  temporarily preserve the old behavior while they grant the appropriate role to affected workflows.
+
+.. _GHSA-cfh6-pv5c-38jv: https://github.com/Netflix/lemur/security/advisories/GHSA-cfh6-pv5c-38jv
+
 1.9.2 - `2026-06-10`
 ~~~~~~~~~~~~~~~~~~~~
 - Fixed ACME ``acme_url`` SSRF (`GHSA-v2wp-frmc-5q3v`_) where a user-supplied directory URL was fetched
