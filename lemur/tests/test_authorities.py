@@ -505,3 +505,62 @@ def test_update_options_without_acme_url_is_unaffected(app, session):
     options = json.dumps([{"name": "some_other_option", "value": "foo"}])
     result = update_options(auth.id, options)
     assert result is not None
+
+
+def test_authority_service_update_rejects_disallowed_acme_url(authority, session):
+    from lemur.authorities import service
+
+    options = json.dumps(
+        [{"name": "acme_url", "value": "http://169.254.169.254/latest/meta-data/"}]
+    )
+
+    with pytest.raises(InvalidConfiguration):
+        service.update(
+            authority.id,
+            description=authority.description,
+            owner=authority.owner,
+            active=authority.active,
+            roles=[],
+            options=options,
+        )
+
+    session.refresh(authority)
+    assert authority.options != options
+
+
+def test_authority_service_update_allows_allowlisted_acme_url(authority, session):
+    from lemur.authorities import service
+
+    options = json.dumps(
+        [{"name": "acme_url", "value": "https://acme-v02.api.letsencrypt.org/directory"}]
+    )
+
+    service.update(
+        authority.id,
+        description=authority.description,
+        owner=authority.owner,
+        active=authority.active,
+        roles=[],
+        options=options,
+    )
+
+    session.refresh(authority)
+    assert authority.options == options
+
+
+def test_authority_service_update_without_acme_url_unaffected(authority, session):
+    from lemur.authorities import service
+
+    options = json.dumps([{"name": "updated", "value": "bar"}])
+
+    service.update(
+        authority.id,
+        description=authority.description,
+        owner=authority.owner,
+        active=authority.active,
+        roles=[],
+        options=options,
+    )
+
+    session.refresh(authority)
+    assert authority.options == options
