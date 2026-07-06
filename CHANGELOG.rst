@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Unreleased
-~~~~~~~~~~
+1.9.3 - `unreleased`
+~~~~~~~~~~~~~~~~~~~~
 - Fixed missing authorization on the ``replaces`` field (`GHSA-cfh6-pv5c-38jv`_), where any authenticated
   caller could reference an arbitrary certificate by ID on certificate create, upload, and edit requests,
   silencing its expiration notifications and retargeting its rotation without the owning team's knowledge.
@@ -10,8 +10,38 @@ Unreleased
   named in ``replaces``, consistent with the existing check for direct revoke/edit. Enforcement can be
   disabled via ``ENFORCE_REPLACES_AUTHORIZATION`` (defaults to ``True``) for deployments that need to
   temporarily preserve the old behavior while they grant the appropriate role to affected workflows.
+- Fixed plaintext credential exposure via the destinations API (`GHSA-6c8m-q6g9-vrw3`_). Sensitive
+  destination plugin options (e.g. SFTP password and private key passphrase) were returned in plaintext
+  to any authenticated caller via ``GET /destinations``, ``GET /destinations/<id>``, and
+  ``GET /certificates/<id>/destinations``. Sensitive option values are now redacted for non-admin
+  callers; admins retain the ability to view and edit them.
+- Fixed incomplete fix for ACME ``acme_url`` SSRF (`GHSA-v5rc-cpwc-cfpr`_). The 1.9.2 fix for
+  `GHSA-v2wp-frmc-5q3v`_ validated ``acme_url`` against ``ACME_DIRECTORY_HOST_ALLOWLIST`` only at
+  authority creation time. Any user with a role on an existing ACME authority could still overwrite
+  its stored ``acme_url`` with an internal/IMDS address via ``PUT /api/1/authorities/<id>``, since the
+  update path stored ``options`` verbatim with no re-validation. The next certificate issuance via that
+  authority would then cause Lemur's backend to fetch the attacker-controlled URL. ``acme_url`` is now
+  also validated against the allowlist on authority update.
+- Fixed SSRF via ACME client following server-controlled URLs (`GHSA-xpmj-wjcp-6pww`_). In addition to
+  the ``acme_url`` allowlist check above, the ACME client itself no longer trusts hostnames supplied by
+  the directory/order/authorization/finalize responses returned by the ACME server; outbound requests are
+  now pinned to the configured, allowlisted directory host, closing a second SSRF vector where a malicious
+  or compromised ACME server could redirect Lemur's backend to arbitrary internal URLs mid-issuance.
+- Fixed missing authorization check on sub-CA creation (`GHSA-g7p5-89mh-248h`_). When
+  ``ADMIN_ONLY_AUTHORITY_CREATION`` is disabled, ``POST /api/1/authorities`` with
+  ``type=subca`` never verified that the caller holds ``AuthorityPermission`` on the
+  supplied parent authority, letting any authenticated non-read-only user mint a sub-CA
+  chained off any internal root Lemur holds the private key for and issue trusted leaf
+  certs under it. ``AuthoritiesList.post`` now enforces ``AuthorityPermission`` on the
+  parent authority before delegating to the issuer plugin, matching the check already
+  used when updating an existing authority.
 
 .. _GHSA-cfh6-pv5c-38jv: https://github.com/Netflix/lemur/security/advisories/GHSA-cfh6-pv5c-38jv
+.. _GHSA-6c8m-q6g9-vrw3: https://github.com/Netflix/lemur/security/advisories/GHSA-6c8m-q6g9-vrw3
+.. _GHSA-v5rc-cpwc-cfpr: https://github.com/Netflix/lemur/security/advisories/GHSA-v5rc-cpwc-cfpr
+.. _GHSA-v2wp-frmc-5q3v: https://github.com/Netflix/lemur/security/advisories/GHSA-v2wp-frmc-5q3v
+.. _GHSA-xpmj-wjcp-6pww: https://github.com/Netflix/lemur/security/advisories/GHSA-xpmj-wjcp-6pww
+.. _GHSA-g7p5-89mh-248h: https://github.com/Netflix/lemur/security/advisories/GHSA-g7p5-89mh-248h
 
 1.9.2 - `2026-06-10`
 ~~~~~~~~~~~~~~~~~~~~

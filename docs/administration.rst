@@ -544,6 +544,10 @@ Basic Configuration
         users can create authorities. Set to ``False`` to explicitly opt in to allowing any authenticated
         user to create authorities.
 
+        Note that any authenticated, non-read-only user may still only create a sub-CA chained off of a
+        parent authority they already hold a role on (or if they are an ``admin``); Lemur enforces
+        ``AuthorityPermission`` on the supplied ``parent`` regardless of this setting.
+
 
 Certificate Default Options
 ---------------------------

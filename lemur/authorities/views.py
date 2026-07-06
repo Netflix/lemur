@@ -232,6 +232,12 @@ class AuthoritiesList(AuthenticatedResource):
         if not permission.can() or not StrictRolePermission().can():
             return dict(message="You are not allowed to create a new authority."), 403
 
+        parent = data.get("parent")
+        if parent:
+            parent_roles = [x.name for x in parent.roles]
+            if not AuthorityPermission(parent.id, parent_roles).can():
+                return dict(message="You are not authorized to use the specified parent authority."), 403
+
         if not validators.is_valid_owner(data["owner"]):
             return dict(message=f"Invalid owner: check if {data['owner']} is a valid group email. Individuals cannot "
                                 f"be authority owners."), 412
