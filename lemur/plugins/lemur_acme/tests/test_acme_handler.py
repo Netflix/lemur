@@ -133,8 +133,6 @@ class TestAcmeHandler(unittest.TestCase):
         self.assertEqual(chain_pem, ACME_CHAIN_LONG_STR[len(leaf_pem):].lstrip())
 
 
-# --- GHSA-xpmj-wjcp-6pww: Defect B — _PinnedClientNetwork hostname enforcement ---
-
 class TestPinnedClientNetwork(unittest.TestCase):
     def setUp(self):
         import josepy as jose

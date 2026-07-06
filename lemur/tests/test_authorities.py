@@ -443,8 +443,6 @@ def test_authorities_put_update_options(client, authority_number, token, status)
         assert 'updated' in json.dumps(response[field])
 
 
-# --- GHSA-xpmj-wjcp-6pww: acme_url re-validation on authority update ---
-
 def test_update_rejects_disallowed_acme_url(app, session):
     """Defect A: authority update must reject an acme_url not on the allowlist."""
     from lemur.authorities.service import update
