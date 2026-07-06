@@ -31,6 +31,7 @@ def _validate_revocation_url(url, config_key):
     Reject URLs that point at private/loopback/link-local destinations (SSRF prevention).
     If config_key is present in app config, also enforce a hostname allowlist.
 
+    Returns the resolved IP string so callers can pin the connection and prevent DNS rebinding.
     Raises ValueError with a descriptive message if the URL is not permitted.
     """
     parsed = urlparse(url)
@@ -54,6 +55,30 @@ def _validate_revocation_url(url, config_key):
 
     if addr.is_private or addr.is_loopback or addr.is_link_local or addr.is_reserved:
         raise ValueError(f"URL resolves to a disallowed internal address ({addr}): {url}")
+
+    return str(addr)
+
+
+def _pin_url_to_ip(url, resolved_ip):
+    """
+    Return url with the hostname replaced by resolved_ip to prevent DNS rebinding.
+    Only applied for http:// URLs; https:// relies on TLS certificate validation for
+    hostname binding and replacing the hostname would break SNI/cert verification.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme != "http":
+        return url
+    port = parsed.port
+    netloc = f"{resolved_ip}:{port}" if port else resolved_ip
+    return parsed._replace(netloc=netloc).geturl()
+
+
+def _host_header(url):
+    """Return the correct Host header value for the given URL (hostname[:port])."""
+    parsed = urlparse(url)
+    if parsed.port:
+        return f"{parsed.hostname}:{parsed.port}"
+    return parsed.hostname
 
 
 def ocsp_verify(cert, cert_path, issuer_chain_path):
@@ -80,13 +105,16 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
     url = url_bytes.decode("utf-8").strip()
 
     try:
-        _validate_revocation_url(url, "LEMUR_TRUSTED_OCSP_HOSTS")
+        resolved_ip = _validate_revocation_url(url, "LEMUR_TRUSTED_OCSP_HOSTS")
     except ValueError as e:
         current_app.logger.warning(
             f"OCSP URL rejected for certificate {cert.serial_number:02X}: {e}"
         )
         return None
 
+    # Use the pinned IP to prevent DNS rebinding between validation and fetch.
+    # Pass the original hostname via -header Host so the OCSP server can route correctly.
+    pinned_url = _pin_url_to_ip(url, resolved_ip)
     p2 = subprocess.Popen(
         [
             "openssl",
@@ -96,7 +124,10 @@ def ocsp_verify(cert, cert_path, issuer_chain_path):
             "-cert",
             cert_path,
             "-url",
-            url,
+            pinned_url,
+            "-header",
+            "Host",
+            _host_header(url),
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -162,7 +193,7 @@ def crl_verify(cert, cert_path):
 
         if point not in crl_cache:
             try:
-                _validate_revocation_url(point, "LEMUR_TRUSTED_CRL_HOSTS")
+                resolved_ip = _validate_revocation_url(point, "LEMUR_TRUSTED_CRL_HOSTS")
             except ValueError as e:
                 current_app.logger.warning(
                     f"CRL URL rejected for certificate {cert.serial_number:02X}: {e}"
@@ -170,8 +201,16 @@ def crl_verify(cert, cert_path):
                 continue
 
             current_app.logger.debug(f"Retrieving CRL: {point}, serial {cert.serial_number:02X}")
+            # Pin to the already-validated IP (prevents DNS rebinding) and disable redirect
+            # following (prevents redirect-based SSRF bypass).
+            pinned_url = _pin_url_to_ip(point, resolved_ip)
             try:
-                response = requests.get(point, timeout=(3.05, 6))
+                response = requests.get(
+                    pinned_url,
+                    timeout=(3.05, 6),
+                    allow_redirects=False,
+                    headers={"Host": _host_header(point)},
+                )
 
                 if response.status_code != 200:
                     raise Exception(f"Unable to retrieve CRL: {point}, serial {cert.serial_number:02X}")
