@@ -322,7 +322,7 @@ def rotate(endpoint_name, source, new_certificate_name, old_certificate_name, me
             log_data["certificate"] = new_cert.name
             log_data["certificate_old"] = old_cert.name
             log_data["message"] = "Rotating endpoint from old to new cert"
-            for endpoint in old_cert.endpoints:
+            for endpoint in list(old_cert.endpoints):
                 click.echo(f"[+] Rotating {endpoint.name}")
                 log_data["endpoint"] = endpoint.dnsname
                 request_rotation(endpoint, new_cert, message, commit)
@@ -471,7 +471,7 @@ def rotate_region(endpoint_name, new_certificate_name, old_certificate_name, mes
             log_data["message"] = "Rotating endpoint from old to new cert"
             click.echo(log_data)
             current_app.logger.info(log_data)
-            for endpoint in old_cert.endpoints:
+            for endpoint in list(old_cert.endpoints):
                 log_data["endpoint"] = endpoint.dnsname
                 request_rotation_region(endpoint, new_cert, message, commit, log_data, region)
 
